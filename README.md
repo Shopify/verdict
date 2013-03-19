@@ -1,6 +1,7 @@
 # Experiments
 
-The Experiment functionality has been extracted from Shoppify so that it can be used to do A/B tests on other applications
+The Experiment functionality has been extracted from Shopify so that it can be used to do A/B tests on other applications
+
 
 ## Installation
 
@@ -16,9 +17,10 @@ Or install it yourself as:
 
     $ gem install experiments
 
+
 ## Usage
 
-This gem contains the Experiment and ShopExperiment model used create the experiment singleton and modify application behaviour. Define the experiment like so:
+This gem contains the Experiment model used create the experiment singleton and consistently modify application behaviour based on an object's unique key. Define the experiment like so:
 
     AnnualVsMonthly = Experiment.new("annual vs monthly") do |ab|
       ab.percentage 10, :monthly
@@ -36,6 +38,11 @@ Modify app behaviour like so:
 
 The real important bit is the hashing algorithm used to decide what group a shop or entity will belong to, without having to set cookies or do database inserts.
 
-See the vault article for more details:
 
-[https://vault.shopify.com/creating-an-experiment-in-shopify](https://vault.shopify.com/creating-an-experiment-in-shopify)
+## Contributing
+
+1. Fork it
+2. Create your feature branch (`git checkout -b my-new-feature`)
+3. Commit your changes (`git commit -am 'Added some feature'`)
+4. Push to the branch (`git push origin my-new-feature`)
+5. Create new Pull Request
