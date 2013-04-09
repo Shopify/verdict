@@ -1,4 +1,6 @@
-class Experiment
+require 'digest/md5'
+
+class Experiments::Experiment
   class AssignmentError < StandardError; end 
   
   attr_reader :name, :groups
@@ -46,12 +48,12 @@ class Experiment
     unless label
       raise "Could not get group for seed #{identifier.inspect}"
     end
-    Rails.logger.info "[#{name}] subject id #{identifier.inspect} is in group #{label.inspect}"
+    Experiments.logger.info "[#{name}] subject id #{identifier.inspect} is in group #{label.inspect}"
     label
   end
 
   def calculate_case_percentile(identifier)
-    raise ArgumentError.new("identifier must not be nil") unless identifier.present?
+    raise ArgumentError.new("identifier must not be nil") if identifier.nil?
     Digest::MD5.hexdigest("#{@name}#{identifier}").to_i(16) % 100
   end
 end
