@@ -1,72 +1,78 @@
 require 'test_helper'
 
-class ExperimentTest < ActiveSupport::TestCase
+class ExperimentTest < MiniTest::Unit::TestCase
 
   def test_add_up_to_100_percent
-    assert_nothing_raised do
-      Experiment.new('test') do |group|
-        group.percentage  1, :group1
-        group.percentage 54, :group2
-        group.percentage 27, :group3
-        group.percentage 18, :group4
-      end
+    e = Experiments::Experiment.new('test') do |group|
+      group.percentage  1, :group1
+      group.percentage 54, :group2
+      group.percentage 27, :group3
+      group.percentage 18, :group4
     end
+
+    assert_equal [:group1, :group2, :group3, :group4], e.groups.keys
+    assert_equal  0 ...   1, e.groups[:group1]
+    assert_equal  1 ...  55, e.groups[:group2]
+    assert_equal 55 ...  82, e.groups[:group3]
+    assert_equal 82 ... 100, e.groups[:group4]
+  end
+
+  def test_half_and_rest
+    e = Experiments::Experiment.new('test') do |group|
+      group.half :first_half
+      group.rest :second_half
+    end
+
+    assert_equal [:first_half, :second_half], e.groups.keys
+    assert_equal  0 ...  50, e.groups[:first_half]
+    assert_equal 50 ... 100, e.groups[:second_half]
   end
   
   def test_raises_if_less_than_100_percent
-    assert_raises(Experiment::AssignmentError) do
-      Experiment.new('test') do |group|
-        group.percentage 99, :too_much
+    assert_raises(Experiments::Experiment::AssignmentError) do
+      Experiments::Experiment.new('test') do |group|
+        group.percentage 99, :too_little
       end
     end
   end
   
   def test_raises_if_greather_than_100_percent
-    assert_raises(Experiment::AssignmentError) do
-      Experiment.new('test') do |group|
+    assert_raises(Experiments::Experiment::AssignmentError) do
+      Experiments::Experiment.new('test') do |group|
         group.percentage 101, :too_much
       end
     end
   end
   
-  def test_half_and_rest
-    assert_nothing_raised do
-      Experiment.new('test') do |group|
-        group.half :first_half
-        group.rest :second_half
-      end
-    end
-  end
-  
   def test_group_for_identifier
-    e = Experiment.new('test') do |group|
+    Experiments.logger = MiniTest::Mock.new
+    e = Experiments::Experiment.new('test') do |group|
       group.half :a
       group.rest :b
     end
 
-    Rails.logger.expects(:info).once.with('[test] subject id 1 is in group :a')
-    Rails.logger.expects(:info).once.with('[test] subject id 2 is in group :b')
+    Experiments.logger.expect(:info, nil, ['[test] subject id 1 is in group :a'])
+    Experiments.logger.expect(:info, nil, ['[test] subject id 2 is in group :b'])
     
     assert_equal :a, e.group_for(1)
     assert_equal :b, e.group_for(2)
+
+     Experiments.logger.verify
   end
 
   def test_group_for
-    e = Experiment.new('test') do |group|
+    e = Experiments::Experiment.new('test') do |group|
       group.half :a
       group.rest :b
     end
-    object = stub(:object)
-    object.stubs(:id => 1)
 
-    assert_equal :a, e.group_for(object)
-
-    object.stubs(:id => 2)
-    assert_equal :b, e.group_for(object)
+    object_stub = Struct.new(:id)
+    assert_equal :a, e.group_for(object_stub.new(1))
+    assert_equal :b, e.group_for(object_stub.new(2))
   end
 
   def test_fair_grouping
-    e = Experiment.new('test') do |group|
+    e = Experiments::Experiment.new('test') do |group|
       group.percentage 33, :first_third
       group.percentage 33, :second_third
       group.rest           :final_third
