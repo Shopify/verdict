@@ -4,6 +4,10 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
 
   MockExperiment = Struct.new(:name)
 
+  def setup
+    Experiments.repository.clear
+  end
+
   def test_add_up_to_100_percent
     s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
     s.percentage  1, :segment1
@@ -31,7 +35,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_raises_if_less_than_100_percent
-    assert_raises(Experiments::Segmenter::SegmentationError) do
+    assert_raises(Experiments::SegmentationError) do
       s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
       s.percentage 99, :too_little
       s.verify!
@@ -39,7 +43,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_raises_if_greather_than_100_percent
-    assert_raises(Experiments::Segmenter::SegmentationError) do
+    assert_raises(Experiments::SegmentationError) do
       s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
       s.percentage 101, :too_much
       s.verify!

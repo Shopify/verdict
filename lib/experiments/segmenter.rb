@@ -26,7 +26,7 @@ module Experiments::Segmenter
     end
 
     def verify!
-      raise SegmentationError, "Should segment exactly 100% of the cases, but segments add up to #{@total_percentage_segmented}%." if @total_percentage_segmented != 100
+      raise Experiments::SegmentationError, "Should segment exactly 100% of the cases, but segments add up to #{@total_percentage_segmented}%." if @total_percentage_segmented != 100
     end
 
     def percentage(n, label)
@@ -46,11 +46,9 @@ module Experiments::Segmenter
     def segment(identifier, subject, context)
       percentile = Digest::MD5.hexdigest("#{@experiment.name}#{identifier}").to_i(16) % 100
       segment_label, _ = segments.find { |_, percentile_range| percentile_range.include?(percentile) }
-      raise SegmentationError, "Could not get segment for subject #{identifier.inspect}!" unless segment_label
+      raise Experiments::SegmentationError, "Could not get segment for subject #{identifier.inspect}!" unless segment_label
       segment_label
     end
 
   end
-
-  class SegmentationError < Experiments::Error; end
 end

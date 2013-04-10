@@ -2,11 +2,22 @@ require 'test_helper'
 
 class ExperimentTest < MiniTest::Unit::TestCase
 
+  def setup
+    Experiments.repository.clear
+  end
+
   def test_should_keep_list_of_all
-    size_at_start = Experiments.all.size
+    size_at_start = Experiments.repository.size
     e = Experiments::Experiment.new('test') { |s| s.percentage(100, :all) }
-    assert_equal size_at_start + 1, Experiments.all.size
-    assert_includes Experiments.all, e
+    assert_equal size_at_start + 1, Experiments.repository.size
+    assert_equal e, Experiments['test']
+  end
+
+  def test_should_not_allow_experiments_with_the_same_name
+    Experiments::Experiment.new('test_duplicate') { |s| s.percentage(100, :all) }
+    assert_raises(Experiments::ExperimentNameNotUnique) do
+      Experiments::Experiment.new('test_duplicate') { |s| s.percentage(100, :all) }
+    end
   end
 
   def test_qualifier

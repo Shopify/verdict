@@ -3,13 +3,16 @@ class Experiments::Experiment
   attr_reader :name, :qualifier, :segmenter
 
   def initialize(name, options = {}, &block)
+
+    raise Experiments::ExperimentNameNotUnique.new(name) if Experiments.repository.has_key?(name)
+    Experiments.repository[name] = self
+
     @name = name
     @qualifier = options[:qualifier] || create_qualifier
     @segmenter = options[:segmenter] || create_segmenter
     @subject_store = options[:store] || create_subject_store
     yield @segmenter if block_given?
     @segmenter.verify!
-    Experiments.all << self
   end
 
   def segments
