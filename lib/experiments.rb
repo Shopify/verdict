@@ -3,7 +3,7 @@ require 'logger'
 module Experiments
   extend self
 
-  attr_accessor :logger
+  attr_accessor :logger, :all
 
   class Error < StandardError; end
 end
@@ -16,3 +16,4 @@ require "experiments/segmenter"
 require "experiments/subject_store"
 
 Experiments.logger ||= Logger.new("/dev/null")
+Experiments.all = []

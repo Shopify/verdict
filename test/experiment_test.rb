@@ -2,6 +2,13 @@ require 'test_helper'
 
 class ExperimentTest < MiniTest::Unit::TestCase
 
+  def test_should_keep_list_of_all
+    size_at_start = Experiments.all.size
+    e = Experiments::Experiment.new('test') { |s| s.percentage(100, :all) }
+    assert_equal size_at_start + 1, Experiments.all.size
+    assert_includes Experiments.all, e
+  end
+
   def test_qualifier
     subject_stub = Struct.new(:id, :country)
     qualifier = proc { |subject| subject.country == 'CA' }
