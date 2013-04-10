@@ -46,7 +46,7 @@ module Experiments::Segmenter
     def segment(identifier, subject, context)
       percentile = Digest::MD5.hexdigest("#{@experiment.name}#{identifier}").to_i(16) % 100
       segment_label, _ = segments.find { |_, percentile_range| percentile_range.include?(percentile) }
-      raise "Could not get segment for subject #{identifier.inspect}!" unless segment_label
+      raise SegmentationError, "Could not get segment for subject #{identifier.inspect}!" unless segment_label
       segment_label
     end
 
