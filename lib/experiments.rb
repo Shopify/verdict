@@ -6,7 +6,7 @@ module Experiments
   attr_accessor :logger, :repository
 
   def [](name)
-    Experiments.repository[name]
+    Experiments.repository[name.to_s]
   end
 
   class Error < StandardError; end
