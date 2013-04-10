@@ -19,18 +19,22 @@ class ExperimentTest < MiniTest::Unit::TestCase
 
   def test_logging
     Experiments.logger = MiniTest::Mock.new
-    qualifier = proc { |subject| subject == 1 }
+    qualifier = proc { |subject| subject <= 2 }
     e = Experiments::Experiment.new('test', qualifier: qualifier) do |segment|
       segment.half :a
       segment.rest :b
     end
 
-    Experiments.logger.expect(:info, nil, ['[Experiment test] subject ID "1" (new) is in segment :a.'])
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=new qualified=true segment=a'])
     e.segment_for(1)
     Experiments.logger.verify
 
-    Experiments.logger.expect(:info, nil, ['[Experiment test] subject ID "2" (new) is not qualified.'])
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=2 status=new qualified=true segment=b'])
     e.segment_for(2)
+    Experiments.logger.verify
+
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=3 status=new qualified=false'])
+    e.segment_for(3)
     Experiments.logger.verify
   end
 
@@ -42,20 +46,12 @@ class ExperimentTest < MiniTest::Unit::TestCase
       segment.rest :b
     end
 
-    Experiments.logger.expect(:info, nil, ['[Experiment test] subject ID "1" (new) is in segment :a.'])
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=new qualified=true segment=a'])
     e.segment_for(1)
     Experiments.logger.verify
 
-    Experiments.logger.expect(:info, nil, ['[Experiment test] subject ID "1" is in segment :a.'])
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=returning qualified=true segment=a'])
     e.segment_for(1)
-    Experiments.logger.verify
-
-    Experiments.logger.expect(:info, nil, ['[Experiment test] subject ID "2" (new) is in segment :b.'])
-    e.segment_for(2)
-    Experiments.logger.verify
-
-    Experiments.logger.expect(:info, nil, ['[Experiment test] subject ID "2" is in segment :b.'])
-    e.segment_for(2)
     Experiments.logger.verify
   end
 end
