@@ -1,7 +1,6 @@
 require 'digest/md5'
 
 module Experiments::Segmenter
-  extend self
 
   class Base
 
