@@ -3,7 +3,7 @@ require 'logger'
 module Experiments
   extend self
 
-  attr_accessor :logger, :repository
+  attr_accessor :logger, :directory
 
   def [](name)
     Experiments.repository[name.to_s]
@@ -11,6 +11,19 @@ module Experiments
 
   def define(*args, &block)
     Experiments::Experiment.new(*args, &block)
+  end
+
+  def repository
+    if @repository.nil?
+      @repository = {}
+      discovery
+    end
+
+    @repository
+  end
+
+  def discovery
+    Dir[File.join(directory, '**', '*.rb')].each { |f| require f } if @directory
   end
 
   class Error < StandardError; end
@@ -35,4 +48,4 @@ require "experiments/assignment"
 require "experiments/storage"
 
 Experiments.logger ||= Logger.new("/dev/null")
-Experiments.repository = {}
+Experiments.directory = nil
