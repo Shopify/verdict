@@ -20,6 +20,25 @@ module Experiments::Segmenter
   end
 
   class StaticPercentage < Base
+
+    class Group < Experiments::Group
+
+      attr_reader :percentile_range
+
+      def initialize(label, percentile_range)
+        super(label)
+        @percentile_range = percentile_range
+      end
+
+      def percentage_size
+        percentile_range.end - percentile_range.begin
+      end
+
+      def to_s
+        "#{label} (#{percentage_size}%)"
+      end
+    end
+
     def initialize(experiment)
       super
       @total_percentage_segmented = 0
@@ -37,14 +56,15 @@ module Experiments::Segmenter
         when Integer; percentage
         else Integer(percentage)
       end
-        
-      @groups[label] = @total_percentage_segmented ... (@total_percentage_segmented + n)
+
+      group = Group.new(label, @total_percentage_segmented ... (@total_percentage_segmented + n))
+      @groups[group.label] = group
       @total_percentage_segmented += n
     end
 
     def assign(identifier, subject, context)
       percentile = Digest::MD5.hexdigest("#{@experiment.name}#{identifier}").to_i(16) % 100
-      segment_label, _ = groups.find { |_, percentile_range| percentile_range.include?(percentile) }
+      segment_label, _ = groups.find { |_, group| group.percentile_range.include?(percentile) }
       raise Experiments::SegmentationError, "Could not get segment for subject #{identifier.inspect}!" unless segment_label
       segment_label
     end

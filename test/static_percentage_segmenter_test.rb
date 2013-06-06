@@ -17,10 +17,10 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
     s.verify!
 
     assert_equal [:segment1, :segment2, :segment3, :segment4], s.groups.keys
-    assert_equal  0 ...   1, s.groups[:segment1]
-    assert_equal  1 ...  55, s.groups[:segment2]
-    assert_equal 55 ...  82, s.groups[:segment3]
-    assert_equal 82 ... 100, s.groups[:segment4]
+    assert_equal  0 ...   1, s.groups[:segment1].percentile_range
+    assert_equal  1 ...  55, s.groups[:segment2].percentile_range
+    assert_equal 55 ...  82, s.groups[:segment3].percentile_range
+    assert_equal 82 ... 100, s.groups[:segment4].percentile_range
   end
 
   def test_defintiion_ofhalf_and_rest
@@ -30,8 +30,8 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
     s.verify!
 
     assert_equal [:first_half, :second_half], s.groups.keys
-    assert_equal  0 ...  50, s.groups[:first_half]
-    assert_equal 50 ... 100, s.groups[:second_half]
+    assert_equal  0 ...  50, s.groups[:first_half].percentile_range
+    assert_equal 50 ... 100, s.groups[:second_half].percentile_range
   end
 
   def test_raises_if_less_than_100_percent

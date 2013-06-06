@@ -1,6 +1,6 @@
 class Experiments::Experiment
 
-  attr_reader :name, :qualifier, :segmenter, :subject_storage
+  attr_reader :name, :qualifier, :subject_storage
 
   def initialize(name, options = {}, &block)
     @name = name.to_s
@@ -15,6 +15,7 @@ class Experiments::Experiment
   end
 
   def groups(segmenter_class = Experiments::Segmenter::StaticPercentage, &block)
+    return @segmenter.groups unless block_given?
     @segmenter ||= segmenter_class.new(self)
     @segmenter.instance_eval(&block)
     @segmenter.verify!
@@ -27,6 +28,15 @@ class Experiments::Experiment
 
   def storage(subject_storage)
     @subject_storage = subject_storage
+  end
+
+  def segmenter
+    raise Experiments::Error, "No groups defined for experiment #{@name.inspect}." if @segmenter.nil?
+    @segmenter
+  end
+
+  def group_names
+    segmenter.groups.keys
   end
 
   def assign(subject, context = nil)

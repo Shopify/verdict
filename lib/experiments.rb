@@ -23,7 +23,7 @@ module Experiments
   end
 
   def discovery
-    Dir[File.join(directory, '**', '*.rb')].each { |f| require f } if @directory
+    Dir[File.join(Experiments.directory, '**', '*.rb')].each { |f| require f } if @directory
   end
 
   class Error < StandardError; end
@@ -43,8 +43,9 @@ require "experiments/version"
 require "experiments/railtie" if defined?(Rails)
 
 require "experiments/experiment"
-require "experiments/segmenter"
+require "experiments/group"
 require "experiments/assignment"
+require "experiments/segmenter"
 require "experiments/storage"
 
 Experiments.logger ||= Logger.new("/dev/null")
