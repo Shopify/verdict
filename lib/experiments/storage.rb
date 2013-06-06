@@ -30,7 +30,7 @@ module Experiments::Storage
 
     def set(experiment_name, subject_identifier, qualified, group)
       @store[experiment_name] ||= {}
-      @store[experiment_name][subject_identifier] = { :qualified => qualified, :group => group }
+      @store[experiment_name][subject_identifier] = Experiments::Assignment.new(returning: true, qualified: qualified, group: group)
       true
     end
 

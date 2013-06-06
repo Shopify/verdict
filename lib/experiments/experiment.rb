@@ -33,11 +33,10 @@ class Experiments::Experiment
     identifier = subject_identifier(subject)
     assignment = @subject_storage.get(@name, identifier) || assignment_for_subject(identifier, subject, context)
     
-    status = assignment[:new] ? 'new' : 'returning'
-    if assignment[:qualified]
-      group = assignment[:group]
-      Experiments.logger.info "[Experiments] experiment=#{@name} subject=#{identifier} status=#{status} qualified=true group=#{group}"
-      group
+    status = assignment.returning? ? 'returning' : 'new'
+    if assignment.qualified?
+      Experiments.logger.info "[Experiments] experiment=#{@name} subject=#{identifier} status=#{status} qualified=true group=#{assignment.group}"
+      assignment.group
     else
       Experiments.logger.info "[Experiments] experiment=#{@name} subject=#{identifier} status=#{status} qualified=false"
       nil        
@@ -52,12 +51,12 @@ class Experiments::Experiment
 
   def assignment_for_subject(identifier, subject, context)
     if @qualifier.call(subject, context)
-      segment = @segmenter.assign(identifier, subject, context)
-      @subject_storage.set(@name, identifier, true, segment)
-      { :qualified => true, :group => segment, :new => true }
+      group = @segmenter.assign(identifier, subject, context)
+      @subject_storage.set(@name, identifier, true, group)
+      Experiments::Assignment.new(returning: false, qualified: true, group: group)
     else
       @subject_storage.set(@name, identifier, false, nil)
-      { :qualified => false, :new => true }
+      Experiments::Assignment.new(returning: false, qualified: false)
     end
   end
 

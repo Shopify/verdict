@@ -31,6 +31,7 @@ require "experiments/railtie" if defined?(Rails)
 
 require "experiments/experiment"
 require "experiments/segmenter"
+require "experiments/assignment"
 require "experiments/storage"
 
 Experiments.logger ||= Logger.new("/dev/null")
