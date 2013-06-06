@@ -7,7 +7,7 @@ Gem::Specification.new do |gem|
   gem.name          = "experiments"
   gem.version       = Experiments::VERSION
   gem.authors       = ["Shopify"]
-  gem.email         = ["kevin.mcphillips@shopify.com"]
+  gem.email         = ["kevin.mcphillips@shopify.com", "willem@shopify.com"]
   gem.description   = %q{Shopify Experiments classes}
   gem.summary       = %q{Models used to define experiments used to A/B test applications.}
   gem.homepage      = "http://github.com/Shopify/experiments"

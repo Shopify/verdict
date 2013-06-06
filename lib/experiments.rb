@@ -9,6 +9,10 @@ module Experiments
     Experiments.repository[name.to_s]
   end
 
+  def define(*args, &block)
+    Experiments::Experiment.new(*args, &block)
+  end
+
   class Error < StandardError; end
   class SegmentationError < Experiments::Error; end
 
@@ -27,7 +31,7 @@ require "experiments/railtie" if defined?(Rails)
 
 require "experiments/experiment"
 require "experiments/segmenter"
-require "experiments/subject_store"
+require "experiments/storage"
 
 Experiments.logger ||= Logger.new("/dev/null")
 Experiments.repository = {}

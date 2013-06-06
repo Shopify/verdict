@@ -1,4 +1,4 @@
-module Experiments::SubjectStore
+module Experiments::Storage
 
   class Base
     # Should return true if stored successfully
@@ -28,9 +28,9 @@ module Experiments::SubjectStore
       @store = {}
     end
 
-    def set(experiment_name, subject_identifier, qualified, segment)
+    def set(experiment_name, subject_identifier, qualified, group)
       @store[experiment_name] ||= {}
-      @store[experiment_name][subject_identifier] = { :qualified => qualified, :segment => segment }
+      @store[experiment_name][subject_identifier] = { :qualified => qualified, :group => group }
       true
     end
 
