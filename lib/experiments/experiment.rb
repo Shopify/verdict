@@ -41,7 +41,7 @@ class Experiments::Experiment
 
   def assign(subject, context = nil)
     identifier = subject_identifier(subject)
-    assignment = @subject_storage.get(@name, identifier) || assignment_for_subject(identifier, subject, context)
+    assignment = @subject_storage.retrieve_assignment(@name, identifier) || assignment_for_subject(identifier, subject, context)
     
     status = assignment.returning? ? 'returning' : 'new'
     if assignment.qualified?
@@ -62,10 +62,10 @@ class Experiments::Experiment
   def assignment_for_subject(identifier, subject, context)
     if @qualifier.call(subject, context)
       group = @segmenter.assign(identifier, subject, context)
-      @subject_storage.set(@name, identifier, true, group)
+      @subject_storage.store_assignment(@name, identifier, true, group)
       Experiments::Assignment.new(returning: false, qualified: true, group: group)
     else
-      @subject_storage.set(@name, identifier, false, nil)
+      @subject_storage.store_assignment(@name, identifier, false, nil)
       Experiments::Assignment.new(returning: false, qualified: false)
     end
   end

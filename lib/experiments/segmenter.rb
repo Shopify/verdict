@@ -25,8 +25,8 @@ module Experiments::Segmenter
 
       attr_reader :percentile_range
 
-      def initialize(label, percentile_range)
-        super(label)
+      def initialize(experiment, label, percentile_range)
+        super(experiment, label)
         @percentile_range = percentile_range
       end
 
@@ -57,7 +57,7 @@ module Experiments::Segmenter
         else Integer(percentage)
       end
 
-      group = Group.new(label, @total_percentage_segmented ... (@total_percentage_segmented + n))
+      group = Group.new(experiment, label, @total_percentage_segmented ... (@total_percentage_segmented + n))
       @groups[group.label] = group
       @total_percentage_segmented += n
     end
