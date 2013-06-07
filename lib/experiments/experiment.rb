@@ -2,10 +2,14 @@ class Experiments::Experiment
 
   attr_reader :name, :qualifier, :subject_storage
 
+  def self.define(name, *args, &block)
+    experiment = self.new(name, *args, &block)
+    raise Experiments::ExperimentNameNotUnique.new(experiment.name) if Experiments.repository.has_key?(experiment.name)
+    Experiments.repository[experiment.name] = experiment
+  end
+
   def initialize(name, options = {}, &block)
     @name = name.to_s
-    raise Experiments::ExperimentNameNotUnique.new(@name) if Experiments.repository.has_key?(@name)
-    Experiments.repository[@name] = self
 
     @qualifier = options[:qualifier] || create_qualifier
     @subject_storage = options[:storage] || create_subject_store

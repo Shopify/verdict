@@ -7,10 +7,6 @@ class AssignmentTest < MiniTest::Unit::TestCase
     @group = Experiments::Group.new(@experiment, :control)
   end
 
-  def teardown
-    Experiments.repository.clear
-  end
-
   def test_basic_properties
     assignment = Experiments::Assignment.new(@experiment, @group)
     assert_equal @experiment, assignment.experiment 

@@ -6,10 +6,6 @@ class GroupTest < MiniTest::Unit::TestCase
     @experiment = Experiments::Experiment.new('a')
   end
 
-  def teardown
-    Experiments.repository.clear
-  end
-
   def test_basic_properties
     group = Experiments::Group.new(@experiment, :test)
 
