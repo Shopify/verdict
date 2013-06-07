@@ -36,8 +36,34 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert e.qualifier.call(ca_subject)
     assert !e.qualifier.call(us_subject)
 
-    assert_equal :all, e.assign(ca_subject)
-    assert_nil e.assign(us_subject)
+    qualified = e.assign(ca_subject)
+    assert_kind_of Experiments::Assignment, qualified
+    assert_equal e.group(:all), qualified.group
+
+    non_qualified = e.assign(us_subject)
+    assert_kind_of Experiments::Assignment, non_qualified
+    assert !non_qualified.qualified?
+    assert_equal nil, non_qualified.group
+  end
+
+  def test_assignment
+    e = Experiments::Experiment.new('test') do
+      qualify { |subject| subject <= 2 }
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+    end
+
+    assignment = e.assign(1)
+    assert_kind_of Experiments::Assignment, assignment
+    assert assignment.qualified?
+    assert !assignment.returning?
+    assert_equal assignment.group, e.group(:a)
+
+    assignment = e.assign(3)
+    assert_kind_of Experiments::Assignment, assignment
+    assert !assignment.qualified?
   end
 
   def test_logging
@@ -75,11 +101,13 @@ class ExperimentTest < MiniTest::Unit::TestCase
     end
 
     Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=new qualified=true group=a'])
-    e.assign(1)
+    assignment = e.assign(1)
+    assert !assignment.returning?
     Experiments.logger.verify
 
     Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=returning qualified=true group=a'])
-    e.assign(1)
+    assignment = e.assign(1)
+    assert assignment.returning?
     Experiments.logger.verify
   end
 end

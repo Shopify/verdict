@@ -1,22 +1,36 @@
 class Experiments::Assignment
 
-  attr_writer :qualified, :returning, :group
+  attr_reader :experiment, :group
 
-  def initialize(options = {})
-    @qualified = options[:qualified]
-    @returning = options[:returning]
-    @group     = options[:group]
-  end
-
-  def group
-    @group
+  def initialize(experiment, group = nil, returning = true)
+    @experiment = experiment
+    @returning  = returning
+    @group      = group
   end
 
   def qualified?
-    @qualified
+    !group.nil?
+  end
+
+  def returning
+    self.class.new(@experiment, @group, true)
   end
 
   def returning?
     @returning
+  end
+
+  def to_sym
+    qualified? ? group.to_sym : nil
+  end  
+
+  def ===(other)
+    case other
+      when nil; !qualified?
+      when Experiments::Assignment; other.group === group
+      when Experiments::Group; other === group
+      when Symbol, String; qualified? ? group.label.to_s == other.to_s : false
+      else false
+    end
   end
 end

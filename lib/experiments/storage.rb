@@ -2,23 +2,23 @@ module Experiments::Storage
 
   class Base
     # Should return true if stored successfully
-    def store_assignment(experiment_name, subject_identifier, qualified, segment)
+    def store_assignment(experiment, subject_identifier, assignment)
       raise NotImplementedError
     end
 
     # Should return nil if not found in store
-    # Should return {:qualified => <bool>, :segment => <symbol> } when found.
-    def retrieve_assignment(experiment_name, subject_identifier)
+    # Should return an Assignment instance
+    def retrieve_assignment(experiment, subject_identifier)
       raise NotImplementedError
     end
   end
 
   class Dummy < Base
-    def store_assignment(experiment_name, subject_identifier, qualified, segment)
+    def store_assignment(experiment, subject_identifier, assignment)
       false
     end
 
-    def retrieve_assignment(experiment_name, subject_identifier)
+    def retrieve_assignment(experiment, subject_identifier)
       nil
     end
   end
@@ -28,15 +28,17 @@ module Experiments::Storage
       @store = {}
     end
 
-    def store_assignment(experiment_name, subject_identifier, qualified, group)
-      @store[experiment_name] ||= {}
-      @store[experiment_name][subject_identifier] = Experiments::Assignment.new(returning: true, qualified: qualified, group: group)
+    def store_assignment(experiment, subject_identifier, assignment)
+      @store[experiment.name] ||= {}
+      @store[experiment.name][subject_identifier] = assignment
       true
     end
 
-    def retrieve_assignment(experiment_name, subject_identifier)
-      experiment_store = @store[experiment_name] || {}
-      experiment_store[subject_identifier]
+    def retrieve_assignment(experiment, subject_identifier)
+      experiment_store = @store[experiment.name] || {}
+      if assignment = experiment_store[subject_identifier]
+        assignment.returning
+      end
     end
   end
 end
