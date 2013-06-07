@@ -11,7 +11,7 @@ class Experiments::Experiment
   def initialize(name, options = {}, &block)
     @name = name.to_s
 
-    @qualifier = options[:qualifier] || create_qualifier
+    @qualifier ||= options[:qualifier] || create_qualifier
     @subject_storage = options[:storage] || create_subject_store
     @segmenter = options[:segmenter]
 
@@ -62,6 +62,10 @@ class Experiments::Experiment
       Experiments.logger.info "[Experiments] experiment=#{@name} subject=#{identifier} status=#{status} qualified=false"
     end
     assignment
+  end
+
+  def switch(subject, context = nil)
+    assign(subject, context).to_sym
   end
 
   def subject_identifier(subject)

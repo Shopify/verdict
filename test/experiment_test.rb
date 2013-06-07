@@ -45,6 +45,10 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assignment = e.assign(3)
     assert_kind_of Experiments::Assignment, assignment
     assert !assignment.qualified?
+
+    assert_equal :a,  e.switch(1)
+    assert_equal :b,  e.switch(2)
+    assert_equal nil, e.switch(3)
   end
 
   def test_logging
