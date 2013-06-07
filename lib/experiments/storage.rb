@@ -30,15 +30,13 @@ module Experiments::Storage
 
     def store_assignment(experiment, subject_identifier, assignment)
       @store[experiment.name] ||= {}
-      @store[experiment.name][subject_identifier] = assignment
+      @store[experiment.name][subject_identifier] = assignment.returning
       true
     end
 
     def retrieve_assignment(experiment, subject_identifier)
       experiment_store = @store[experiment.name] || {}
-      if assignment = experiment_store[subject_identifier]
-        assignment.returning
-      end
+      experiment_store[subject_identifier]
     end
   end
 end
