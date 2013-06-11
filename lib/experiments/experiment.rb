@@ -1,59 +1,95 @@
-require 'digest/md5'
-
 class Experiments::Experiment
-  class AssignmentError < StandardError; end 
-  
-  attr_reader :name, :groups
 
-  def initialize(name, &block)
-    @name = name
-    @total_percentage_assigned = 0
-    @groups = {}
-    yield self
+  attr_reader :name, :qualifier, :subject_storage
+
+  def self.define(name, *args, &block)
+    experiment = self.new(name, *args, &block)
+    raise Experiments::ExperimentNameNotUnique.new(experiment.name) if Experiments.repository.has_key?(experiment.name)
+    Experiments.repository[experiment.name] = experiment
+  end
+
+  def initialize(name, options = {}, &block)
+    @name = name.to_s
+
+    @qualifier ||= options[:qualifier] || create_qualifier
+    @subject_storage = options[:storage] || create_subject_store
+    @segmenter = options[:segmenter]
+
+    instance_eval(&block) if block_given?
+  end
+
+  def group(name)
+    segmenter.groups[name.to_s]
+  end
+
+  def groups(segmenter_class = Experiments::Segmenter::StaticPercentage, &block)
+    return @segmenter.groups unless block_given?
+    @segmenter ||= segmenter_class.new(self)
+    @segmenter.instance_eval(&block)
+    @segmenter.verify!
+    return self
+  end
+
+  def qualify(&block)
+    @qualifier = block
+  end
+
+  def storage(subject_storage)
+    @subject_storage = subject_storage
+  end
+
+  def segmenter
+    raise Experiments::Error, "No groups defined for experiment #{@name.inspect}." if @segmenter.nil?
+    @segmenter
+  end
+
+  def group_labels
+    segmenter.groups.keys
+  end
+
+  def create_assignment(group, returning = true)
+    Experiments::Assignment.new(self, group, returning)
+  end
+
+  def assign(subject, context = nil)
+    identifier = subject_identifier(subject)
+    assignment = @subject_storage.retrieve_assignment(self, identifier) || assignment_for_subject(identifier, subject, context)
     
-    raise AssignmentError, "Should assign exactly 100% of the cases, but groups add up to #{@total_percentage_assigned}%." if @total_percentage_assigned != 100
-
-  end
-  
-  def percentage(n, label)
-    n = n.to_i
-    @groups[label] = @total_percentage_assigned ... (@total_percentage_assigned + n)
-    @total_percentage_assigned += n
-  end
-  
-  def half(label)
-    self.percentage(50, label)
-  end
-  
-  def rest(label)
-    self.percentage(100 - @total_percentage_assigned, label)
+    status = assignment.returning? ? 'returning' : 'new'
+    if assignment.qualified?
+      Experiments.logger.info "[Experiments] experiment=#{@name} subject=#{identifier} status=#{status} qualified=true group=#{assignment.group.label}"
+    else
+      Experiments.logger.info "[Experiments] experiment=#{@name} subject=#{identifier} status=#{status} qualified=false"
+    end
+    assignment
   end
 
-  def active_for?(object)
-    true
+  def switch(subject, context = nil)
+    assign(subject, context).to_sym
   end
 
-  def group_for(object_or_id)
-    return unless active_for?(object_or_id)
-    identifier = object_or_id.respond_to?(:id) ? object_or_id.id : object_or_id
-    group_for_id(identifier)
+  def subject_identifier(subject)
+    subject.respond_to?(:id) ? subject.id.to_s : subject.to_s
   end
 
   protected
 
-  # The identifier should be something unique and immutable
-  def group_for_id(identifier)
-    percentile = calculate_case_percentile(identifier)
-    label, range = groups.find {|label, range| range.include?(percentile)}
-    unless label
-      raise "Could not get group for seed #{identifier.inspect}"
+  def assignment_for_subject(identifier, subject, context)
+    assignment = if @qualifier.call(subject, context)
+      group = @segmenter.assign(identifier, subject, context)
+      create_assignment(group, false)
+    else
+      create_assignment(nil, false)
     end
-    Experiments.logger.info "[#{name}] subject id #{identifier.inspect} is in group #{label.inspect}"
-    label
+    @subject_storage.store_assignment(self, identifier, assignment)
+    assignment
   end
 
-  def calculate_case_percentile(identifier)
-    raise ArgumentError.new("identifier must not be nil") if identifier.nil?
-    Digest::MD5.hexdigest("#{@name}#{identifier}").to_i(16) % 100
+  def create_qualifier
+    lambda { |_, _| true }    
+  end
+
+  def create_subject_store
+    Experiments::Storage::Dummy.new
   end
 end

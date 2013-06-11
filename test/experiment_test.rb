@@ -2,88 +2,97 @@ require 'test_helper'
 
 class ExperimentTest < MiniTest::Unit::TestCase
 
-  def test_add_up_to_100_percent
-    e = Experiments::Experiment.new('test') do |group|
-      group.percentage  1, :group1
-      group.percentage 54, :group2
-      group.percentage 27, :group3
-      group.percentage 18, :group4
-    end
-
-    assert_equal [:group1, :group2, :group3, :group4], e.groups.keys
-    assert_equal  0 ...   1, e.groups[:group1]
-    assert_equal  1 ...  55, e.groups[:group2]
-    assert_equal 55 ...  82, e.groups[:group3]
-    assert_equal 82 ... 100, e.groups[:group4]
-  end
-
-  def test_half_and_rest
-    e = Experiments::Experiment.new('test') do |group|
-      group.half :first_half
-      group.rest :second_half
-    end
-
-    assert_equal [:first_half, :second_half], e.groups.keys
-    assert_equal  0 ...  50, e.groups[:first_half]
-    assert_equal 50 ... 100, e.groups[:second_half]
-  end
-  
-  def test_raises_if_less_than_100_percent
-    assert_raises(Experiments::Experiment::AssignmentError) do
-      Experiments::Experiment.new('test') do |group|
-        group.percentage 99, :too_little
+  def test_qualifier
+    e = Experiments.define('test') do |experiment|
+      qualify { |subject| subject.country == 'CA' }
+      groups do
+        group :all, 100
       end
     end
+
+    subject_stub = Struct.new(:id, :country)
+    ca_subject = subject_stub.new(1, 'CA')
+    us_subject = subject_stub.new(1, 'US')
+
+    assert e.qualifier.call(ca_subject)
+    assert !e.qualifier.call(us_subject)
+
+    qualified = e.assign(ca_subject)
+    assert_kind_of Experiments::Assignment, qualified
+    assert_equal e.group(:all), qualified.group
+
+    non_qualified = e.assign(us_subject)
+    assert_kind_of Experiments::Assignment, non_qualified
+    assert !non_qualified.qualified?
+    assert_equal nil, non_qualified.group
   end
-  
-  def test_raises_if_greather_than_100_percent
-    assert_raises(Experiments::Experiment::AssignmentError) do
-      Experiments::Experiment.new('test') do |group|
-        group.percentage 101, :too_much
+
+  def test_assignment
+    e = Experiments::Experiment.new('test') do
+      qualify { |subject| subject <= 2 }
+      groups do
+        group :a, :half
+        group :b, :rest
       end
     end
+
+    assignment = e.assign(1)
+    assert_kind_of Experiments::Assignment, assignment
+    assert assignment.qualified?
+    assert !assignment.returning?
+    assert_equal assignment.group, e.group(:a)
+
+    assignment = e.assign(3)
+    assert_kind_of Experiments::Assignment, assignment
+    assert !assignment.qualified?
+
+    assert_equal :a,  e.switch(1)
+    assert_equal :b,  e.switch(2)
+    assert_equal nil, e.switch(3)
   end
-  
-  def test_group_for_identifier
+
+  def test_logging
     Experiments.logger = MiniTest::Mock.new
-    e = Experiments::Experiment.new('test') do |group|
-      group.half :a
-      group.rest :b
+    e = Experiments::Experiment.new('test') do
+      qualify { |subject| subject <= 2 }
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
     end
 
-    Experiments.logger.expect(:info, nil, ['[test] subject id 1 is in group :a'])
-    Experiments.logger.expect(:info, nil, ['[test] subject id 2 is in group :b'])
-    
-    assert_equal :a, e.group_for(1)
-    assert_equal :b, e.group_for(2)
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=new qualified=true group=a'])
+    e.assign(1)
+    Experiments.logger.verify
 
-     Experiments.logger.verify
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=2 status=new qualified=true group=b'])
+    e.assign(2)
+    Experiments.logger.verify
+
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=3 status=new qualified=false'])
+    e.assign(3)
+    Experiments.logger.verify
   end
 
-  def test_group_for
-    e = Experiments::Experiment.new('test') do |group|
-      group.half :a
-      group.rest :b
+  def test_with_memory_store
+    Experiments.logger = MiniTest::Mock.new
+    e = Experiments::Experiment.new('test') do
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+
+      storage(Experiments::Storage::Memory.new)
     end
 
-    object_stub = Struct.new(:id)
-    assert_equal :a, e.group_for(object_stub.new(1))
-    assert_equal :b, e.group_for(object_stub.new(2))
-  end
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=new qualified=true group=a'])
+    assignment = e.assign(1)
+    assert !assignment.returning?
+    Experiments.logger.verify
 
-  def test_fair_grouping
-    e = Experiments::Experiment.new('test') do |group|
-      group.percentage 33, :first_third
-      group.percentage 33, :second_third
-      group.rest           :final_third
-    end
-    
-    groups = { :first_third => 0, :second_third => 0, :final_third => 0 }
-    200.times { |n| groups[e.group_for(n)] += 1 }
-
-    assert_equal 200, groups.values.reduce(0, :+)
-    assert (60..72).include?(groups[:first_third]),  'The groups should be roughly the expected size.'
-    assert (60..72).include?(groups[:second_third]), 'The groups should be roughly the expected size.'
-    assert (60..72).include?(groups[:final_third]),  'The groups should be roughly the expected size.'
+    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=returning qualified=true group=a'])
+    assignment = e.assign(1)
+    assert assignment.returning?
+    Experiments.logger.verify
   end
 end

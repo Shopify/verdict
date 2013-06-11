@@ -20,29 +20,34 @@ Or install it yourself as:
 
 ## Usage
 
-This gem contains the Experiment model used create the experiment singleton and consistently modify application behaviour based on an object's unique key. Define the experiment like so:
+This gem contains the `Experiments::Experiment` model used create the experiment singleton and consistently modify application behaviour based on an object's unique key. Define an experiment like so:
 
-    AnnualVsMonthly = Experiment.new("annual vs monthly") do |ab|
-      ab.percentage 10, :monthly
-      ab.rest :yearly
-    end
-    
-Modify app behaviour like so:
+    Experiments.define 'my experiment' do
 
-    case AnnualVsMonthly.group_for(shop)
-    when :monthly
-      # monthly stuff
-    else
-      # yearly stuff
+      qualify { |subject|  ... }
+
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+
+      storage Experiments::Storage::Memory.new
     end
 
-The real important bit is the hashing algorithm used to decide what group a shop or entity will belong to, without having to set cookies or do database inserts.
+Refer to the experiment like this:
+
+    case Experiments['my experiment'].assign(shop)
+    when :half
+      ...
+    when :rest
+      ...
+    end
 
 
 ## Contributing
 
 1. Fork it
 2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes (`git commit -am 'Added some feature'`)
+3. Commit your changes, including tests (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request
+5. Create new Pull Request, and mention @wvanbergen.
