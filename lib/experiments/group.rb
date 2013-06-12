@@ -1,23 +1,23 @@
 class Experiments::Group
 
-  attr_reader :experiment, :label
+  attr_reader :experiment, :handle
 
-  def initialize(experiment, label)
-    @experiment, @label = experiment, label.to_s
+  def initialize(experiment, handle)
+    @experiment, @handle = experiment, handle.to_s
   end
 
   def to_s
-    label
+    handle
   end
 
   def to_sym
-    label.to_sym
+    handle.to_sym
   end
 
   def ===(other)
     case other
-      when Experiments::Group; experiment == other.experiment && other.label == label
-      when Symbol, String; label == other.to_s
+      when Experiments::Group; experiment == other.experiment && other.handle == handle
+      when Symbol, String; handle == other.to_s
       else false
     end
   end

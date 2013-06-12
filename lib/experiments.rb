@@ -5,8 +5,8 @@ module Experiments
 
   attr_accessor :logger, :directory, :default_experiment_class
 
-  def [](name)
-    Experiments.repository[name.to_s]
+  def [](handle)
+    Experiments.repository[handle.to_s]
   end
 
   def define(*args, &block)
@@ -29,12 +29,12 @@ module Experiments
   class Error < StandardError; end
   class SegmentationError < Experiments::Error; end
 
-  class ExperimentNameNotUnique < Experiments::Error
-    attr_reader :name
+  class ExperimentHandleNotUnique < Experiments::Error
+    attr_reader :handle
 
-    def initialize(name)
-      @name = name
-      super("Experiment #{name.inspect} is already defined!")
+    def initialize(handle)
+      @handle = handle
+      super("Another experiment with handle #{handle.inspect} is already defined!")
     end
   end
 end

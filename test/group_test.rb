@@ -11,7 +11,7 @@ class GroupTest < MiniTest::Unit::TestCase
 
     assert_equal @experiment, group.experiment
     assert_kind_of Experiments::Group, group
-    assert_equal 'test', group.label
+    assert_equal 'test', group.handle
     assert_equal 'test', group.to_s
     assert_equal :test, group.to_sym
   end

@@ -1,15 +1,15 @@
 class Experiments::Experiment
 
-  attr_reader :name, :qualifier, :subject_storage
+  attr_reader :handle, :qualifier, :subject_storage
 
-  def self.define(name, *args, &block)
-    experiment = self.new(name, *args, &block)
-    raise Experiments::ExperimentNameNotUnique.new(experiment.name) if Experiments.repository.has_key?(experiment.name)
-    Experiments.repository[experiment.name] = experiment
+  def self.define(handle, *args, &block)
+    experiment = self.new(handle, *args, &block)
+    raise Experiments::ExperimentHandleNotUnique.new(experiment.handle) if Experiments.repository.has_key?(experiment.handle)
+    Experiments.repository[experiment.handle] = experiment
   end
 
-  def initialize(name, options = {}, &block)
-    @name = name.to_s
+  def initialize(handle, options = {}, &block)
+    @handle = handle.to_s
 
     @qualifier ||= options[:qualifier] || create_qualifier
     @subject_storage = options[:storage] || create_subject_store
@@ -18,8 +18,8 @@ class Experiments::Experiment
     instance_eval(&block) if block_given?
   end
 
-  def group(name)
-    segmenter.groups[name.to_s]
+  def group(handle)
+    segmenter.groups[handle.to_s]
   end
 
   def groups(segmenter_class = Experiments::Segmenter::StaticPercentage, &block)
@@ -39,11 +39,11 @@ class Experiments::Experiment
   end
 
   def segmenter
-    raise Experiments::Error, "No groups defined for experiment #{@name.inspect}." if @segmenter.nil?
+    raise Experiments::Error, "No groups defined for experiment #{@handle.inspect}." if @segmenter.nil?
     @segmenter
   end
 
-  def group_labels
+  def group_handles
     segmenter.groups.keys
   end
 
@@ -57,9 +57,9 @@ class Experiments::Experiment
     
     status = assignment.returning? ? 'returning' : 'new'
     if assignment.qualified?
-      Experiments.logger.info "[Experiments] experiment=#{@name} subject=#{identifier} status=#{status} qualified=true group=#{assignment.group.label}"
+      Experiments.logger.info "[Experiments] experiment=#{@handle} subject=#{identifier} status=#{status} qualified=true group=#{assignment.group.handle}"
     else
-      Experiments.logger.info "[Experiments] experiment=#{@name} subject=#{identifier} status=#{status} qualified=false"
+      Experiments.logger.info "[Experiments] experiment=#{@handle} subject=#{identifier} status=#{status} qualified=false"
     end
     assignment
   end

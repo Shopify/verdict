@@ -2,7 +2,7 @@ require 'test_helper'
 
 class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
 
-  MockExperiment = Struct.new(:name)
+  MockExperiment = Struct.new(:handle)
 
   def setup
     Experiments.repository.clear

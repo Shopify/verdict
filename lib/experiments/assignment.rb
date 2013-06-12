@@ -26,10 +26,10 @@ class Experiments::Assignment
 
   def as_json(options = {})
     {
-      experiment: experiment.name,
+      experiment: experiment.handle,
       qualified: qualified?,
       returning: returning?,
-      group: qualified? ? group.label : nil
+      group: qualified? ? group.handle : nil
     }
   end
 
@@ -42,7 +42,7 @@ class Experiments::Assignment
       when nil; !qualified?
       when Experiments::Assignment; other.group === group
       when Experiments::Group; other === group
-      when Symbol, String; qualified? ? group.label.to_s == other.to_s : false
+      when Symbol, String; qualified? ? group.handle == other.to_s : false
       else false
     end
   end

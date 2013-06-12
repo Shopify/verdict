@@ -16,7 +16,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
 
   def test_should_not_allow_experiments_with_the_same_name
     Experiments::Experiment.define('test_duplicate')
-    assert_raises(Experiments::ExperimentNameNotUnique) do
+    assert_raises(Experiments::ExperimentHandleNotUnique) do
       Experiments::Experiment.define('test_duplicate')
     end
   end
