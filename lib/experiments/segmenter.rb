@@ -60,6 +60,8 @@ module Experiments::Segmenter
       group = Group.new(experiment, handle, @total_percentage_segmented ... (@total_percentage_segmented + n))
       @groups[group.handle] = group
       @total_percentage_segmented += n
+      block.call(group) if block_given?
+      return group
     end
 
     def assign(identifier, subject, context)
