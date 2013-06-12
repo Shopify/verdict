@@ -1,4 +1,5 @@
 require 'test_helper'
+require 'json'
 
 class AssignmentTest < MiniTest::Unit::TestCase
 
@@ -34,5 +35,22 @@ class AssignmentTest < MiniTest::Unit::TestCase
     assert !(non_assignment === @group)
     assert !(non_assignment === 'control')
     assert !(non_assignment === :control)
+  end
+
+  def test_json_representation
+    assignment = Experiments::Assignment.new(@experiment, @group)
+    json = JSON.parse(assignment.to_json)
+
+    assert_equal 'assignment test', json['experiment']
+    assert_equal true, json['qualified']
+    assert_equal true, json['returning']
+    assert_equal 'control', json['group']
+
+    non_assignment = Experiments::Assignment.new(@experiment, nil, false)
+    json = JSON.parse(non_assignment.to_json)
+    assert_equal 'assignment test', json['experiment']
+    assert_equal false, json['qualified']
+    assert_equal false, json['returning']
+    assert_equal nil, json['group']    
   end
 end

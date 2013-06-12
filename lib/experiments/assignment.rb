@@ -24,6 +24,19 @@ class Experiments::Assignment
     qualified? ? group.to_sym : nil
   end  
 
+  def as_json(options = {})
+    {
+      experiment: experiment.name,
+      qualified: qualified?,
+      returning: returning?,
+      group: qualified? ? group.label : nil
+    }
+  end
+
+  def to_json(options = {})
+    as_json(options).to_json
+  end
+
   def ===(other)
     case other
       when nil; !qualified?
