@@ -20,6 +20,10 @@ class Experiments::Assignment
     @returning
   end
 
+  def handle
+    qualified? ? group.handle : nil
+  end
+
   def to_sym
     qualified? ? group.to_sym : nil
   end  

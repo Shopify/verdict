@@ -15,12 +15,14 @@ class AssignmentTest < MiniTest::Unit::TestCase
     assert assignment.returning?
     assert assignment.qualified?
     assert_equal :control, assignment.to_sym
+    assert_equal 'control', assignment.handle
 
     non_assignment = Experiments::Assignment.new(@experiment, nil, false)
     assert_equal nil, non_assignment.group 
     assert !non_assignment.returning?
     assert !non_assignment.qualified?
     assert_equal nil, non_assignment.to_sym
+    assert_equal nil, non_assignment.handle
   end
 
   def test_triple_equals
