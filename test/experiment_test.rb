@@ -52,7 +52,6 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_logging
-    Experiments.logger = MiniTest::Mock.new
     e = Experiments::Experiment.new('test') do
       qualify { |subject| subject <= 2 }
       groups do
@@ -61,21 +60,20 @@ class ExperimentTest < MiniTest::Unit::TestCase
       end
     end
 
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=new qualified=true group=a'])
-    e.assign(1)
-    Experiments.logger.verify
+    Experiments.stubs(:logger).returns(logger = mock('logger'))
 
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=2 status=new qualified=true group=b'])
+    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
+    e.assign(1)  
+
+    logger.expects(:info).with('[Experiments] experiment=test subject=2 status=new qualified=true group=b')
     e.assign(2)
-    Experiments.logger.verify
 
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=3 status=new qualified=false'])
+    logger.expects(:info).with('[Experiments] experiment=test subject=3 status=new qualified=false')
     e.assign(3)
-    Experiments.logger.verify
   end
 
   def test_with_memory_store
-    Experiments.logger = MiniTest::Mock.new
+    
     e = Experiments::Experiment.new('test') do
       groups do
         group :a, :half
@@ -85,14 +83,14 @@ class ExperimentTest < MiniTest::Unit::TestCase
       storage(Experiments::Storage::Memory.new)
     end
 
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=new qualified=true group=a'])
+    Experiments.stubs(:logger).returns(logger = mock('logger'))
+    
+    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
     assignment = e.assign(1)
     assert !assignment.returning?
-    Experiments.logger.verify
-
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=returning qualified=true group=a'])
+    
+    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=returning qualified=true group=a')
     assignment = e.assign(1)
     assert assignment.returning?
-    Experiments.logger.verify
   end
 end
