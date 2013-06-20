@@ -1,5 +1,7 @@
 class Experiments::Experiment
 
+  include Experiments::Metadata
+
   attr_reader :handle, :qualifier, :subject_storage
 
   def self.define(handle, *args, &block)

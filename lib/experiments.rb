@@ -42,6 +42,7 @@ end
 require "experiments/version"
 require "experiments/railtie" if defined?(Rails)
 
+require "experiments/metadata"
 require "experiments/experiment"
 require "experiments/group"
 require "experiments/assignment"

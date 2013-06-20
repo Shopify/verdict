@@ -1,4 +1,5 @@
 class Experiments::Group
+  include Experiments::Metadata
 
   attr_reader :experiment, :handle
 
