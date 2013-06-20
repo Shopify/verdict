@@ -80,4 +80,15 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
     assert (60..72).include?(assignments[:second_third]), 'The groups should be roughly the same size.'
     assert (60..72).include?(assignments[:final_third]),  'The groups should be roughly the same size.'
   end
+
+  def test_group_json_export
+    s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
+    s.group :first_third, 33
+    s.group :rest, :rest
+    s.verify!
+
+    json = JSON.parse(s.groups['rest'].to_json)
+    assert_equal 'rest', json['handle']
+    assert_equal 67, json['percentage']
+  end
 end

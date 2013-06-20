@@ -22,4 +22,15 @@ class Experiments::Group
       else false
     end
   end
+
+  def as_json(options = {})
+    {
+      handle: handle,
+      metadata: metadata
+    }
+  end
+
+  def to_json(options = {})
+    as_json(options).to_json
+  end
 end

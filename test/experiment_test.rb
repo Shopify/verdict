@@ -2,6 +2,11 @@ require 'test_helper'
 
 class ExperimentTest < MiniTest::Unit::TestCase
 
+  def test_no_qualifier
+    e = Experiments.define('test')
+    assert !e.has_qualifier?
+  end
+
   def test_qualifier
     e = Experiments.define('test') do |experiment|
       qualify { |subject| subject.country == 'CA' }
@@ -9,6 +14,8 @@ class ExperimentTest < MiniTest::Unit::TestCase
         group :all, 100
       end
     end
+
+    assert e.has_qualifier?
 
     subject_stub = Struct.new(:id, :country)
     ca_subject = subject_stub.new(1, 'CA')
@@ -73,7 +80,6 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_with_memory_store
-    
     e = Experiments::Experiment.new('test') do
       groups do
         group :a, :half
@@ -92,5 +98,21 @@ class ExperimentTest < MiniTest::Unit::TestCase
     logger.expects(:info).with('[Experiments] experiment=test subject=1 status=returning qualified=true group=a')
     assignment = e.assign(1)
     assert assignment.returning?
+  end
+
+  def test_json
+    e = Experiments::Experiment.new(:json) do
+      name 'testing'
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+    end
+
+    json = JSON.parse(e.to_json)
+    assert_equal 'json', json['handle']
+    assert_equal false, json['has_qualifier']
+    assert_kind_of Enumerable, json['groups']
+    assert_equal 'testing', json['metadata']['name']
   end
 end

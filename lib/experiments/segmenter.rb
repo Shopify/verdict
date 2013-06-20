@@ -37,6 +37,10 @@ module Experiments::Segmenter
       def to_s
         "#{handle} (#{percentage_size}%)"
       end
+
+      def as_json(options = {})
+        super(options).merge(percentage: percentage_size)
+      end
     end
 
     def initialize(experiment)

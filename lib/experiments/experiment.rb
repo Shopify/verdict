@@ -1,5 +1,7 @@
 class Experiments::Experiment
 
+  NOOP_QUALIFIER = lambda { |_, _| true }
+
   include Experiments::Metadata
 
   attr_reader :handle, :qualifier, :subject_storage
@@ -74,6 +76,23 @@ class Experiments::Experiment
     subject.respond_to?(:id) ? subject.id.to_s : subject.to_s
   end
 
+  def has_qualifier?
+    @qualifier != NOOP_QUALIFIER
+  end
+
+  def as_json(options = {})
+    {
+      handle: handle,
+      has_qualifier: has_qualifier?,
+      groups: segmenter.groups.values.map { |g| g.as_json(options) },
+      metadata: metadata
+    }
+  end
+
+  def to_json(options = {})
+    as_json(options).to_json
+  end  
+
   protected
 
   def assignment_for_subject(identifier, subject, context)
@@ -88,7 +107,7 @@ class Experiments::Experiment
   end
 
   def create_qualifier
-    lambda { |_, _| true }    
+    NOOP_QUALIFIER
   end
 
   def create_subject_store
