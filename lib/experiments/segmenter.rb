@@ -37,6 +37,10 @@ module Experiments::Segmenter
       def to_s
         "#{handle} (#{percentage_size}%)"
       end
+
+      def as_json(options = {})
+        super(options).merge(percentage: percentage_size)
+      end
     end
 
     def initialize(experiment)
@@ -60,7 +64,7 @@ module Experiments::Segmenter
       group = Group.new(experiment, handle, @total_percentage_segmented ... (@total_percentage_segmented + n))
       @groups[group.handle] = group
       @total_percentage_segmented += n
-      block.call(group) if block_given?
+      group.instance_eval(&block) if block_given?
       return group
     end
 

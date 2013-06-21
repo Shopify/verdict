@@ -28,4 +28,15 @@ class GroupTest < MiniTest::Unit::TestCase
     assert !(group === 'test')
     assert !(group === nil)
   end
+
+  def test_json
+    group = Experiments::Group.new(@experiment, 'control')
+    group.name 'testing'
+    group.description 'description'
+
+    json = JSON.parse(group.to_json)
+    assert_equal 'control', json['handle']
+    assert_equal 'testing', json['metadata']['name']
+    assert_equal 'description', json['metadata']['description']
+  end  
 end

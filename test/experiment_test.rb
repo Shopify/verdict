@@ -2,6 +2,12 @@ require 'test_helper'
 
 class ExperimentTest < MiniTest::Unit::TestCase
 
+  def test_no_qualifier
+    e = Experiments.define('test')
+    assert !e.has_qualifier?
+    assert e.everybody_qualifies?
+  end
+
   def test_qualifier
     e = Experiments.define('test') do |experiment|
       qualify { |subject| subject.country == 'CA' }
@@ -9,6 +15,9 @@ class ExperimentTest < MiniTest::Unit::TestCase
         group :all, 100
       end
     end
+
+    assert e.has_qualifier?
+    assert !e.everybody_qualifies?
 
     subject_stub = Struct.new(:id, :country)
     ca_subject = subject_stub.new(1, 'CA')
@@ -52,7 +61,6 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_logging
-    Experiments.logger = MiniTest::Mock.new
     e = Experiments::Experiment.new('test') do
       qualify { |subject| subject <= 2 }
       groups do
@@ -61,21 +69,19 @@ class ExperimentTest < MiniTest::Unit::TestCase
       end
     end
 
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=new qualified=true group=a'])
-    e.assign(1)
-    Experiments.logger.verify
+    Experiments.stubs(:logger).returns(logger = mock('logger'))
 
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=2 status=new qualified=true group=b'])
+    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
+    e.assign(1)  
+
+    logger.expects(:info).with('[Experiments] experiment=test subject=2 status=new qualified=true group=b')
     e.assign(2)
-    Experiments.logger.verify
 
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=3 status=new qualified=false'])
+    logger.expects(:info).with('[Experiments] experiment=test subject=3 status=new qualified=false')
     e.assign(3)
-    Experiments.logger.verify
   end
 
   def test_with_memory_store
-    Experiments.logger = MiniTest::Mock.new
     e = Experiments::Experiment.new('test') do
       groups do
         group :a, :half
@@ -85,14 +91,30 @@ class ExperimentTest < MiniTest::Unit::TestCase
       storage(Experiments::Storage::Memory.new)
     end
 
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=new qualified=true group=a'])
+    Experiments.stubs(:logger).returns(logger = mock('logger'))
+    
+    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
     assignment = e.assign(1)
     assert !assignment.returning?
-    Experiments.logger.verify
-
-    Experiments.logger.expect(:info, nil, ['[Experiments] experiment=test subject=1 status=returning qualified=true group=a'])
+    
+    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=returning qualified=true group=a')
     assignment = e.assign(1)
     assert assignment.returning?
-    Experiments.logger.verify
+  end
+
+  def test_json
+    e = Experiments::Experiment.new(:json) do
+      name 'testing'
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+    end
+
+    json = JSON.parse(e.to_json)
+    assert_equal 'json', json['handle']
+    assert_equal false, json['has_qualifier']
+    assert_kind_of Enumerable, json['groups']
+    assert_equal 'testing', json['metadata']['name']
   end
 end

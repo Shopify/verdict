@@ -1,5 +1,7 @@
 class Experiments::Experiment
 
+  include Experiments::Metadata
+
   attr_reader :handle, :qualifier, :subject_storage
 
   def self.define(handle, *args, &block)
@@ -72,10 +74,31 @@ class Experiments::Experiment
     subject.respond_to?(:id) ? subject.id.to_s : subject.to_s
   end
 
+  def has_qualifier?
+    !@qualifier.nil?
+  end
+
+  def everybody_qualifies?
+    !has_qualifier?
+  end
+
+  def as_json(options = {})
+    {
+      handle: handle,
+      has_qualifier: has_qualifier?,
+      groups: segmenter.groups.values.map { |g| g.as_json(options) },
+      metadata: metadata
+    }
+  end
+
+  def to_json(options = {})
+    as_json(options).to_json
+  end  
+
   protected
 
   def assignment_for_subject(identifier, subject, context)
-    assignment = if @qualifier.call(subject, context)
+    assignment = if everybody_qualifies? || @qualifier.call(subject, context)
       group = @segmenter.assign(identifier, subject, context)
       create_assignment(group, false)
     else
@@ -86,7 +109,7 @@ class Experiments::Experiment
   end
 
   def create_qualifier
-    lambda { |_, _| true }    
+    nil
   end
 
   def create_subject_store
