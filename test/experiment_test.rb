@@ -5,6 +5,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   def test_no_qualifier
     e = Experiments.define('test')
     assert !e.has_qualifier?
+    assert e.everybody_qualifies?
   end
 
   def test_qualifier
@@ -16,6 +17,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
     end
 
     assert e.has_qualifier?
+    assert !e.everybody_qualifies?
 
     subject_stub = Struct.new(:id, :country)
     ca_subject = subject_stub.new(1, 'CA')

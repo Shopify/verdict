@@ -1,7 +1,5 @@
 class Experiments::Experiment
 
-  NOOP_QUALIFIER = lambda { |_, _| true }
-
   include Experiments::Metadata
 
   attr_reader :handle, :qualifier, :subject_storage
@@ -77,7 +75,11 @@ class Experiments::Experiment
   end
 
   def has_qualifier?
-    @qualifier != NOOP_QUALIFIER
+    !@qualifier.nil?
+  end
+
+  def everybody_qualifies?
+    !has_qualifier?
   end
 
   def as_json(options = {})
@@ -96,7 +98,7 @@ class Experiments::Experiment
   protected
 
   def assignment_for_subject(identifier, subject, context)
-    assignment = if @qualifier.call(subject, context)
+    assignment = if everybody_qualifies? || @qualifier.call(subject, context)
       group = @segmenter.assign(identifier, subject, context)
       create_assignment(group, false)
     else
@@ -107,7 +109,7 @@ class Experiments::Experiment
   end
 
   def create_qualifier
-    NOOP_QUALIFIER
+    nil
   end
 
   def create_subject_store
