@@ -3,14 +3,10 @@ require 'logger'
 module Experiments
   extend self
 
-  attr_accessor :logger, :directory, :default_experiment_class
+  attr_accessor :logger, :directory
 
   def [](handle)
     Experiments.repository[handle.to_s]
-  end
-
-  def define(*args, &block)
-    Experiments.default_experiment_class.define(*args, &block)
   end
 
   def repository
@@ -50,6 +46,5 @@ require "experiments/assignment"
 require "experiments/segmenter"
 require "experiments/storage"
 
-Experiments.default_experiment_class = Experiments::Experiment
 Experiments.logger ||= Logger.new("/dev/null")
 Experiments.directory = nil

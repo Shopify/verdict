@@ -3,13 +3,13 @@ require 'test_helper'
 class ExperimentTest < MiniTest::Unit::TestCase
 
   def test_no_qualifier
-    e = Experiments.define('test')
+    e = Experiments::Experiment.define('test')
     assert !e.has_qualifier?
     assert e.everybody_qualifies?
   end
 
   def test_qualifier
-    e = Experiments.define('test') do |experiment|
+    e = Experiments::Experiment.define('test') do |experiment|
       qualify { |subject| subject.country == 'CA' }
       groups do
         group :all, 100
