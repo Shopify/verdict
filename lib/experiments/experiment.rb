@@ -15,6 +15,7 @@ class Experiments::Experiment
 
     @qualifier ||= options[:qualifier] || create_qualifier
     @subject_storage = options[:storage] || create_subject_store
+    @store_unqualified = options[:store_unqualified]
     @segmenter = options[:segmenter]
 
     instance_eval(&block) if block_given?
@@ -41,8 +42,7 @@ class Experiments::Experiment
   end
 
   def storage(subject_storage, options = {})
-    options[:store_unqualified] = true unless options.has_key?(:store_unqualified)
-    @store_unqualified = options[:store_unqualified]
+    @store_unqualified = options[:store_unqualified] if options.has_key?(:store_unqualified)
     @subject_storage = subject_storage
   end
 
