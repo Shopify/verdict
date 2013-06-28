@@ -20,6 +20,10 @@ class Experiments::Experiment
     instance_eval(&block) if block_given?
   end
 
+  def store_unqualified?
+    @store_unqualified
+  end
+
   def group(handle)
     segmenter.groups[handle.to_s]
   end
@@ -36,7 +40,9 @@ class Experiments::Experiment
     @qualifier = block
   end
 
-  def storage(subject_storage)
+  def storage(subject_storage, options = {})
+    options[:store_unqualified] = true unless options.has_key?(:store_unqualified)
+    @store_unqualified = options[:store_unqualified]
     @subject_storage = subject_storage
   end
 
@@ -55,14 +61,15 @@ class Experiments::Experiment
 
   def assign(subject, context = nil)
     identifier = retrieve_subject_identifier(subject)
-    assignment = @subject_storage.retrieve_assignment(self, identifier) || assignment_for_subject(identifier, subject, context)
-    
-    status = assignment.returning? ? 'returning' : 'new'
-    if assignment.qualified?
-      Experiments.logger.info "[Experiments] experiment=#{@handle} subject=#{identifier} status=#{status} qualified=true group=#{assignment.group.handle}"
+    assignment = if store_unqualified?
+      assignment_with_qualification_persistence(identifier, subject, context)
     else
-      Experiments.logger.info "[Experiments] experiment=#{@handle} subject=#{identifier} status=#{status} qualified=false"
+      assignment_without_qualification_persistence(identifier, subject, context)
     end
+
+    log_assignment(identifier, assignment)
+    @subject_storage.store_assignment(self, identifier, assignment) if should_store_assignment?(assignment)
+    
     assignment
   end
 
@@ -99,19 +106,42 @@ class Experiments::Experiment
 
   protected
 
+  def should_store_assignment?(assignment)
+    !assignment.returning? && (store_unqualified? || assignment.qualified?)
+  end
+
+  def assignment_with_qualification_persistence(identifier, subject, context)
+    @subject_storage.retrieve_assignment(self, identifier) || (
+      subject_qualifies?(subject, context) ? 
+        create_assignment(@segmenter.assign(identifier, subject, context), false) :
+        create_assignment(nil, false)
+    )
+  end
+
+  def assignment_without_qualification_persistence(identifier, subject, context)
+    if subject_qualifies?(subject, context)
+      @subject_storage.retrieve_assignment(self, identifier) ||
+        create_assignment(@segmenter.assign(identifier, subject, context), false)
+    else 
+      create_assignment(nil, false)
+    end
+  end  
+
+  def log_assignment(identifier, assignment)
+    status = assignment.returning? ? 'returning' : 'new'
+    if assignment.qualified?
+      Experiments.logger.info "[Experiments] experiment=#{@handle} subject=#{identifier} status=#{status} qualified=true group=#{assignment.group.handle}"
+    else
+      Experiments.logger.info "[Experiments] experiment=#{@handle} subject=#{identifier} status=#{status} qualified=false"
+    end
+  end
+
   def subject_identifier(subject)
     subject.respond_to?(:id) ? subject.id : subject.to_s
   end
 
-  def assignment_for_subject(identifier, subject, context)
-    assignment = if everybody_qualifies? || @qualifier.call(subject, context)
-      group = @segmenter.assign(identifier, subject, context)
-      create_assignment(group, false)
-    else
-      create_assignment(nil, false)
-    end
-    @subject_storage.store_assignment(self, identifier, assignment)
-    assignment
+  def subject_qualifies?(subject, context = nil)
+    everybody_qualifies? || @qualifier.call(subject, context)
   end
 
   def create_qualifier

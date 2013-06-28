@@ -1,15 +1,16 @@
+require 'json'
 require 'test_helper'
 
 class ExperimentTest < MiniTest::Unit::TestCase
 
   def test_no_qualifier
-    e = Experiments::Experiment.define('test')
+    e = Experiments::Experiment.new('test')
     assert !e.has_qualifier?
     assert e.everybody_qualifies?
   end
 
   def test_qualifier
-    e = Experiments::Experiment.define('test') do |experiment|
+    e = Experiments::Experiment.new('test') do |experiment|
       qualify { |subject| subject.country == 'CA' }
       groups do
         group :all, 100
@@ -88,6 +89,76 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert_raises(Experiments::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(id: nil)) }
     assert_raises(Experiments::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(to_s: '')) }
   end
+
+  def test_new_unqualified_assignment_without_store_unqualified
+    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    e = Experiments::Experiment.new('test') do
+      qualify { mock_qualifier.qualifies? }
+      storage mock_store, store_unqualified: false
+    end
+
+    mock_qualifier.expects(:qualifies?).returns(false)
+    mock_store.expects(:retrieve_assignment).never
+    mock_store.expects(:store_assignment).never
+    e.assign(mock('subject'))
+  end
+
+  def test_returning_qualified_assignment_without_store_unqualified
+    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    e = Experiments::Experiment.new('test') do
+      qualify { mock_qualifier.qualifies? }
+      storage mock_store, store_unqualified: false
+      groups { group :all, 100 }
+    end
+
+    qualified_assignment = e.create_assignment(e.group(:all))
+    mock_qualifier.expects(:qualifies?).returns(true)
+    mock_store.expects(:retrieve_assignment).returns(qualified_assignment).once
+    mock_store.expects(:store_assignment).never
+    e.assign(mock('subject'))
+  end    
+
+  def test_new_unqualified_assignment_with_store_unqualified
+    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    e = Experiments::Experiment.new('test') do
+      qualify { mock_qualifier.qualifies? }
+      storage mock_store, store_unqualified: true
+    end
+
+    mock_qualifier.expects(:qualifies?).returns(false)
+    mock_store.expects(:retrieve_assignment).returns(nil).once
+    mock_store.expects(:store_assignment).once
+    e.assign(mock('subject'))
+  end
+
+  def test_returning_unqualified_assignment_with_store_unqualified
+    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    e = Experiments::Experiment.new('test') do
+      qualify { mock_qualifier.qualifies? }
+      storage mock_store, store_unqualified: true
+    end
+
+    unqualified_assignment = e.create_assignment(nil)
+    mock_qualifier.expects(:qualifies?).never
+    mock_store.expects(:retrieve_assignment).returns(unqualified_assignment).once
+    mock_store.expects(:store_assignment).never
+    e.assign(mock('subject'))
+  end
+
+  def test_returning_qualified_assignment_with_store_unqualified
+    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    e = Experiments::Experiment.new('test') do
+      qualify { mock_qualifier.qualifies? }
+      storage mock_store, store_unqualified: true
+      groups { group :all, 100 }
+    end
+
+    qualified_assignment = e.create_assignment(e.group(:all))
+    mock_qualifier.expects(:qualifies?).never
+    mock_store.expects(:retrieve_assignment).returns(qualified_assignment).once
+    mock_store.expects(:store_assignment).never
+    e.assign(mock('subject'))
+  end  
 
   def test_with_memory_store
     e = Experiments::Experiment.new('test') do

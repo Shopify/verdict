@@ -24,6 +24,7 @@ module Experiments
 
   class Error < StandardError; end
   class SegmentationError < Experiments::Error; end
+  class InvalidSubject < Experiments::Error; end
   class EmptySubjectIdentifier < Experiments::Error; end
 
   class ExperimentHandleNotUnique < Experiments::Error
