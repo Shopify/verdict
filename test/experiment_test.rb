@@ -81,6 +81,14 @@ class ExperimentTest < MiniTest::Unit::TestCase
     e.assign(3)
   end
 
+  def test_subject_identifier
+    e = Experiments::Experiment.new('test')
+    assert_equal '123', e.retrieve_subject_identifier(stub(id: 123, to_s: '456'))
+    assert_equal '456', e.retrieve_subject_identifier(stub(to_s: '456'))
+    assert_raises(Experiments::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(id: nil)) }
+    assert_raises(Experiments::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(to_s: '')) }
+  end
+
   def test_with_memory_store
     e = Experiments::Experiment.new('test') do
       groups do

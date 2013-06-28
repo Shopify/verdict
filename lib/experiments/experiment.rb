@@ -54,7 +54,7 @@ class Experiments::Experiment
   end
 
   def assign(subject, context = nil)
-    identifier = subject_identifier(subject)
+    identifier = retrieve_subject_identifier(subject)
     assignment = @subject_storage.retrieve_assignment(self, identifier) || assignment_for_subject(identifier, subject, context)
     
     status = assignment.returning? ? 'returning' : 'new'
@@ -70,8 +70,10 @@ class Experiments::Experiment
     assign(subject, context).to_sym
   end
 
-  def subject_identifier(subject)
-    subject.respond_to?(:id) ? subject.id.to_s : subject.to_s
+  def retrieve_subject_identifier(subject)
+    identifier = subject_identifier(subject).to_s
+    raise Experiments::EmptySubjectIdentifier, "Subject resolved to an empty identifier!" if identifier.empty?
+    identifier
   end
 
   def has_qualifier?
@@ -96,6 +98,10 @@ class Experiments::Experiment
   end  
 
   protected
+
+  def subject_identifier(subject)
+    subject.respond_to?(:id) ? subject.id : subject.to_s
+  end
 
   def assignment_for_subject(identifier, subject, context)
     assignment = if everybody_qualifies? || @qualifier.call(subject, context)

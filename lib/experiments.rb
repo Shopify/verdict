@@ -28,6 +28,7 @@ module Experiments
 
   class Error < StandardError; end
   class SegmentationError < Experiments::Error; end
+  class EmptySubjectIdentifier < Experiments::Error; end
 
   class ExperimentHandleNotUnique < Experiments::Error
     attr_reader :handle
