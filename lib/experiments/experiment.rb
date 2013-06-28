@@ -62,9 +62,9 @@ class Experiments::Experiment
   def assign(subject, context = nil)
     identifier = retrieve_subject_identifier(subject)
     assignment = if store_unqualified?
-      assignment_with_qualification_persistence(identifier, subject, context)
+      assignment_with_unqualified_persistence(identifier, subject, context)
     else
-      assignment_without_qualification_persistence(identifier, subject, context)
+      assignment_without_unqualified_persistence(identifier, subject, context)
     end
 
     log_assignment(identifier, assignment)
@@ -110,7 +110,7 @@ class Experiments::Experiment
     !assignment.returning? && (store_unqualified? || assignment.qualified?)
   end
 
-  def assignment_with_qualification_persistence(identifier, subject, context)
+  def assignment_with_unqualified_persistence(identifier, subject, context)
     @subject_storage.retrieve_assignment(self, identifier) || (
       subject_qualifies?(subject, context) ? 
         create_assignment(@segmenter.assign(identifier, subject, context), false) :
@@ -118,7 +118,7 @@ class Experiments::Experiment
     )
   end
 
-  def assignment_without_qualification_persistence(identifier, subject, context)
+  def assignment_without_unqualified_persistence(identifier, subject, context)
     if subject_qualifies?(subject, context)
       @subject_storage.retrieve_assignment(self, identifier) ||
         create_assignment(@segmenter.assign(identifier, subject, context), false)
