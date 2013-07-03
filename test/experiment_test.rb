@@ -196,4 +196,30 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert_kind_of Enumerable, json['groups']
     assert_equal 'testing', json['metadata']['name']
   end
+
+  def test_storage_read_failure
+    storage_mock = mock('storage')
+
+    e = Experiments::Experiment.new(:json) do
+      groups { group :all, 100 }
+      storage storage_mock
+    end
+
+    storage_mock.stubs(:retrieve_assignment).raises(Experiments::StorageError, 'storage read issues')
+    rescued_assignment = e.assign(stub(id: 123))
+    assert !rescued_assignment.qualified?
+  end
+
+  def test_storage_write_failure
+    storage_mock = mock('storage')
+    e = Experiments::Experiment.new(:json) do
+      groups { group :all, 100 }
+      storage storage_mock
+    end
+
+    storage_mock.expects(:retrieve_assignment).returns(e.create_assignment(e.group(:all), false))
+    storage_mock.expects(:store_assignment).raises(Experiments::StorageError, 'storage write issues')
+    rescued_assignment = e.assign(stub(id: 456))
+    assert !rescued_assignment.qualified?
+  end
 end
