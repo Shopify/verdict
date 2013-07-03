@@ -26,6 +26,7 @@ module Experiments
   class SegmentationError < Experiments::Error; end
   class InvalidSubject < Experiments::Error; end
   class EmptySubjectIdentifier < Experiments::Error; end
+  class StorageError < Experiments::Error; end
 
   class ExperimentHandleNotUnique < Experiments::Error
     attr_reader :handle
