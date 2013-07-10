@@ -9,7 +9,7 @@ Gem::Specification.new do |gem|
   gem.authors       = ["Shopify"]
   gem.email         = ["kevin.mcphillips@shopify.com", "willem@shopify.com"]
   gem.description   = %q{Shopify Experiments classes}
-  gem.summary       = %q{Models used to define experiments used to A/B test applications.}
+  gem.summary       = %q{A library to centrally define experiments for your application, and collect assignment information.}
   gem.homepage      = "http://github.com/Shopify/experiments"
 
   gem.files         = `git ls-files`.split($/)
