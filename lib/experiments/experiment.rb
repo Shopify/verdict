@@ -13,12 +13,18 @@ class Experiments::Experiment
   def initialize(handle, options = {}, &block)
     @handle = handle.to_s
 
-    @qualifier ||= options[:qualifier] || create_qualifier
-    @subject_storage = options[:storage] || create_subject_store
+    options = default_options.merge(options)
+    @qualifier         = options[:qualifier]
+    @subject_storage   = options[:storage]
     @store_unqualified = options[:store_unqualified]
-    @segmenter = options[:segmenter]
-
+    @segmenter         = options[:segmenter]
+    @subject_type      = options[:subject_type]
     instance_eval(&block) if block_given?
+  end
+
+  def subject_type(type = nil)
+    return @subject_type if type.nil?
+    @subject_type = type
   end
 
   def store_unqualified?
@@ -93,12 +99,16 @@ class Experiments::Experiment
   end
 
   def as_json(options = {})
-    {
+    data = {
       handle: handle,
       has_qualifier: has_qualifier?,
       groups: segmenter.groups.values.map { |g| g.as_json(options) },
       metadata: metadata
     }
+
+    data.tap do |data|
+      data[:subject_type] = subject_type.to_s unless subject_type.nil?
+    end
   end
 
   def to_json(options = {})
@@ -106,6 +116,12 @@ class Experiments::Experiment
   end  
 
   protected
+
+  def default_options
+    {
+      storage: Experiments::Storage::Dummy.new
+    }
+  end
 
   def should_store_assignment?(assignment)
     !assignment.returning? && (store_unqualified? || assignment.qualified?)
@@ -143,13 +159,5 @@ class Experiments::Experiment
 
   def subject_qualifies?(subject, context = nil)
     everybody_qualifies? || @qualifier.call(subject, context)
-  end
-
-  def create_qualifier
-    nil
-  end
-
-  def create_subject_store
-    Experiments::Storage::Dummy.new
   end
 end

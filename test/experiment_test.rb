@@ -184,6 +184,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   def test_json
     e = Experiments::Experiment.new(:json) do
       name 'testing'
+      subject_type 'visitor'
       groups do
         group :a, :half
         group :b, :rest
@@ -195,6 +196,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert_equal false, json['has_qualifier']
     assert_kind_of Enumerable, json['groups']
     assert_equal 'testing', json['metadata']['name']
+    assert_equal 'visitor', json['subject_type']
   end
 
   def test_storage_read_failure
