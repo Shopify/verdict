@@ -1,11 +1,16 @@
 class Experiments::Assignment
 
-  attr_reader :experiment, :group
+  attr_reader :experiment, :subject_identifier, :group
 
-  def initialize(experiment, group = nil, returning = true)
-    @experiment = experiment
-    @returning  = returning
-    @group      = group
+  def initialize(experiment, subject_identifier, group = nil, returning = true)
+    @experiment         = experiment
+    @subject_identifier = subject_identifier
+    @group              = group
+    @returning          = returning
+  end
+
+  def subject
+    @subject ||= experiment.fetch_subject(subject_identifier)
   end
 
   def qualified?
@@ -13,7 +18,7 @@ class Experiments::Assignment
   end
 
   def returning
-    self.class.new(@experiment, @group, true)
+    self.class.new(@experiment, @subject_identifier, @group, true)
   end
 
   def returning?
@@ -31,9 +36,10 @@ class Experiments::Assignment
   def as_json(options = {})
     {
       experiment: experiment.handle,
-      qualified: qualified?,
-      returning: returning?,
-      group: qualified? ? group.handle : nil
+      subject:    subject_identifier,
+      qualified:  qualified?,
+      returning:  returning?,
+      group:      qualified? ? group.handle : nil
     }
   end
 

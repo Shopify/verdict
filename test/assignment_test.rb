@@ -9,7 +9,8 @@ class AssignmentTest < MiniTest::Unit::TestCase
   end
 
   def test_basic_properties
-    assignment = Experiments::Assignment.new(@experiment, @group)
+    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', @group)
+    assert_equal 'test_subject_id', assignment.subject_identifier
     assert_equal @experiment, assignment.experiment 
     assert_equal @group, assignment.group 
     assert assignment.returning?
@@ -17,7 +18,7 @@ class AssignmentTest < MiniTest::Unit::TestCase
     assert_equal :control, assignment.to_sym
     assert_equal 'control', assignment.handle
 
-    non_assignment = Experiments::Assignment.new(@experiment, nil, false)
+    non_assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, false)
     assert_equal nil, non_assignment.group 
     assert !non_assignment.returning?
     assert !non_assignment.qualified?
@@ -25,14 +26,23 @@ class AssignmentTest < MiniTest::Unit::TestCase
     assert_equal nil, non_assignment.handle
   end
 
+  def test_subject_lookup
+    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil)
+    assert_raises(NotImplementedError) { assignment.subject }
+
+    @experiment.expects(:fetch_subject).with('test_subject_id').returns(subject = mock('subject'))
+    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil)
+    assert_equal subject, assignment.subject
+  end
+
   def test_triple_equals
-    assignment = Experiments::Assignment.new(@experiment, @group)
+    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', @group)
     assert !(assignment === nil)
     assert assignment === @group
     assert assignment === 'control'
     assert assignment === :control
 
-    non_assignment = Experiments::Assignment.new(@experiment, nil, false)
+    non_assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, false)
     assert non_assignment === nil
     assert !(non_assignment === @group)
     assert !(non_assignment === 'control')
@@ -40,19 +50,21 @@ class AssignmentTest < MiniTest::Unit::TestCase
   end
 
   def test_json_representation
-    assignment = Experiments::Assignment.new(@experiment, @group)
+    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', @group)
     json = JSON.parse(assignment.to_json)
 
     assert_equal 'assignment test', json['experiment']
+    assert_equal 'test_subject_id', json['subject']
     assert_equal true, json['qualified']
     assert_equal true, json['returning']
     assert_equal 'control', json['group']
 
-    non_assignment = Experiments::Assignment.new(@experiment, nil, false)
+    non_assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, false)
     json = JSON.parse(non_assignment.to_json)
     assert_equal 'assignment test', json['experiment']
+    assert_equal 'test_subject_id', json['subject']
     assert_equal false, json['qualified']
     assert_equal false, json['returning']
-    assert_equal nil, json['group']    
+    assert_equal nil, json['group']
   end
 end

@@ -61,8 +61,8 @@ class Experiments::Experiment
     segmenter.groups.keys
   end
 
-  def create_assignment(group, returning = true)
-    Experiments::Assignment.new(self, group, returning)
+  def subject_assignment(subject_identifier, group, returning = true)
+    Experiments::Assignment.new(self, subject_identifier, group, returning)
   end
 
   def assign(subject, context = nil)
@@ -74,10 +74,10 @@ class Experiments::Experiment
     end
 
     @subject_storage.store_assignment(self, identifier, assignment) if should_store_assignment?(assignment)
-    log_assignment(identifier, assignment)
+    log_assignment(assignment)
     assignment
   rescue Experiments::StorageError
-    create_assignment(nil, false)
+    subject_assignment(identifier, nil, false)
   end
 
   def switch(subject, context = nil)
@@ -113,7 +113,11 @@ class Experiments::Experiment
 
   def to_json(options = {})
     as_json(options).to_json
-  end  
+  end 
+
+  def fetch_subject(subject_identifier)
+    raise NotImplementedError, "Fetching subjects based in identifier is not implemented for eperiment @{handle.inspect}."
+  end
 
   protected
 
@@ -127,29 +131,29 @@ class Experiments::Experiment
     !assignment.returning? && (store_unqualified? || assignment.qualified?)
   end
 
-  def assignment_with_unqualified_persistence(identifier, subject, context)
-    @subject_storage.retrieve_assignment(self, identifier) || (
+  def assignment_with_unqualified_persistence(subject_identifier, subject, context)
+    @subject_storage.retrieve_assignment(self, subject_identifier) || (
       subject_qualifies?(subject, context) ? 
-        create_assignment(@segmenter.assign(identifier, subject, context), false) :
-        create_assignment(nil, false)
+        subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), false) :
+        subject_assignment(subject_identifier, nil, false)
     )
   end
 
-  def assignment_without_unqualified_persistence(identifier, subject, context)
+  def assignment_without_unqualified_persistence(subject_identifier, subject, context)
     if subject_qualifies?(subject, context)
-      @subject_storage.retrieve_assignment(self, identifier) ||
-        create_assignment(@segmenter.assign(identifier, subject, context), false)
+      @subject_storage.retrieve_assignment(self, subject_identifier) ||
+        subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), false)
     else 
-      create_assignment(nil, false)
+      subject_assignment(subject_identifier, nil, false)
     end
   end  
 
-  def log_assignment(identifier, assignment)
+  def log_assignment(assignment)
     status = assignment.returning? ? 'returning' : 'new'
     if assignment.qualified?
-      Experiments.logger.info "[Experiments] experiment=#{@handle} subject=#{identifier} status=#{status} qualified=true group=#{assignment.group.handle}"
+      Experiments.logger.info "[Experiments] experiment=#{assignment.experiment.handle} subject=#{assignment.subject_identifier} status=#{status} qualified=true group=#{assignment.group.handle}"
     else
-      Experiments.logger.info "[Experiments] experiment=#{@handle} subject=#{identifier} status=#{status} qualified=false"
+      Experiments.logger.info "[Experiments] experiment=#{assignment.experiment.handle} subject=#{assignment.subject_identifier} status=#{status} qualified=false"
     end
   end
 
