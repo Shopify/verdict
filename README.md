@@ -1,6 +1,12 @@
 # Experiments
 
-This library allows you to define experiments
+This library allows you to define and use experiments in your application.
+
+- This library can be used in any Ruby application, and comes with a `Railtie` to
+  make integrating it with a Rails app easy.
+- This library only handles consistently assigning subjects to experiment groups, 
+  and storing/logging these assignments for analysis. It doesn't do any analysis
+  of results. That should happen elsewhere, e.g. in a data warehouse environment.
 
 
 ## Installation
@@ -34,7 +40,9 @@ end
 ```
 
 Usually you want to place this in a file called **my_experiment.rb** in the 
-**/app/experiments** folder.
+**/app/experiments** folder. Also, usually you want to subclass `Experiments::Experiment` 
+to set some default options for your app's environment, and call `define` on that class
+instead.
 
 Refer to the experiment elsewhere in your codebase like this:
 
@@ -49,6 +57,27 @@ else
   # Handle unqualified people. 
 end
 ```
+
+## Storage & logging
+
+The library uses a basic interface to store experiment assignments. Except for
+a development-only memory store, it doesn't include any storage models.
+
+You can set up storage by calling the `storage` method of your experiment, with
+an object that responds to the following tho methods:
+
+- `def retrieve_assignment(experiment, subject_identifier)`
+- `def store_assignment(assignment)`
+
+In which `experiment` is the Experiment instance, `subject_identifier` is a  
+string that uniquely identifies the subject, and `assignment` is an
+`Experiment::Assignment` instance. By default it will use `subject.id.to_s` as
+`subject_identifier`, but you can change that by overriding the `subject_identifier(subject)`
+
+The library will also log every assignment to `Experiments.logger`. The Railtie
+sets `Experiment.loggor` to `Rails.logger`, so experiment assignments will show
+up in your Rails log. You can override the logging by overriding the 
+`log_assignment(assignment)` method on the experiment.
 
 ## Contributing
 
