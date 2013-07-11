@@ -1,48 +1,54 @@
 # Experiments
 
-The Experiment functionality has been extracted from Shopify so that it can be used to do A/B tests on other applications
+This library allows you to define experiments
 
 
 ## Installation
 
-Add this line to your application's Gemfile:
+Add this line to your application's Gemfile, and run `bundle install`:
 
     gem 'experiments'
 
-And then execute:
-
-    $ bundle
-
-Or install it yourself as:
-
-    $ gem install experiments
-
-
 ## Usage
 
-This gem contains the `Experiments::Experiment` model used create the experiment singleton and consistently modify application behaviour based on an object's unique key. Define an experiment like so:
+This gem contains the `Experiments::Experiment` model used create the experiment instance,
+in order consistently modify application behaviour based on an object's unique key. 
 
-    Experiments.define 'my experiment' do
+Define an experiment like so:
 
-      qualify { |subject|  ... }
+``` ruby
+Experiments::Experiment.define :my_experiment do
 
-      groups do
-        group :a, :half
-        group :b, :rest
-      end
+  # This block should return true if the subject is qualified to participate
+  qualify { |subject, context|  ... }
 
-      storage Experiments::Storage::Memory.new
-    end
+  # Specify the groups and the percentages
+  groups do
+    group :test, :half
+    group :control, :rest
+  end
 
-Refer to the experiment like this:
+  # Specify how assignments will be stored.
+  storage Experiments::Storage::Memory.new
+end
+```
 
-    case Experiments['my experiment'].assign(shop)
-    when :half
-      ...
-    when :rest
-      ...
-    end
+Usually you want to place this in a file called **my_experiment.rb** in the 
+**/app/experiments** folder.
 
+Refer to the experiment elsewhere in your codebase like this:
+
+``` ruby
+context = { ... } # anything you want to pass along to the qualify block. 
+case Experiments['my experiment'].switch(shop, context)
+when :test
+  # Handle test group
+when :control
+  # Handle control group
+else 
+  # Handle unqualified people. 
+end
+```
 
 ## Contributing
 
