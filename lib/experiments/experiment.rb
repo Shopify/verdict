@@ -73,7 +73,7 @@ class Experiments::Experiment
       assignment_without_unqualified_persistence(identifier, subject, context)
     end
 
-    @subject_storage.store_assignment(self, identifier, assignment) if should_store_assignment?(assignment)
+    @subject_storage.store_assignment(assignment) if should_store_assignment?(assignment)
     log_assignment(assignment)
     assignment
   rescue Experiments::StorageError
