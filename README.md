@@ -54,7 +54,7 @@ when :test
 when :control
   # Handle control group
 else 
-  # Handle unqualified people. 
+  # Handle unqualified subjects. 
 end
 ```
 
@@ -72,12 +72,13 @@ an object that responds to the following tho methods:
 In which `experiment` is the Experiment instance, `subject_identifier` is a  
 string that uniquely identifies the subject, and `assignment` is an
 `Experiment::Assignment` instance. By default it will use `subject.id.to_s` as
-`subject_identifier`, but you can change that by overriding the `subject_identifier(subject)`
+`subject_identifier`, but you can change that by overriding the 
+`def subject_identifier(subject)` method on the experiment.
 
 The library will also log every assignment to `Experiments.logger`. The Railtie
-sets `Experiment.loggor` to `Rails.logger`, so experiment assignments will show
+sets `Experiment.logger` to `Rails.logger`, so experiment assignments will show
 up in your Rails log. You can override the logging by overriding the 
-`log_assignment(assignment)` method on the experiment.
+`def log_assignment(assignment)` method on the experiment.
 
 ## Contributing
 
