@@ -61,25 +61,18 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert_equal nil, e.switch(3)
   end
 
-  def test_logging
+  def test_assignment_event_logging
     e = Experiments::Experiment.new('test') do
-      qualify { |subject| subject <= 2 }
-      groups do
-        group :a, :half
-        group :b, :rest
-      end
+      groups { group :all, 100 }
     end
 
-    e.event_logger.stubs(:logger).returns(logger = mock('logger'))
+    e.stubs(:event_logger).returns(logger = mock('event_logger'))
+    logger.expects(:log_assignment).with do |assignment|
+      assert_kind_of Experiments::Assignment, assignment
+      assert_equal 'subject_identifier', assignment.subject_identifier
+    end
 
-    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
-    e.assign(1)  
-
-    logger.expects(:info).with('[Experiments] experiment=test subject=2 status=new qualified=true group=b')
-    e.assign(2)
-
-    logger.expects(:info).with('[Experiments] experiment=test subject=3 status=new qualified=false')
-    e.assign(3)
+    e.assign(stub(id: 'subject_identifier'))
   end
 
   def test_subject_identifier
@@ -161,24 +154,16 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end  
 
   def test_with_memory_store
-    e = Experiments::Experiment.new('test') do
-      groups do
-        group :a, :half
-        group :b, :rest
-      end
-
+    e = Experiments::Experiment.new(:storage_test) do
+      groups { group :all, 100 }
       storage(Experiments::Storage::Memory.new)
     end
 
-    e.event_logger.stubs(:logger).returns(logger = mock('logger'))
-    
-    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
-    assignment = e.assign(1)
-    assert !assignment.returning?
-    
-    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=returning qualified=true group=a')
-    assignment = e.assign(1)
-    assert assignment.returning?
+    subject = stub(id: 'returning')
+    assignment_1 = e.assign(subject)
+    assignment_2 = e.assign(subject)
+    assert !assignment_1.returning?
+    assert assignment_2.returning?
   end
 
   def test_achieve
