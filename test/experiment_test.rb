@@ -61,20 +61,6 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert_equal nil, e.switch(3)
   end
 
-  def test_assignment_event_logging
-    e = Experiments::Experiment.new('test') do
-      groups { group :all, 100 }
-    end
-
-    e.stubs(:event_logger).returns(logger = mock('event_logger'))
-    logger.expects(:log_assignment).with do |assignment|
-      assert_kind_of Experiments::Assignment, assignment
-      assert_equal 'subject_identifier', assignment.subject_identifier
-    end
-
-    e.assign(stub(id: 'subject_identifier'))
-  end
-
   def test_subject_identifier
     e = Experiments::Experiment.new('test')
     assert_equal '123', e.retrieve_subject_identifier(stub(id: 123, to_s: '456'))
@@ -166,15 +152,26 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert assignment_2.returning?
   end
 
-  def test_achieve
-    e = Experiments::Experiment.new(:achieve)
+  def test_assignment_event_logging
+    e = Experiments::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
 
-    e.event_logger.stubs(:logger).returns(logger = mock('logger'))
-    logger.expects(:info).with('[Experiments] experiment=achieve subject=test_subject achievement=my_event')
+    e.stubs(:event_logger).returns(logger = mock('event_logger'))
+    logger.expects(:log_assignment).with(kind_of(Experiments::Assignment))
 
-    achievement = e.achieve(subject = stub(id: 'test_subject'), :my_event)
-    assert_equal 'test_subject', achievement.subject_identifier
-    assert_equal :my_event, achievement.label 
+    e.assign(stub(id: 'subject_identifier'))
+  end
+
+  def test_conversion_event_logging
+    e = Experiments::Experiment.new('test')
+
+    e.stubs(:event_logger).returns(logger = mock('logger'))
+    logger.expects(:log_conversion).with(kind_of(Experiments::Conversion))
+
+    conversion = e.convert(subject = stub(id: 'test_subject'), :my_goal)
+    assert_equal 'test_subject', conversion.subject_identifier
+    assert_equal :my_goal, conversion.goal 
   end
 
   def test_json

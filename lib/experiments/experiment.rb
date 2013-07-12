@@ -66,15 +66,15 @@ class Experiments::Experiment
     Experiments::Assignment.new(self, subject_identifier, group, returning)
   end
 
-  def subject_achievement(subject_identifier, achievement)
-    Experiments::Achievement.new(self, subject_identifier, achievement)
+  def subject_conversion(subject_identifier, goal)
+    Experiments::Conversion.new(self, subject_identifier, goal)
   end
 
-  def achieve(subject, achievement_label)
+  def convert(subject, goal)
     identifier = retrieve_subject_identifier(subject)
-    achievement = subject_achievement(identifier, achievement_label)
-    event_logger.log_achievement(achievement)
-    achievement
+    conversion = subject_conversion(identifier, goal)
+    event_logger.log_conversion(conversion)
+    conversion
   end
 
   def assign(subject, context = nil)

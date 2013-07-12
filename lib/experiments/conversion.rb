@@ -1,9 +1,9 @@
-class Experiments::Achievement
+class Experiments::Conversion
 
-  attr_reader :experiment, :subject_identifier, :label
+  attr_reader :experiment, :subject_identifier, :goal
 
-  def initialize(experiment, subject_identifier, label)
-    @experiment, @subject_identifier, @label = experiment, subject_identifier, label
+  def initialize(experiment, subject_identifier, goal)
+    @experiment, @subject_identifier, @goal = experiment, subject_identifier, goal
   end
 
   def subject
@@ -18,7 +18,7 @@ class Experiments::Achievement
     {
       experiment: experiment.handle,
       subject:    subject_identifier,
-      label:      label
+      goal:       goal
     }
   end
 
