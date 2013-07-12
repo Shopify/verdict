@@ -70,7 +70,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
       end
     end
 
-    Experiments.stubs(:logger).returns(logger = mock('logger'))
+    e.event_logger.stubs(:logger).returns(logger = mock('logger'))
 
     logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
     e.assign(1)  
@@ -170,7 +170,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
       storage(Experiments::Storage::Memory.new)
     end
 
-    Experiments.stubs(:logger).returns(logger = mock('logger'))
+    e.event_logger.stubs(:logger).returns(logger = mock('logger'))
     
     logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
     assignment = e.assign(1)
@@ -179,6 +179,17 @@ class ExperimentTest < MiniTest::Unit::TestCase
     logger.expects(:info).with('[Experiments] experiment=test subject=1 status=returning qualified=true group=a')
     assignment = e.assign(1)
     assert assignment.returning?
+  end
+
+  def test_achieve
+    e = Experiments::Experiment.new(:achieve)
+
+    e.event_logger.stubs(:logger).returns(logger = mock('logger'))
+    logger.expects(:info).with('[Experiments] experiment=achieve subject=test_subject achievement=my_event')
+
+    achievement = e.achieve(subject = stub(id: 'test_subject'), :my_event)
+    assert_equal 'test_subject', achievement.subject_identifier
+    assert_equal :my_event, achievement.label 
   end
 
   def test_json
