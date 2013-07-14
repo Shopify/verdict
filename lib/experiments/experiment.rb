@@ -15,8 +15,8 @@ class Experiments::Experiment
 
     options = default_options.merge(options)
     @qualifier         = options[:qualifier]
-    @event_logger      = options[:event_logger]
-    @subject_storage   = options[:storage]
+    @event_logger      = options[:event_logger] || Experiments::EventLogger.new(Experiments.default_logger)
+    @subject_storage   = options[:storage] || Experiments::Storage::Dummy.new
     @store_unqualified = options[:store_unqualified]
     @segmenter         = options[:segmenter]
     @subject_type      = options[:subject_type]
@@ -138,10 +138,7 @@ class Experiments::Experiment
   protected
 
   def default_options
-    {
-      event_logger: Experiments::EventLogger.new(Experiments.default_logger),
-      storage: Experiments::Storage::Dummy.new
-    }
+    {}
   end
 
   def should_store_assignment?(assignment)
