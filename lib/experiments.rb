@@ -3,7 +3,7 @@ require 'logger'
 module Experiments
   extend self
 
-  attr_accessor :logger, :directory
+  attr_accessor :default_logger, :directory
 
   def [](handle)
     Experiments.repository[handle.to_s]
@@ -45,8 +45,10 @@ require "experiments/metadata"
 require "experiments/experiment"
 require "experiments/group"
 require "experiments/assignment"
+require "experiments/conversion"
 require "experiments/segmenter"
 require "experiments/storage"
+require "experiments/event_logger"
 
-Experiments.logger ||= Logger.new("/dev/null")
+Experiments.default_logger ||= Logger.new("/dev/null")
 Experiments.directory = nil

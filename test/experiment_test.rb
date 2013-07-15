@@ -61,27 +61,6 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert_equal nil, e.switch(3)
   end
 
-  def test_logging
-    e = Experiments::Experiment.new('test') do
-      qualify { |subject| subject <= 2 }
-      groups do
-        group :a, :half
-        group :b, :rest
-      end
-    end
-
-    Experiments.stubs(:logger).returns(logger = mock('logger'))
-
-    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
-    e.assign(1)  
-
-    logger.expects(:info).with('[Experiments] experiment=test subject=2 status=new qualified=true group=b')
-    e.assign(2)
-
-    logger.expects(:info).with('[Experiments] experiment=test subject=3 status=new qualified=false')
-    e.assign(3)
-  end
-
   def test_subject_identifier
     e = Experiments::Experiment.new('test')
     assert_equal '123', e.retrieve_subject_identifier(stub(id: 123, to_s: '456'))
@@ -161,24 +140,38 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end  
 
   def test_with_memory_store
-    e = Experiments::Experiment.new('test') do
-      groups do
-        group :a, :half
-        group :b, :rest
-      end
-
+    e = Experiments::Experiment.new(:storage_test) do
+      groups { group :all, 100 }
       storage(Experiments::Storage::Memory.new)
     end
 
-    Experiments.stubs(:logger).returns(logger = mock('logger'))
-    
-    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=new qualified=true group=a')
-    assignment = e.assign(1)
-    assert !assignment.returning?
-    
-    logger.expects(:info).with('[Experiments] experiment=test subject=1 status=returning qualified=true group=a')
-    assignment = e.assign(1)
-    assert assignment.returning?
+    subject = stub(id: 'returning')
+    assignment_1 = e.assign(subject)
+    assignment_2 = e.assign(subject)
+    assert !assignment_1.returning?
+    assert assignment_2.returning?
+  end
+
+  def test_assignment_event_logging
+    e = Experiments::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    e.stubs(:event_logger).returns(logger = mock('event_logger'))
+    logger.expects(:log_assignment).with(kind_of(Experiments::Assignment))
+
+    e.assign(stub(id: 'subject_identifier'))
+  end
+
+  def test_conversion_event_logging
+    e = Experiments::Experiment.new('test')
+
+    e.stubs(:event_logger).returns(logger = mock('logger'))
+    logger.expects(:log_conversion).with(kind_of(Experiments::Conversion))
+
+    conversion = e.convert(subject = stub(id: 'test_subject'), :my_goal)
+    assert_equal 'test_subject', conversion.subject_identifier
+    assert_equal :my_goal, conversion.goal 
   end
 
   def test_json

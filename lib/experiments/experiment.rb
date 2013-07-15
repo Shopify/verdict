@@ -2,7 +2,7 @@ class Experiments::Experiment
 
   include Experiments::Metadata
 
-  attr_reader :handle, :qualifier, :subject_storage
+  attr_reader :handle, :qualifier, :subject_storage, :event_logger
 
   def self.define(handle, *args, &block)
     experiment = self.new(handle, *args, &block)
@@ -15,7 +15,8 @@ class Experiments::Experiment
 
     options = default_options.merge(options)
     @qualifier         = options[:qualifier]
-    @subject_storage   = options[:storage]
+    @event_logger      = options[:event_logger] || Experiments::EventLogger.new(Experiments.default_logger)
+    @subject_storage   = options[:storage] || Experiments::Storage::Dummy.new
     @store_unqualified = options[:store_unqualified]
     @segmenter         = options[:segmenter]
     @subject_type      = options[:subject_type]
@@ -65,6 +66,17 @@ class Experiments::Experiment
     Experiments::Assignment.new(self, subject_identifier, group, returning)
   end
 
+  def subject_conversion(subject_identifier, goal)
+    Experiments::Conversion.new(self, subject_identifier, goal)
+  end
+
+  def convert(subject, goal)
+    identifier = retrieve_subject_identifier(subject)
+    conversion = subject_conversion(identifier, goal)
+    event_logger.log_conversion(conversion)
+    conversion
+  end
+
   def assign(subject, context = nil)
     identifier = retrieve_subject_identifier(subject)
     assignment = if store_unqualified?
@@ -74,7 +86,7 @@ class Experiments::Experiment
     end
 
     @subject_storage.store_assignment(assignment) if should_store_assignment?(assignment)
-    log_assignment(assignment)
+    event_logger.log_assignment(assignment)
     assignment
   rescue Experiments::StorageError
     subject_assignment(identifier, nil, false)
@@ -119,12 +131,14 @@ class Experiments::Experiment
     raise NotImplementedError, "Fetching subjects based in identifier is not implemented for eperiment @{handle.inspect}."
   end
 
+  def fetch_assignment(subject_identifier)
+    @subject_storage.retrieve_assignment(self, subject_identifier)
+  end
+
   protected
 
   def default_options
-    {
-      storage: Experiments::Storage::Dummy.new
-    }
+    {}
   end
 
   def should_store_assignment?(assignment)
@@ -132,7 +146,7 @@ class Experiments::Experiment
   end
 
   def assignment_with_unqualified_persistence(subject_identifier, subject, context)
-    @subject_storage.retrieve_assignment(self, subject_identifier) || (
+    fetch_assignment(subject_identifier) || (
       subject_qualifies?(subject, context) ? 
         subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), false) :
         subject_assignment(subject_identifier, nil, false)
@@ -141,21 +155,12 @@ class Experiments::Experiment
 
   def assignment_without_unqualified_persistence(subject_identifier, subject, context)
     if subject_qualifies?(subject, context)
-      @subject_storage.retrieve_assignment(self, subject_identifier) ||
+      fetch_assignment(subject_identifier) ||
         subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), false)
     else 
       subject_assignment(subject_identifier, nil, false)
     end
   end  
-
-  def log_assignment(assignment)
-    status = assignment.returning? ? 'returning' : 'new'
-    if assignment.qualified?
-      Experiments.logger.info "[Experiments] experiment=#{assignment.experiment.handle} subject=#{assignment.subject_identifier} status=#{status} qualified=true group=#{assignment.group.handle}"
-    else
-      Experiments.logger.info "[Experiments] experiment=#{assignment.experiment.handle} subject=#{assignment.subject_identifier} status=#{status} qualified=false"
-    end
-  end
 
   def subject_identifier(subject)
     subject.respond_to?(:id) ? subject.id : subject.to_s
