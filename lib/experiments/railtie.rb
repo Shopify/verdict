@@ -1,7 +1,9 @@
 class Experiments::Railtie < Rails::Railtie
-  initializer "experiments.configure_rails_initialization" do 
+  initializer "experiments.configure_rails_initialization" do |app|
     Experiments.default_logger = Rails.logger
     Experiments.directory = Rails.root.join('app', 'experiments')
+
+    app.config.eager_load_paths -= [Experiments.directory.to_s]
   end
 
   rake_tasks do
