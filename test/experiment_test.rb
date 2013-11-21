@@ -142,7 +142,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   def test_with_memory_store
     e = Experiments::Experiment.new(:storage_test) do
       groups { group :all, 100 }
-      storage(Experiments::Storage::Memory.new)
+      storage(Experiments::Storage::MemoryStorage.new)
     end
 
     subject = stub(id: 'returning')
