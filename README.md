@@ -35,7 +35,7 @@ Experiments::Experiment.define :my_experiment do
   end
 
   # Specify how assignments will be stored.
-  storage Experiments::Storage::Memory.new
+  storage Experiments::Storage::MemoryStorage.new
 end
 ```
 
