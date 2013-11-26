@@ -96,6 +96,14 @@ class Experiments::Experiment
     assign(subject, context).to_sym
   end
 
+  def lookup(subject)
+    lookup_assignment_for_identifier(retrieve_subject_identifier(subject))
+  end
+
+  def lookup_assignment_for_identifier(subject_identifier)
+    fetch_assignment(subject_identifier)
+  end
+
   def retrieve_subject_identifier(subject)
     identifier = subject_identifier(subject).to_s
     raise Experiments::EmptySubjectIdentifier, "Subject resolved to an empty identifier!" if identifier.empty?

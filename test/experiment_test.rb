@@ -152,6 +152,20 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert assignment_2.returning?
   end
 
+  def test_assignment_lookup
+    e = Experiments::Experiment.new(:storage_test) do
+      groups { group :all, 100 }
+      storage(Experiments::Storage::Memory.new)
+    end
+
+    subject = stub(id: 'returning')
+
+    assert e.lookup(subject).nil?
+
+    e.assign(subject)
+    assert !e.lookup(subject).nil?
+  end
+
   def test_assignment_event_logging
     e = Experiments::Experiment.new('test') do
       groups { group :all, 100 }
