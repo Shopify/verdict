@@ -53,7 +53,7 @@ namespace :experiments do
     experiment.store_assignment(assignment)
   end
 
-  task :remove => 'environment' do
+  task :remove_assignment => 'environment' do
     raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
     raise "Provide the subject identifier as env variable" if ENV['subject'].blank?
 
