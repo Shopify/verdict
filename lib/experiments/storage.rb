@@ -18,6 +18,10 @@ module Experiments::Storage
       nil
     end
 
+    # Should remove the subject from storage, so it will be reassigned later.
+    def remove_assignment(experiment, subject_identifier)
+    end
+
     # Should clear out the storage used for this experiment
     def clear_experiment(experiment)
     end
@@ -37,6 +41,11 @@ module Experiments::Storage
     def retrieve_assignment(experiment, subject_identifier)
       experiment_store = @store[experiment.handle] || {}
       experiment_store[subject_identifier]
+    end
+
+    def remove_assignment(experiment, subject_identifier)
+      @store[assignment.experiment.handle] ||= {}
+      @store[assignment.experiment.handle].delete(subject_identifier)
     end
 
     def clear_experiment(experiment)
@@ -68,6 +77,10 @@ module Experiments::Storage
       end
     rescue ::Redis::BaseError => e
       raise Experiments::StorageError, "Redis error: #{e.message}"
+    end
+
+    def remove_assignment(experiment, subject_identifier)
+      redis.hdel(generate_experiment_key(experiment), subject_identifier)
     end
 
     def clear_experiment(experiment)
