@@ -1,3 +1,9 @@
+def require_env(key)
+  value = ENV[key.downcase].presence || ENV[key.upcase].presence
+  raise "Provide #{key} as environment variable" if value.blank?
+  value
+end
+
 namespace :experiments do
   
   desc "List all defined experiments"
@@ -11,12 +17,9 @@ namespace :experiments do
   end
 
   task :lookup_assignment => 'environment' do
-    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
-    raise "Provide the subject identifier as env variable" if ENV['subject'].blank?
-
-    experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
-    assignment = experiment.lookup_assignment_for_identifier(ENV['subject'])
-
+    experiment = Experiments[require_env('experiment')] or raise "Experiment not found"
+    subject_identifier = require_env('subject')
+    assignment = experiment.lookup_assignment_for_identifier(subject_identifier)
     if assignment.nil?
       puts "Subject #{ENV['subject']} is not assigned to experiment #{experiment.handle} yet."
     elsif assignment.qualified?
@@ -27,37 +30,25 @@ namespace :experiments do
   end
 
   task :wrapup => 'environment' do
-    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
-
-    experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
+    experiment = Experiments[require_env('experiment')] or raise "Experiment not found"
     experiment.wrapup
   end
 
   task :assign_manually => 'environment' do
-    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
-    raise "Provide the group handle as env variable" if ENV['group'].blank?
-    raise "Provide the subject identifier as env variable" if ENV['subject'].blank?
-
-    experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
-    group = experiment.group(ENV['group']) or raise "Group not found"
-    assignment = experiment.subject_assignment(ENV['subject'], group, false)
+    experiment = Experiments[require_env('experiment')] or raise "Experiment not found"
+    group = experiment.group(require_env('group')) or raise "Group not found"
+    assignment = experiment.subject_assignment(require_env('subject'), group, false)
     experiment.store_assignment(assignment)
   end
 
   task :disqualify => 'environment' do
-    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
-    raise "Provide the subject identifier as env variable" if ENV['subject'].blank?
-
-    experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
-    assignment = experiment.subject_assignment(ENV['subject'], nil, false)
+    experiment = Experiments[require_env('experiment')] or raise "Experiment not found"
+    assignment = experiment.subject_assignment(require_env('subject'), nil, false)
     experiment.store_assignment(assignment)
   end
 
   task :remove_assignment => 'environment' do
-    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
-    raise "Provide the subject identifier as env variable" if ENV['subject'].blank?
-
-    experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
-    experiment.remove_subject_identifier(ENV['subject'])
+    experiment = Experiments[require_env('experiment')] or raise "Experiment not found"
+    experiment.remove_subject_identifier(require_env('subject'))
   end
 end

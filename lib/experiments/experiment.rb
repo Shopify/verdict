@@ -93,7 +93,7 @@ class Experiments::Experiment
   def store_assignment(assignment)
     @subject_storage.store_assignment(assignment) if should_store_assignment?(assignment)
     event_logger.log_assignment(assignment)
-    return assignment
+    assignment
   end
 
   def remove_subject(subject)
