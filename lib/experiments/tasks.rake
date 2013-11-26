@@ -10,8 +10,8 @@ namespace :experiments do
     end
   end
 
-  task :lookup => 'environment' do
-    raise "Provide the experiment name as env variable" if ENV['experiment'].blank?
+  task :lookup_assignment => 'environment' do
+    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
     raise "Provide the subject identifier as env variable" if ENV['subject'].blank?
 
     experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
@@ -27,8 +27,37 @@ namespace :experiments do
   end
 
   task :wrapup => 'environment' do
-    raise "Provide the experiment name as env variable" if ENV['experiment'].blank?
+    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
+
     experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
     experiment.wrapup
+  end
+
+  task :assign_manually => 'environment' do
+    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
+    raise "Provide the group handle as env variable" if ENV['group'].blank?
+    raise "Provide the subject identifier as env variable" if ENV['subject'].blank?
+
+    experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
+    group = experiment.group(ENV['group']) or raise "Group not found"
+    assignment = experiment.subject_assignment(ENV['subject'], group, false)
+    experiment.store_assignment(assignment)
+  end
+
+  task :disqualify => 'environment' do
+    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
+    raise "Provide the subject identifier as env variable" if ENV['subject'].blank?
+
+    experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
+    assignment = experiment.subject_assignment(ENV['subject'], nil, false)
+    experiment.store_assignment(assignment)
+  end
+
+  task :remove => 'environment' do
+    raise "Provide the experiment handle as env variable" if ENV['experiment'].blank?
+    raise "Provide the subject identifier as env variable" if ENV['subject'].blank?
+
+    experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
+    experiment.remove_subject_identifier(ENV['subject'])
   end
 end
