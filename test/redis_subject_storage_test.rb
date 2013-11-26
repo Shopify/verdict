@@ -61,4 +61,12 @@ class RedisSubjectStorageTest < MiniTest::Unit::TestCase
     @redis.stubs(:hset).raises(::Redis::BaseError, "Redis is down")
     assert !@experiment.assign('subject_1').qualified?
   end
+
+  def test_clear_experiment
+    experiment_key = @storage.send(:generate_experiment_key, @experiment)
+    new_assignment = @experiment.assign('subject_3')
+    assert @redis.exists(experiment_key)
+    @experiment.wrapup
+    assert !@redis.exists(experiment_key)
+  end
 end

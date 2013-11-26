@@ -104,6 +104,10 @@ class Experiments::Experiment
     fetch_assignment(subject_identifier)
   end
 
+  def wrapup
+    @subject_storage.clear_experiment(self)
+  end
+
   def retrieve_subject_identifier(subject)
     identifier = subject_identifier(subject).to_s
     raise Experiments::EmptySubjectIdentifier, "Subject resolved to an empty identifier!" if identifier.empty?

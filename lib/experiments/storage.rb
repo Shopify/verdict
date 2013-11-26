@@ -17,6 +17,10 @@ module Experiments::Storage
     def retrieve_assignment(experiment, subject_identifier)
       nil
     end
+
+    # Should clear out the storage used for this experiment
+    def clear_experiment(experiment)
+    end
   end
 
   class MemoryStorage
@@ -33,6 +37,10 @@ module Experiments::Storage
     def retrieve_assignment(experiment, subject_identifier)
       experiment_store = @store[experiment.handle] || {}
       experiment_store[subject_identifier]
+    end
+
+    def clear_experiment(experiment)
+      @store.delete(experiment.handle)
     end
   end
 
@@ -60,6 +68,10 @@ module Experiments::Storage
       end
     rescue ::Redis::BaseError => e
       raise Experiments::StorageError, "Redis error: #{e.message}"
+    end
+
+    def clear_experiment(experiment)
+      redis.del(generate_experiment_key(experiment))
     end
 
     private

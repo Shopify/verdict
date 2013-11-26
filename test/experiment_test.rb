@@ -155,15 +155,26 @@ class ExperimentTest < MiniTest::Unit::TestCase
   def test_assignment_lookup
     e = Experiments::Experiment.new(:storage_test) do
       groups { group :all, 100 }
-      storage(Experiments::Storage::Memory.new)
+      storage(Experiments::Storage::MemoryStorage.new)
     end
 
     subject = stub(id: 'returning')
-
     assert e.lookup(subject).nil?
 
     e.assign(subject)
     assert !e.lookup(subject).nil?
+  end
+
+  def test_wrapup
+    e = Experiments::Experiment.new(:storage_test) do
+      groups { group :all, 100 }
+      storage(Experiments::Storage::MemoryStorage.new)
+    end
+    subject = stub(id: 'bootscale')
+
+    e.assign(subject)
+    e.wrapup
+    assert e.lookup(subject).nil?
   end
 
   def test_assignment_event_logging

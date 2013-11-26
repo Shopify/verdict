@@ -25,4 +25,10 @@ namespace :experiments do
       puts "Subject #{ENV['subject']} is unqualified for experiment #{experiment.handle}"
     end
   end
+
+  task :wrapup => 'environment' do
+    raise "Provide the experiment name as env variable" if ENV['experiment'].blank?
+    experiment = Experiments[ENV['experiment']] or raise "Experiment not found"
+    experiment.wrapup
+  end
 end
