@@ -72,9 +72,7 @@ module Experiments::Storage
 
     def store_assignment(assignment)
       hash = { group: assignment.handle, created_at: Time.now.utc }
-      if !redis.hset(generate_experiment_key(assignment.experiment), assignment.subject_identifier, JSON.dump(hash))
-        raise Experiments::StorageError, "Assignment of subject #{assignment.subject_identifier} for experiment #{assignment.experiment.handle} already exists!"
-      end
+      redis.hset(generate_experiment_key(assignment.experiment), assignment.subject_identifier, JSON.dump(hash))
     rescue ::Redis::BaseError => e
       raise Experiments::StorageError, "Redis error: #{e.message}"
     end
