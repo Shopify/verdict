@@ -139,19 +139,6 @@ class ExperimentTest < MiniTest::Unit::TestCase
     e.assign(mock('subject'))
   end  
 
-  def test_with_memory_store
-    e = Experiments::Experiment.new(:storage_test) do
-      groups { group :all, 100 }
-      storage(Experiments::Storage::MemoryStorage.new)
-    end
-
-    subject = stub(id: 'returning')
-    assignment_1 = e.assign(subject)
-    assignment_2 = e.assign(subject)
-    assert !assignment_1.returning?
-    assert assignment_2.returning?
-  end
-
   def test_assignment_event_logging
     e = Experiments::Experiment.new('test') do
       groups { group :all, 100 }

@@ -85,15 +85,39 @@ class Experiments::Experiment
       assignment_without_unqualified_persistence(identifier, subject, context)
     end
 
-    @subject_storage.store_assignment(assignment) if should_store_assignment?(assignment)
-    event_logger.log_assignment(assignment)
-    assignment
+    store_assignment(assignment)
   rescue Experiments::StorageError
     subject_assignment(identifier, nil, false)
   end
 
+  def store_assignment(assignment)
+    @subject_storage.store_assignment(assignment) if should_store_assignment?(assignment)
+    event_logger.log_assignment(assignment)
+    assignment
+  end
+
+  def remove_subject(subject)
+    remove_subject_identifier(retrieve_subject_identifier(subject))
+  end
+
+  def remove_subject_identifier(subject_identifier)
+    @subject_storage.remove_assignment(self, subject_identifier)
+  end
+
   def switch(subject, context = nil)
     assign(subject, context).to_sym
+  end
+
+  def lookup(subject)
+    lookup_assignment_for_identifier(retrieve_subject_identifier(subject))
+  end
+
+  def lookup_assignment_for_identifier(subject_identifier)
+    fetch_assignment(subject_identifier)
+  end
+
+  def wrapup
+    @subject_storage.clear_experiment(self)
   end
 
   def retrieve_subject_identifier(subject)
