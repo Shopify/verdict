@@ -137,7 +137,19 @@ class ExperimentTest < MiniTest::Unit::TestCase
     mock_store.expects(:retrieve_assignment).returns(qualified_assignment).once
     mock_store.expects(:store_assignment).never
     e.assign(mock('subject'))
-  end  
+  end
+
+  def test_disqualify
+    e = Experiments::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    subject = stub(id: 'walrus')
+    original_assignment = e.assign(subject)
+    assert original_assignment.qualified?
+    new_assignment = e.disqualify(subject)
+    assert !new_assignment.qualified?
+  end
 
   def test_assignment_event_logging
     e = Experiments::Experiment.new('test') do

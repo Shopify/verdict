@@ -90,6 +90,11 @@ class Experiments::Experiment
     subject_assignment(identifier, nil, false)
   end
 
+  def disqualify(subject)
+    identifier = retrieve_subject_identifier(subject)
+    store_assignment(subject_assignment(identifier, nil))
+  end
+
   def store_assignment(assignment)
     @subject_storage.store_assignment(assignment) if should_store_assignment?(assignment)
     event_logger.log_assignment(assignment)
