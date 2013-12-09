@@ -216,4 +216,35 @@ class ExperimentTest < MiniTest::Unit::TestCase
     rescued_assignment = e.assign(stub(id: 456))
     assert !rescued_assignment.qualified?
   end
+
+  def test_initial_started_at
+    e = Experiments::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    e.subject_storage.expects(:retrieve_start_timestamp).returns(nil)
+    e.subject_storage.expects(:store_start_timestamp).once
+    e.started_at
+  end
+
+  def test_subsequent_started_at_when_start_time_is_memoized
+    e = Experiments::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    e.started_at
+    e.subject_storage.expects(:retrieve_start_timestamp).never
+    e.subject_storage.expects(:store_start_timestamp).never
+    e.started_at
+  end
+
+  def test_subsequent_started_at_when_start_time_is_not_memoized
+    e = Experiments::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    e.subject_storage.expects(:retrieve_start_timestamp).returns(DateTime.now)
+    e.subject_storage.expects(:store_start_timestamp).never
+    e.started_at
+  end  
 end

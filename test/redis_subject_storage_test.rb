@@ -77,4 +77,13 @@ class RedisSubjectStorageTest < MiniTest::Unit::TestCase
     @experiment.wrapup
     assert !@redis.exists(experiment_key)
   end
+
+  def test_started_at
+    key = @storage.send(:generate_experiment_start_timestamp_key, @experiment)
+    
+    assert !@redis.exists(key)
+    a = @experiment.started_at
+    assert @redis.exists(key)
+    assert_equal a, @experiment.started_at
+  end
 end

@@ -36,4 +36,10 @@ class MemorySubjectStorageTest < MiniTest::Unit::TestCase
     @experiment.wrapup
     assert !@experiment.assign(@subject).returning?
   end
+
+  def test_started_at
+    assert @storage.start_timestamps[@experiment.handle].nil?
+    @experiment.started_at
+    assert @storage.start_timestamps[@experiment.handle].instance_of?(DateTime)
+  end
 end

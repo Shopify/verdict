@@ -58,6 +58,10 @@ class Experiments::Experiment
     @segmenter
   end
 
+  def started_at
+    @started_at ||= @subject_storage.retrieve_start_timestamp(self) || set_start_timestamp
+  end
+
   def group_handles
     segmenter.groups.keys
   end
@@ -198,4 +202,9 @@ class Experiments::Experiment
   def subject_qualifies?(subject, context = nil)
     everybody_qualifies? || @qualifier.call(subject, context)
   end
+
+  def set_start_timestamp
+    @subject_storage.store_start_timestamp(self, started_at = DateTime.now)
+    started_at
+  end  
 end

@@ -25,31 +25,52 @@ module Experiments::Storage
     # Should clear out the storage used for this experiment
     def clear_experiment(experiment)
     end
+
+    # Retrieves the start timestamp of the experiment
+    def retrieve_start_timestamp(experiment)
+      nil
+    end
+
+    # Stores the timestamp on which the experiment was started
+    def store_start_timestamp(experiment, timestamp)
+    end
   end
 
   class MemoryStorage
+
+    attr_reader :assignments, :start_timestamps
+
     def initialize
-      @store = {}
+      @assignments = {}
+      @start_timestamps = {}
     end
 
     def store_assignment(assignment)
-      @store[assignment.experiment.handle] ||= {}
-      @store[assignment.experiment.handle][assignment.subject_identifier] = assignment.returning
+      @assignments[assignment.experiment.handle] ||= {}
+      @assignments[assignment.experiment.handle][assignment.subject_identifier] = assignment.returning
       true
     end
 
     def retrieve_assignment(experiment, subject_identifier)
-      experiment_store = @store[experiment.handle] || {}
+      experiment_store = @assignments[experiment.handle] || {}
       experiment_store[subject_identifier]
     end
 
     def remove_assignment(experiment, subject_identifier)
-      @store[assignment.experiment.handle] ||= {}
-      @store[assignment.experiment.handle].delete(subject_identifier)
+      @assignments[assignment.experiment.handle] ||= {}
+      @assignments[assignment.experiment.handle].delete(subject_identifier)
     end
 
     def clear_experiment(experiment)
-      @store.delete(experiment.handle)
+      @assignments.delete(experiment.handle)
+    end
+
+    def retrieve_start_timestamp(experiment)
+      @start_timestamps[experiment.handle]
+    end
+
+    def store_start_timestamp(experiment, timestamp)
+      @start_timestamps[experiment.handle] = timestamp
     end
   end
 
@@ -83,12 +104,28 @@ module Experiments::Storage
 
     def clear_experiment(experiment)
       redis.del(generate_experiment_key(experiment))
+      redis.del(generate_experiment_start_timestamp_key(experiment))
     end
+
+    def retrieve_start_timestamp(experiment)
+      if started_at = redis.get(generate_experiment_start_timestamp_key(experiment))
+        DateTime.parse(started_at)
+      end
+    end
+
+    def store_start_timestamp(experiment, timestamp)
+      redis.setnx(generate_experiment_start_timestamp_key(experiment), timestamp)
+    end
+
 
     private
 
     def generate_experiment_key(experiment)
       "#{@key_prefix}#{experiment.handle}"
+    end
+
+    def generate_experiment_start_timestamp_key(experiment)
+      "#{@key_prefix}#{experiment.handle}/started_at"
     end
   end
 end
