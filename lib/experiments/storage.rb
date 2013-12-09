@@ -114,7 +114,7 @@ module Experiments::Storage
     end
 
     def store_start_timestamp(experiment, timestamp)
-      redis.setnx(generate_experiment_start_timestamp_key(experiment), timestamp)
+      redis.setnx(generate_experiment_start_timestamp_key(experiment), timestamp.to_s)
     end
 
 
