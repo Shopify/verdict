@@ -246,5 +246,19 @@ class ExperimentTest < MiniTest::Unit::TestCase
     e.subject_storage.expects(:retrieve_start_timestamp).returns(DateTime.now)
     e.subject_storage.expects(:store_start_timestamp).never
     e.started_at
-  end  
+  end
+
+  def test_qualify_based_on_experiment_start_timestamp
+    DateTime.stubs(:now).returns(DateTime.parse('2012-01-01T00:00:00'))
+    e = Experiments::Experiment.new('test') do
+      qualify { |subject| subject.created_at >= self.started_at }
+      groups { group :all, 100 }
+    end
+
+    subject = stub(id: 'old', created_at: DateTime.parse('2011-01-01T00:00:00'))
+    assert !e.subject_qualifies?(subject)
+
+    subject = stub(id: 'new', created_at: DateTime.parse('2013-01-01T00:00:00'))
+    assert e.subject_qualifies?(subject)
+  end
 end

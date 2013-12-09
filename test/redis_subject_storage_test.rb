@@ -13,7 +13,7 @@ class RedisSubjectStorageTest < MiniTest::Unit::TestCase
   end
 
   def teardown
-    @redis.del('experiments/redis_storage')
+    @storage.clear_experiment(@experiment)
   end
 
   def test_generate_experiment_key_should_generate_namespaced_key
