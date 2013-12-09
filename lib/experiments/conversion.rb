@@ -3,7 +3,10 @@ class Experiments::Conversion
   attr_reader :experiment, :subject_identifier, :goal, :created_at
 
   def initialize(experiment, subject_identifier, goal, created_at = Time.now.utc)
-    @experiment, @subject_identifier, @goal, @created_at = experiment, subject_identifier, goal, created_at
+    @experiment = experiment
+    @subject_identifier = subject_identifier
+    @goal = goal
+    @created_at = created_at
   end
 
   def subject
