@@ -70,7 +70,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_new_unqualified_assignment_without_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: false
@@ -83,7 +83,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_returning_qualified_assignment_without_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: false
@@ -98,7 +98,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end    
 
   def test_new_unqualified_assignment_with_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
@@ -111,7 +111,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_returning_unqualified_assignment_with_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
@@ -125,7 +125,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_returning_qualified_assignment_with_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
@@ -192,8 +192,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_storage_read_failure
-    storage_mock = mock('storage')
-
+    storage_mock = Experiments::Storage::MockStorage.new
     e = Experiments::Experiment.new(:json) do
       groups { group :all, 100 }
       storage storage_mock
@@ -205,7 +204,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_storage_write_failure
-    storage_mock = mock('storage')
+    storage_mock = Experiments::Storage::MockStorage.new
     e = Experiments::Experiment.new(:json) do
       groups { group :all, 100 }
       storage storage_mock

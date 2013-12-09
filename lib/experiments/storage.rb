@@ -1,6 +1,6 @@
 module Experiments::Storage
 
-  class DummyStorage
+  class MockStorage
 
     # Should store the assignments to allow quick lookups.
     # - Assignments should be unique on the combination of 
