@@ -70,12 +70,12 @@ class Experiments::Experiment
     segmenter.groups.keys
   end
 
-  def subject_assignment(subject_identifier, group, returning = true)
-    Experiments::Assignment.new(self, subject_identifier, group, returning)
+  def subject_assignment(subject_identifier, group, originally_created_at = nil)
+    Experiments::Assignment.new(self, subject_identifier, group, originally_created_at)
   end
 
-  def subject_conversion(subject_identifier, goal)
-    Experiments::Conversion.new(self, subject_identifier, goal)
+  def subject_conversion(subject_identifier, goal, created_at = Time.now.utc)
+    Experiments::Conversion.new(self, subject_identifier, goal, created_at)
   end
 
   def convert(subject, goal)
@@ -95,12 +95,12 @@ class Experiments::Experiment
 
     store_assignment(assignment)
   rescue Experiments::StorageError
-    subject_assignment(identifier, nil, false)
+    subject_assignment(identifier, nil, nil)
   end
 
   def disqualify(subject)
     identifier = retrieve_subject_identifier(subject)
-    store_assignment(subject_assignment(identifier, nil))
+    store_assignment(subject_assignment(identifier, nil, nil))
   end
 
   def store_assignment(assignment)
@@ -185,17 +185,17 @@ class Experiments::Experiment
   def assignment_with_unqualified_persistence(subject_identifier, subject, context)
     fetch_assignment(subject_identifier) || (
       subject_qualifies?(subject, context) ? 
-        subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), false) :
-        subject_assignment(subject_identifier, nil, false)
+        subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), nil) :
+        subject_assignment(subject_identifier, nil, nil)
     )
   end
 
   def assignment_without_unqualified_persistence(subject_identifier, subject, context)
     if subject_qualifies?(subject, context)
       fetch_assignment(subject_identifier) ||
-        subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), false)
+        subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), nil)
     else 
-      subject_assignment(subject_identifier, nil, false)
+      subject_assignment(subject_identifier, nil, nil)
     end
   end  
 
