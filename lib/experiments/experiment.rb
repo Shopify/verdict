@@ -59,7 +59,11 @@ class Experiments::Experiment
   end
 
   def started_at
-    @started_at ||= @subject_storage.retrieve_start_timestamp(self) || set_start_timestamp
+    @started_at ||= @subject_storage.retrieve_start_timestamp(self)
+  end
+
+  def started?
+    !@started_at.nil?
   end
 
   def group_handles
@@ -168,10 +172,6 @@ class Experiments::Experiment
     @subject_storage.retrieve_assignment(self, subject_identifier)
   end
 
-  def subject_qualifies?(subject, context = nil)
-    everybody_qualifies? || @qualifier.call(subject, context)
-  end
-
   protected
 
   def default_options
@@ -203,8 +203,17 @@ class Experiments::Experiment
     subject.respond_to?(:id) ? subject.id : subject.to_s
   end
 
+  def subject_qualifies?(subject, context = nil)
+    ensure_experiment_has_started
+    everybody_qualifies? || @qualifier.call(subject, context)
+  end
+
   def set_start_timestamp
-    @subject_storage.store_start_timestamp(self, started_at = DateTime.now)
-    started_at
-  end  
+    @subject_storage.store_start_timestamp(self, started_now = DateTime.now)
+    started_now
+  end
+
+  def ensure_experiment_has_started
+    @started_at ||= @subject_storage.retrieve_start_timestamp(self) || set_start_timestamp
+  end
 end

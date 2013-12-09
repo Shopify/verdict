@@ -39,7 +39,7 @@ class MemorySubjectStorageTest < MiniTest::Unit::TestCase
 
   def test_started_at
     assert @storage.start_timestamps[@experiment.handle].nil?
-    @experiment.started_at
+    @experiment.send(:ensure_experiment_has_started)
     assert @storage.start_timestamps[@experiment.handle].instance_of?(DateTime)
   end
 end

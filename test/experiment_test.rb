@@ -223,7 +223,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
 
     e.subject_storage.expects(:retrieve_start_timestamp).returns(nil)
     e.subject_storage.expects(:store_start_timestamp).once
-    e.started_at
+    e.send(:ensure_experiment_has_started)
   end
 
   def test_subsequent_started_at_when_start_time_is_memoized
@@ -231,10 +231,10 @@ class ExperimentTest < MiniTest::Unit::TestCase
       groups { group :all, 100 }
     end
 
-    e.started_at
+    e.send(:ensure_experiment_has_started)
     e.subject_storage.expects(:retrieve_start_timestamp).never
     e.subject_storage.expects(:store_start_timestamp).never
-    e.started_at
+    e.send(:ensure_experiment_has_started)
   end
 
   def test_subsequent_started_at_when_start_time_is_not_memoized
@@ -244,7 +244,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
 
     e.subject_storage.expects(:retrieve_start_timestamp).returns(DateTime.now)
     e.subject_storage.expects(:store_start_timestamp).never
-    e.started_at
+    e.send(:ensure_experiment_has_started)
   end
 
   def test_qualify_based_on_experiment_start_timestamp
@@ -255,9 +255,20 @@ class ExperimentTest < MiniTest::Unit::TestCase
     end
 
     subject = stub(id: 'old', created_at: DateTime.parse('2011-01-01T00:00:00'))
-    assert !e.subject_qualifies?(subject)
+    assert !e.assign(subject).qualified?
 
     subject = stub(id: 'new', created_at: DateTime.parse('2013-01-01T00:00:00'))
-    assert e.subject_qualifies?(subject)
+    assert e.assign(subject).qualified?
+  end
+
+  def test_experiment_starting_behavior
+    e = Experiments::Experiment.new('starting_test') do
+      groups { group :all, 100 }
+    end
+
+    assert !e.started?, "The experiment should not have started yet"
+
+    e.assign(stub(id: '123'))
+    assert e.started?, "The experiment should have started after the first assignment"
   end
 end

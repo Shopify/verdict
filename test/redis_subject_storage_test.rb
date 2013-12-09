@@ -82,7 +82,7 @@ class RedisSubjectStorageTest < MiniTest::Unit::TestCase
     key = @storage.send(:generate_experiment_start_timestamp_key, @experiment)
     
     assert !@redis.exists(key)
-    a = @experiment.started_at
+    a = @experiment.send(:ensure_experiment_has_started)
     assert @redis.exists(key)
     assert_equal a, @experiment.started_at
   end
