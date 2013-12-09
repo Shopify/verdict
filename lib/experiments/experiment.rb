@@ -16,7 +16,7 @@ class Experiments::Experiment
     options = default_options.merge(options)
     @qualifier         = options[:qualifier]
     @event_logger      = options[:event_logger] || Experiments::EventLogger.new(Experiments.default_logger)
-    @subject_storage   = options[:storage] || Experiments::Storage::DummyStorage.new
+    @subject_storage   = options[:storage] || Experiments::Storage::MemoryStorage.new
     @store_unqualified = options[:store_unqualified]
     @segmenter         = options[:segmenter]
     @subject_type      = options[:subject_type]
@@ -56,6 +56,14 @@ class Experiments::Experiment
   def segmenter
     raise Experiments::Error, "No groups defined for experiment #{@handle.inspect}." if @segmenter.nil?
     @segmenter
+  end
+
+  def started_at
+    @started_at ||= @subject_storage.retrieve_start_timestamp(self)
+  end
+
+  def started?
+    !@started_at.nil?
   end
 
   def group_handles
@@ -196,6 +204,16 @@ class Experiments::Experiment
   end
 
   def subject_qualifies?(subject, context = nil)
+    ensure_experiment_has_started
     everybody_qualifies? || @qualifier.call(subject, context)
+  end
+
+  def set_start_timestamp
+    @subject_storage.store_start_timestamp(self, started_now = Time.now.utc)
+    started_now
+  end
+
+  def ensure_experiment_has_started
+    @started_at ||= @subject_storage.retrieve_start_timestamp(self) || set_start_timestamp
   end
 end

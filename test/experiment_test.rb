@@ -70,7 +70,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_new_unqualified_assignment_without_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: false
@@ -83,7 +83,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_returning_qualified_assignment_without_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: false
@@ -98,7 +98,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end    
 
   def test_new_unqualified_assignment_with_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
@@ -111,7 +111,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_returning_unqualified_assignment_with_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
@@ -125,7 +125,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_returning_qualified_assignment_with_store_unqualified
-    mock_store, mock_qualifier = mock('store'), mock('qualifier')
+    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
     e = Experiments::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
@@ -192,8 +192,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_storage_read_failure
-    storage_mock = mock('storage')
-
+    storage_mock = Experiments::Storage::MockStorage.new
     e = Experiments::Experiment.new(:json) do
       groups { group :all, 100 }
       storage storage_mock
@@ -205,7 +204,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_storage_write_failure
-    storage_mock = mock('storage')
+    storage_mock = Experiments::Storage::MockStorage.new
     e = Experiments::Experiment.new(:json) do
       groups { group :all, 100 }
       storage storage_mock
@@ -215,5 +214,61 @@ class ExperimentTest < MiniTest::Unit::TestCase
     storage_mock.expects(:store_assignment).raises(Experiments::StorageError, 'storage write issues')
     rescued_assignment = e.assign(stub(id: 456))
     assert !rescued_assignment.qualified?
+  end
+
+  def test_initial_started_at
+    e = Experiments::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    e.subject_storage.expects(:retrieve_start_timestamp).returns(nil)
+    e.subject_storage.expects(:store_start_timestamp).once
+    e.send(:ensure_experiment_has_started)
+  end
+
+  def test_subsequent_started_at_when_start_time_is_memoized
+    e = Experiments::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    e.send(:ensure_experiment_has_started)
+    e.subject_storage.expects(:retrieve_start_timestamp).never
+    e.subject_storage.expects(:store_start_timestamp).never
+    e.send(:ensure_experiment_has_started)
+  end
+
+  def test_subsequent_started_at_when_start_time_is_not_memoized
+    e = Experiments::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    e.subject_storage.expects(:retrieve_start_timestamp).returns(Time.now.utc)
+    e.subject_storage.expects(:store_start_timestamp).never
+    e.send(:ensure_experiment_has_started)
+  end
+
+  def test_qualify_based_on_experiment_start_timestamp
+    Time.stubs(:now).returns(Time.parse('2012-01-01T00:00:00Z'))
+    e = Experiments::Experiment.new('test') do
+      qualify { |subject| subject.created_at >= self.started_at }
+      groups { group :all, 100 }
+    end
+
+    subject = stub(id: 'old', created_at: Time.parse('2011-01-01T00:00:00Z'))
+    assert !e.assign(subject).qualified?
+
+    subject = stub(id: 'new', created_at: Time.parse('2013-01-01T00:00:00Z'))
+    assert e.assign(subject).qualified?
+  end
+
+  def test_experiment_starting_behavior
+    e = Experiments::Experiment.new('starting_test') do
+      groups { group :all, 100 }
+    end
+
+    assert !e.started?, "The experiment should not have started yet"
+
+    e.assign(stub(id: '123'))
+    assert e.started?, "The experiment should have started after the first assignment"
   end
 end

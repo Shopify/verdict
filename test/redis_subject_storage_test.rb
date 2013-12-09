@@ -13,7 +13,7 @@ class RedisSubjectStorageTest < MiniTest::Unit::TestCase
   end
 
   def teardown
-    @redis.del('experiments/redis_storage')
+    @storage.clear_experiment(@experiment)
   end
 
   def test_generate_experiment_key_should_generate_namespaced_key
@@ -76,5 +76,14 @@ class RedisSubjectStorageTest < MiniTest::Unit::TestCase
     assert @redis.exists(experiment_key)
     @experiment.wrapup
     assert !@redis.exists(experiment_key)
+  end
+
+  def test_started_at
+    key = @storage.send(:generate_experiment_start_timestamp_key, @experiment)
+    
+    assert !@redis.exists(key)
+    a = @experiment.send(:ensure_experiment_has_started)
+    assert @redis.exists(key)
+    assert_equal a, @experiment.started_at
   end
 end
