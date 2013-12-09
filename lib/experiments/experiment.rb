@@ -209,7 +209,7 @@ class Experiments::Experiment
   end
 
   def set_start_timestamp
-    @subject_storage.store_start_timestamp(self, started_now = DateTime.now)
+    @subject_storage.store_start_timestamp(self, started_now = Time.now.utc)
     started_now
   end
 
