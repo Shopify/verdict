@@ -90,7 +90,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
       groups { group :all, 100 }
     end
 
-    qualified_assignment = e.subject_assignment(mock('identifier'), e.group(:all))
+    qualified_assignment = e.subject_assignment(mock('identifier'), e.group(:all), Time.now)
     mock_qualifier.expects(:qualifies?).returns(true)
     mock_store.expects(:retrieve_assignment).returns(qualified_assignment).once
     mock_store.expects(:store_assignment).never
@@ -117,7 +117,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
       storage mock_store, store_unqualified: true
     end
 
-    unqualified_assignment = e.subject_assignment(mock('subject_identifier'), nil)
+    unqualified_assignment = e.subject_assignment(mock('subject_identifier'), nil, Time.now)
     mock_qualifier.expects(:qualifies?).never
     mock_store.expects(:retrieve_assignment).returns(unqualified_assignment).once
     mock_store.expects(:store_assignment).never
@@ -132,7 +132,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
       groups { group :all, 100 }
     end
 
-    qualified_assignment = e.subject_assignment(mock('subject_identifier'), e.group(:all))
+    qualified_assignment = e.subject_assignment(mock('subject_identifier'), e.group(:all), Time.now)
     mock_qualifier.expects(:qualifies?).never
     mock_store.expects(:retrieve_assignment).returns(qualified_assignment).once
     mock_store.expects(:store_assignment).never
@@ -210,7 +210,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
       storage storage_mock
     end
 
-    storage_mock.expects(:retrieve_assignment).returns(e.subject_assignment(mock('subject_identifier'), e.group(:all), false))
+    storage_mock.expects(:retrieve_assignment).returns(e.subject_assignment(mock('subject_identifier'), e.group(:all)))
     storage_mock.expects(:store_assignment).raises(Experiments::StorageError, 'storage write issues')
     rescued_assignment = e.assign(stub(id: 456))
     assert !rescued_assignment.qualified?

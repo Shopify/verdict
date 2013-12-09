@@ -1,3 +1,5 @@
+require 'json'
+
 module Experiments::Storage
 
   class MockStorage
@@ -85,14 +87,19 @@ module Experiments::Storage
 
     def retrieve_assignment(experiment, subject_identifier)
       if value = redis.hget(generate_experiment_key(experiment), subject_identifier)
-        experiment.subject_assignment(subject_identifier, experiment.group(JSON.parse(value)['group']))
+        hash = JSON.parse(value)
+        experiment.subject_assignment(
+          subject_identifier, 
+          experiment.group(hash['group']),
+          Time.parse(hash['created_at'])
+        )
       end
     rescue ::Redis::BaseError => e
       raise Experiments::StorageError, "Redis error: #{e.message}"
     end
 
     def store_assignment(assignment)
-      hash = { group: assignment.handle, created_at: Time.now.utc }
+      hash = { group: assignment.handle, created_at: assignment.created_at }
       redis.hset(generate_experiment_key(assignment.experiment), assignment.subject_identifier, JSON.dump(hash))
     rescue ::Redis::BaseError => e
       raise Experiments::StorageError, "Redis error: #{e.message}"

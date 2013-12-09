@@ -1,12 +1,13 @@
 class Experiments::Assignment
 
-  attr_reader :experiment, :subject_identifier, :group
+  attr_reader :experiment, :subject_identifier, :group, :created_at
 
-  def initialize(experiment, subject_identifier, group = nil, returning = true)
+  def initialize(experiment, subject_identifier, group, originally_created_at)
     @experiment         = experiment
     @subject_identifier = subject_identifier
     @group              = group
-    @returning          = returning
+    @returning          = !originally_created_at.nil?
+    @created_at         = originally_created_at || Time.now.utc
   end
 
   def subject
@@ -18,7 +19,7 @@ class Experiments::Assignment
   end
 
   def returning
-    self.class.new(@experiment, @subject_identifier, @group, true)
+    self.class.new(@experiment, @subject_identifier, @group, @created_at)
   end
 
   def returning?
@@ -39,7 +40,8 @@ class Experiments::Assignment
       subject:    subject_identifier,
       qualified:  qualified?,
       returning:  returning?,
-      group:      qualified? ? group.handle : nil
+      group:      qualified? ? group.handle : nil,
+      created_at: created_at.utc.strftime('%FT%TZ')
     }
   end
 

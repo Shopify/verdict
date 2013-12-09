@@ -1,9 +1,9 @@
 class Experiments::Conversion
 
-  attr_reader :experiment, :subject_identifier, :goal
+  attr_reader :experiment, :subject_identifier, :goal, :created_at
 
-  def initialize(experiment, subject_identifier, goal)
-    @experiment, @subject_identifier, @goal = experiment, subject_identifier, goal
+  def initialize(experiment, subject_identifier, goal, created_at = Time.now.utc)
+    @experiment, @subject_identifier, @goal, @created_at = experiment, subject_identifier, goal, created_at
   end
 
   def subject
@@ -18,7 +18,8 @@ class Experiments::Conversion
     {
       experiment: experiment.handle,
       subject:    subject_identifier,
-      goal:       goal
+      goal:       goal,
+      created_at: created_at.utc.strftime('%FT%TZ')
     }
   end
 
