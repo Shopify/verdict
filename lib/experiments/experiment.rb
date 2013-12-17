@@ -152,7 +152,8 @@ class Experiments::Experiment
       handle: handle,
       has_qualifier: has_qualifier?,
       groups: segmenter.groups.values.map { |g| g.as_json(options) },
-      metadata: metadata
+      metadata: metadata,
+      started_at: started_at.nil? ? nil : started_at.utc.strftime('%FT%TZ')
     }
 
     data.tap do |data|
