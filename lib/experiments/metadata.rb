@@ -21,4 +21,10 @@ module Experiments::Metadata
     return @metadata[:screenshot] if new_screenshot.nil?
     @metadata[:screenshot] = new_screenshot
   end
+
+  def owner(new_owner = nil)
+    @metadata ||= {}
+    return @metadata[:owner] if new_owner.nil?
+    @metadata[:owner] = new_owner
+  end
 end
