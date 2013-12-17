@@ -1,4 +1,4 @@
-# Experiments
+# Verdict
 
 This library allows you to define and use experiments in your application.
 
@@ -13,7 +13,7 @@ This library allows you to define and use experiments in your application.
 
 Add this line to your application's Gemfile, and run `bundle install`:
 
-    gem 'experiments'
+    gem 'verdict'
 
 ## Usage
 
@@ -23,7 +23,7 @@ in order consistently modify application behaviour based on an object's unique k
 Define an experiment like so:
 
 ``` ruby
-Experiments::Experiment.define :my_experiment do
+Verdict::Experiment.define :my_experiment do
 
   # This block should return true if the subject is qualified to participate
   qualify { |subject, context|  ... }
@@ -35,7 +35,7 @@ Experiments::Experiment.define :my_experiment do
   end
 
   # Specify how assignments will be stored.
-  storage Experiments::Storage::MemoryStorage.new
+  storage Verdict::Storage::MemoryStorage.new
 end
 ```
 
