@@ -1,5 +1,5 @@
-class Experiments::Group
-  include Experiments::Metadata
+class Verdict::Group
+  include Verdict::Metadata
 
   attr_reader :experiment, :handle
 
@@ -17,7 +17,7 @@ class Experiments::Group
 
   def ===(other)
     case other
-      when Experiments::Group; experiment == other.experiment && other.handle == handle
+      when Verdict::Group; experiment == other.experiment && other.handle == handle
       when Symbol, String; handle == other.to_s
       else false
     end

@@ -4,8 +4,8 @@ class RedisSubjectStorageTest < MiniTest::Unit::TestCase
 
   def setup
     @redis = ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
-    @storage = storage = Experiments::Storage::RedisStorage.new(@redis)
-    @experiment = Experiments::Experiment.new(:redis_storage) do
+    @storage = storage = Verdict::Storage::RedisStorage.new(@redis)
+    @experiment = Verdict::Experiment.new(:redis_storage) do
       qualify { |s| s == 'subject_1' }
       groups { group :all, 100 }
       storage storage, store_unqualified: true

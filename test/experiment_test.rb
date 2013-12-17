@@ -4,13 +4,13 @@ require 'test_helper'
 class ExperimentTest < MiniTest::Unit::TestCase
 
   def test_no_qualifier
-    e = Experiments::Experiment.new('test')
+    e = Verdict::Experiment.new('test')
     assert !e.has_qualifier?
     assert e.everybody_qualifies?
   end
 
   def test_qualifier
-    e = Experiments::Experiment.new('test') do |experiment|
+    e = Verdict::Experiment.new('test') do |experiment|
       qualify { |subject| subject.country == 'CA' }
       groups do
         group :all, 100
@@ -28,17 +28,17 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert !e.qualifier.call(us_subject)
 
     qualified = e.assign(ca_subject)
-    assert_kind_of Experiments::Assignment, qualified
+    assert_kind_of Verdict::Assignment, qualified
     assert_equal e.group(:all), qualified.group
 
     non_qualified = e.assign(us_subject)
-    assert_kind_of Experiments::Assignment, non_qualified
+    assert_kind_of Verdict::Assignment, non_qualified
     assert !non_qualified.qualified?
     assert_equal nil, non_qualified.group
   end
 
   def test_assignment
-    e = Experiments::Experiment.new('test') do
+    e = Verdict::Experiment.new('test') do
       qualify { |subject| subject <= 2 }
       groups do
         group :a, :half
@@ -47,13 +47,13 @@ class ExperimentTest < MiniTest::Unit::TestCase
     end
 
     assignment = e.assign(1)
-    assert_kind_of Experiments::Assignment, assignment
+    assert_kind_of Verdict::Assignment, assignment
     assert assignment.qualified?
     assert !assignment.returning?
     assert_equal assignment.group, e.group(:a)
 
     assignment = e.assign(3)
-    assert_kind_of Experiments::Assignment, assignment
+    assert_kind_of Verdict::Assignment, assignment
     assert !assignment.qualified?
 
     assert_equal :a,  e.switch(1)
@@ -62,16 +62,16 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_subject_identifier
-    e = Experiments::Experiment.new('test')
+    e = Verdict::Experiment.new('test')
     assert_equal '123', e.retrieve_subject_identifier(stub(id: 123, to_s: '456'))
     assert_equal '456', e.retrieve_subject_identifier(stub(to_s: '456'))
-    assert_raises(Experiments::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(id: nil)) }
-    assert_raises(Experiments::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(to_s: '')) }
+    assert_raises(Verdict::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(id: nil)) }
+    assert_raises(Verdict::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(to_s: '')) }
   end
 
   def test_new_unqualified_assignment_without_store_unqualified
-    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
-    e = Experiments::Experiment.new('test') do
+    mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
+    e = Verdict::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: false
     end
@@ -83,8 +83,8 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_returning_qualified_assignment_without_store_unqualified
-    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
-    e = Experiments::Experiment.new('test') do
+    mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
+    e = Verdict::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: false
       groups { group :all, 100 }
@@ -98,8 +98,8 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end    
 
   def test_new_unqualified_assignment_with_store_unqualified
-    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
-    e = Experiments::Experiment.new('test') do
+    mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
+    e = Verdict::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
     end
@@ -111,8 +111,8 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_returning_unqualified_assignment_with_store_unqualified
-    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
-    e = Experiments::Experiment.new('test') do
+    mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
+    e = Verdict::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
     end
@@ -125,8 +125,8 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_returning_qualified_assignment_with_store_unqualified
-    mock_store, mock_qualifier = Experiments::Storage::MockStorage.new, mock('qualifier')
-    e = Experiments::Experiment.new('test') do
+    mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
+    e = Verdict::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
       groups { group :all, 100 }
@@ -140,7 +140,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_disqualify
-    e = Experiments::Experiment.new('test') do
+    e = Verdict::Experiment.new('test') do
       groups { group :all, 100 }
     end
 
@@ -152,21 +152,21 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_assignment_event_logging
-    e = Experiments::Experiment.new('test') do
+    e = Verdict::Experiment.new('test') do
       groups { group :all, 100 }
     end
 
     e.stubs(:event_logger).returns(logger = mock('event_logger'))
-    logger.expects(:log_assignment).with(kind_of(Experiments::Assignment))
+    logger.expects(:log_assignment).with(kind_of(Verdict::Assignment))
 
     e.assign(stub(id: 'subject_identifier'))
   end
 
   def test_conversion_event_logging
-    e = Experiments::Experiment.new('test')
+    e = Verdict::Experiment.new('test')
 
     e.stubs(:event_logger).returns(logger = mock('logger'))
-    logger.expects(:log_conversion).with(kind_of(Experiments::Conversion))
+    logger.expects(:log_conversion).with(kind_of(Verdict::Conversion))
 
     conversion = e.convert(subject = stub(id: 'test_subject'), :my_goal)
     assert_equal 'test_subject', conversion.subject_identifier
@@ -174,7 +174,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_json
-    e = Experiments::Experiment.new(:json) do
+    e = Verdict::Experiment.new(:json) do
       name 'testing'
       subject_type 'visitor'
       groups do
@@ -197,32 +197,32 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_storage_read_failure
-    storage_mock = Experiments::Storage::MockStorage.new
-    e = Experiments::Experiment.new(:json) do
+    storage_mock = Verdict::Storage::MockStorage.new
+    e = Verdict::Experiment.new(:json) do
       groups { group :all, 100 }
       storage storage_mock
     end
 
-    storage_mock.stubs(:retrieve_assignment).raises(Experiments::StorageError, 'storage read issues')
+    storage_mock.stubs(:retrieve_assignment).raises(Verdict::StorageError, 'storage read issues')
     rescued_assignment = e.assign(stub(id: 123))
     assert !rescued_assignment.qualified?
   end
 
   def test_storage_write_failure
-    storage_mock = Experiments::Storage::MockStorage.new
-    e = Experiments::Experiment.new(:json) do
+    storage_mock = Verdict::Storage::MockStorage.new
+    e = Verdict::Experiment.new(:json) do
       groups { group :all, 100 }
       storage storage_mock
     end
 
     storage_mock.expects(:retrieve_assignment).returns(e.subject_assignment(mock('subject_identifier'), e.group(:all)))
-    storage_mock.expects(:store_assignment).raises(Experiments::StorageError, 'storage write issues')
+    storage_mock.expects(:store_assignment).raises(Verdict::StorageError, 'storage write issues')
     rescued_assignment = e.assign(stub(id: 456))
     assert !rescued_assignment.qualified?
   end
 
   def test_initial_started_at
-    e = Experiments::Experiment.new('test') do
+    e = Verdict::Experiment.new('test') do
       groups { group :all, 100 }
     end
 
@@ -232,7 +232,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_subsequent_started_at_when_start_time_is_memoized
-    e = Experiments::Experiment.new('test') do
+    e = Verdict::Experiment.new('test') do
       groups { group :all, 100 }
     end
 
@@ -243,7 +243,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_subsequent_started_at_when_start_time_is_not_memoized
-    e = Experiments::Experiment.new('test') do
+    e = Verdict::Experiment.new('test') do
       groups { group :all, 100 }
     end
 
@@ -254,7 +254,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
 
   def test_qualify_based_on_experiment_start_timestamp
     Timecop.freeze(Time.new(2012)) do
-      e = Experiments::Experiment.new('test') do
+      e = Verdict::Experiment.new('test') do
         qualify { |subject| subject.created_at >= self.started_at }
         groups { group :all, 100 }
       end
@@ -268,7 +268,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_experiment_starting_behavior
-    e = Experiments::Experiment.new('starting_test') do
+    e = Verdict::Experiment.new('starting_test') do
       groups { group :all, 100 }
     end
 

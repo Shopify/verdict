@@ -1,4 +1,4 @@
-module Experiments::Metadata
+module Verdict::Metadata
 
   def self.included(klass)
     klass.send(:attr_reader, :metadata)

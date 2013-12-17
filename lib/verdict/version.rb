@@ -1,3 +1,3 @@
-module Experiments
+module Verdict
   VERSION = "0.1.0"
 end

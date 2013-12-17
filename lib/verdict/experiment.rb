@@ -1,13 +1,13 @@
-class Experiments::Experiment
+class Verdict::Experiment
 
-  include Experiments::Metadata
+  include Verdict::Metadata
 
   attr_reader :handle, :qualifier, :subject_storage, :event_logger
 
   def self.define(handle, *args, &block)
     experiment = self.new(handle, *args, &block)
-    raise Experiments::ExperimentHandleNotUnique.new(experiment.handle) if Experiments.repository.has_key?(experiment.handle)
-    Experiments.repository[experiment.handle] = experiment
+    raise Verdict::ExperimentHandleNotUnique.new(experiment.handle) if Verdict.repository.has_key?(experiment.handle)
+    Verdict.repository[experiment.handle] = experiment
   end
 
   def initialize(handle, options = {}, &block)
@@ -15,8 +15,8 @@ class Experiments::Experiment
 
     options = default_options.merge(options)
     @qualifier         = options[:qualifier]
-    @event_logger      = options[:event_logger] || Experiments::EventLogger.new(Experiments.default_logger)
-    @subject_storage   = options[:storage] || Experiments::Storage::MemoryStorage.new
+    @event_logger      = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
+    @subject_storage   = options[:storage] || Verdict::Storage::MemoryStorage.new
     @store_unqualified = options[:store_unqualified]
     @segmenter         = options[:segmenter]
     @subject_type      = options[:subject_type]
@@ -36,7 +36,7 @@ class Experiments::Experiment
     segmenter.groups[handle.to_s]
   end
 
-  def groups(segmenter_class = Experiments::Segmenter::StaticPercentage, &block)
+  def groups(segmenter_class = Verdict::Segmenter::StaticPercentage, &block)
     return @segmenter.groups unless block_given?
     @segmenter ||= segmenter_class.new(self)
     @segmenter.instance_eval(&block)
@@ -54,7 +54,7 @@ class Experiments::Experiment
   end
 
   def segmenter
-    raise Experiments::Error, "No groups defined for experiment #{@handle.inspect}." if @segmenter.nil?
+    raise Verdict::Error, "No groups defined for experiment #{@handle.inspect}." if @segmenter.nil?
     @segmenter
   end
 
@@ -71,11 +71,11 @@ class Experiments::Experiment
   end
 
   def subject_assignment(subject_identifier, group, originally_created_at = nil)
-    Experiments::Assignment.new(self, subject_identifier, group, originally_created_at)
+    Verdict::Assignment.new(self, subject_identifier, group, originally_created_at)
   end
 
   def subject_conversion(subject_identifier, goal, created_at = Time.now.utc)
-    Experiments::Conversion.new(self, subject_identifier, goal, created_at)
+    Verdict::Conversion.new(self, subject_identifier, goal, created_at)
   end
 
   def convert(subject, goal)
@@ -94,7 +94,7 @@ class Experiments::Experiment
     end
 
     store_assignment(assignment)
-  rescue Experiments::StorageError
+  rescue Verdict::StorageError
     subject_assignment(identifier, nil, nil)
   end
 
@@ -135,7 +135,7 @@ class Experiments::Experiment
 
   def retrieve_subject_identifier(subject)
     identifier = subject_identifier(subject).to_s
-    raise Experiments::EmptySubjectIdentifier, "Subject resolved to an empty identifier!" if identifier.empty?
+    raise Verdict::EmptySubjectIdentifier, "Subject resolved to an empty identifier!" if identifier.empty?
     identifier
   end
 

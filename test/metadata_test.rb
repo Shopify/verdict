@@ -3,7 +3,7 @@ require 'test_helper'
 class MetadataTest < MiniTest::Unit::TestCase
 
   def test_experiment_metadata
-    experiment = Experiments::Experiment.new('experiment metadata') do
+    experiment = Verdict::Experiment.new('experiment metadata') do
       name "Metadata test"
       description "For testing metadata functionality"
       owner "Willem van Bergen"
@@ -21,7 +21,7 @@ class MetadataTest < MiniTest::Unit::TestCase
   end
 
   def test_group_metadata
-    experiment = Experiments::Experiment.new('group metadata') do
+    experiment = Verdict::Experiment.new('group metadata') do
       groups do
         group :all, 100 do
           name "Group metadata test"

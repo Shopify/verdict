@@ -2,8 +2,8 @@ require "bundler/setup"
 require "minitest/autorun"
 require "minitest/pride"
 require "mocha/setup"
-require 'timecop'
-require "experiments"
+require "timecop"
+require "verdict"
 require "redis"
 
 REDIS_HOST = ENV['REDIS_HOST'].nil? ? '127.0.0.1' : ENV['REDIS_HOST']

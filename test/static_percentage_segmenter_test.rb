@@ -5,11 +5,11 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   MockExperiment = Struct.new(:handle)
 
   def setup
-    Experiments.repository.clear
+    Verdict.repository.clear
   end
 
   def test_add_up_to_100_percent
-    s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
+    s = Verdict::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
     s.group :segment1, 1
     s.group :segment2, 54
     s.group :segment3, 27
@@ -24,7 +24,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_definition_ofhalf_and_rest
-    s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
+    s = Verdict::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
     s.group :first_half, :half
     s.group :second_half, :rest
     s.verify!
@@ -35,23 +35,23 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_raises_if_less_than_100_percent
-    assert_raises(Experiments::SegmentationError) do
-      s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
+    assert_raises(Verdict::SegmentationError) do
+      s = Verdict::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
       s.group :too_little, 99
       s.verify!
     end
   end
 
   def test_raises_if_greather_than_100_percent
-    assert_raises(Experiments::SegmentationError) do
-      s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
+    assert_raises(Verdict::SegmentationError) do
+      s = Verdict::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
       s.group :too_much, 101
       s.verify!
     end
   end
 
   def test_consistent_assignment_for_subjects
-    s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
+    s = Verdict::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
     s.group :first_half, :half
     s.group :second_half, :rest
     s.verify!
@@ -63,7 +63,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_fair_segmenting
-    s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
+    s = Verdict::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
     s.group :first_third, 33
     s.group :second_third, 33
     s.group :final_third, :rest
@@ -82,7 +82,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_group_json_export
-    s = Experiments::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
+    s = Verdict::Segmenter::StaticPercentage.new(MockExperiment.new('test'))
     s.group :first_third, 33
     s.group :rest, :rest
     s.verify!

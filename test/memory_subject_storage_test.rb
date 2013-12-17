@@ -3,8 +3,8 @@ require 'test_helper'
 class MemorySubjectStorageTest < MiniTest::Unit::TestCase
 
   def setup
-    @storage = storage = Experiments::Storage::MemoryStorage.new
-    @experiment = Experiments::Experiment.new(:memory_storage) do
+    @storage = storage = Verdict::Storage::MemoryStorage.new
+    @experiment = Verdict::Experiment.new(:memory_storage) do
       groups { group :all, 100 }
       storage storage, store_unqualified: true
     end

@@ -1,4 +1,4 @@
-class Experiments::Conversion
+class Verdict::Conversion
 
   attr_reader :experiment, :subject_identifier, :goal, :created_at
 

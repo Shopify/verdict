@@ -1,6 +1,6 @@
 require 'digest/md5'
 
-module Experiments::Segmenter
+module Verdict::Segmenter
 
   class Base
 
@@ -21,7 +21,7 @@ module Experiments::Segmenter
 
   class StaticPercentage < Base
 
-    class Group < Experiments::Group
+    class Group < Verdict::Group
 
       attr_reader :percentile_range
 
@@ -49,7 +49,7 @@ module Experiments::Segmenter
     end
 
     def verify!
-      raise Experiments::SegmentationError, "Should segment exactly 100% of the cases, but segments add up to #{@total_percentage_segmented}%." if @total_percentage_segmented != 100
+      raise Verdict::SegmentationError, "Should segment exactly 100% of the cases, but segments add up to #{@total_percentage_segmented}%." if @total_percentage_segmented != 100
     end
 
     def group(handle, size, &block)
@@ -71,7 +71,7 @@ module Experiments::Segmenter
     def assign(identifier, subject, context)
       percentile = Digest::MD5.hexdigest("#{@experiment.handle}#{identifier}").to_i(16) % 100
       _, group = groups.find { |_, group| group.percentile_range.include?(percentile) }
-      raise Experiments::SegmentationError, "Could not get segment for subject #{identifier.inspect}!" unless group
+      raise Verdict::SegmentationError, "Could not get segment for subject #{identifier.inspect}!" unless group
       group
     end
   end

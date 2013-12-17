@@ -4,12 +4,12 @@ require 'json'
 class AssignmentTest < MiniTest::Unit::TestCase
 
   def setup
-    @experiment = Experiments::Experiment.new('assignment test')
-    @group = Experiments::Group.new(@experiment, :control)
+    @experiment = Verdict::Experiment.new('assignment test')
+    @group = Verdict::Group.new(@experiment, :control)
   end
 
   def test_basic_properties
-    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', @group, Time.now.utc)
+    assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', @group, Time.now.utc)
     assert_equal 'test_subject_id', assignment.subject_identifier
     assert_equal @experiment, assignment.experiment 
     assert_equal @group, assignment.group 
@@ -19,7 +19,7 @@ class AssignmentTest < MiniTest::Unit::TestCase
     assert_equal 'control', assignment.handle
     assert_kind_of Time, assignment.created_at
 
-    non_assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, nil)
+    non_assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, nil)
     assert_equal nil, non_assignment.group 
     assert !non_assignment.returning?
     assert !non_assignment.qualified?
@@ -29,22 +29,22 @@ class AssignmentTest < MiniTest::Unit::TestCase
   end
 
   def test_subject_lookup
-    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
+    assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
     assert_raises(NotImplementedError) { assignment.subject }
 
     @experiment.expects(:fetch_subject).with('test_subject_id').returns(subject = mock('subject'))
-    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
+    assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
     assert_equal subject, assignment.subject
   end
 
   def test_triple_equals
-    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', @group, Time.now.utc)
+    assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', @group, Time.now.utc)
     assert !(assignment === nil)
     assert assignment === @group
     assert assignment === 'control'
     assert assignment === :control
 
-    non_assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
+    non_assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
     assert non_assignment === nil
     assert !(non_assignment === @group)
     assert !(non_assignment === 'control')
@@ -52,7 +52,7 @@ class AssignmentTest < MiniTest::Unit::TestCase
   end
 
   def test_json_representation
-    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', @group, Time.new(2013, 1, 1, 0, 0, 0, '+00:00'))
+    assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', @group, Time.new(2013, 1, 1, 0, 0, 0, '+00:00'))
     json = JSON.parse(assignment.to_json)
 
     assert_equal 'assignment test', json['experiment']
@@ -63,7 +63,7 @@ class AssignmentTest < MiniTest::Unit::TestCase
     assert_equal '2013-01-01T00:00:00Z', json['created_at']
 
     Timecop.freeze(Time.new(2012, 1, 1, 0, 0, 0, '+00:00')) do
-      non_assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, nil)
+      non_assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, nil)
       json = JSON.parse(non_assignment.to_json)
       assert_equal 'assignment test', json['experiment']
       assert_equal 'test_subject_id', json['subject']

@@ -1,6 +1,6 @@
 require 'json'
 
-module Experiments::Storage
+module Verdict::Storage
 
   class MockStorage
 
@@ -95,14 +95,14 @@ module Experiments::Storage
         )
       end
     rescue ::Redis::BaseError => e
-      raise Experiments::StorageError, "Redis error: #{e.message}"
+      raise Verdict::StorageError, "Redis error: #{e.message}"
     end
 
     def store_assignment(assignment)
       hash = { group: assignment.handle, created_at: assignment.created_at }
       redis.hset(generate_experiment_key(assignment.experiment), assignment.subject_identifier, JSON.dump(hash))
     rescue ::Redis::BaseError => e
-      raise Experiments::StorageError, "Redis error: #{e.message}"
+      raise Verdict::StorageError, "Redis error: #{e.message}"
     end
 
     def remove_assignment(experiment, subject_identifier)

@@ -1,4 +1,4 @@
-class Experiments::Assignment
+class Verdict::Assignment
 
   attr_reader :experiment, :subject_identifier, :group, :created_at
 
@@ -52,8 +52,8 @@ class Experiments::Assignment
   def ===(other)
     case other
       when nil; !qualified?
-      when Experiments::Assignment; other.group === group
-      when Experiments::Group; other === group
+      when Verdict::Assignment; other.group === group
+      when Verdict::Group; other === group
       when Symbol, String; qualified? ? group.handle == other.to_s : false
       else false
     end
