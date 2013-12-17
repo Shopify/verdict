@@ -193,7 +193,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert_kind_of Enumerable, json['groups']
     assert_equal 'testing', json['metadata']['name']
     assert_equal 'visitor', json['subject_type']
-    assert_equal '2013-02-03T09:05:06Z', json['started_at']
+    assert_equal '2013-02-03T04:05:06Z', json['started_at']
   end
 
   def test_storage_read_failure
