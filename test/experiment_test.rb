@@ -183,7 +183,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
       end
     end
 
-    Timecop.freeze(Time.new(2013, 2, 3, 4, 5, 6, '-05:00')) do
+    Timecop.freeze(Time.new(2013, 2, 3, 4, 5, 6, '+00:00')) do
       e.send(:ensure_experiment_has_started)
     end
 
