@@ -17,7 +17,7 @@ Add this line to your application's Gemfile, and run `bundle install`:
 
 ## Usage
 
-This gem contains the `Experiments::Experiment` model used create the experiment instance,
+This gem contains the `Verdict::Experiment` model used create the experiment instance,
 in order consistently modify application behaviour based on an object's unique key. 
 
 Define an experiment like so:
@@ -40,7 +40,7 @@ end
 ```
 
 Usually you want to place this in a file called **my_experiment.rb** in the 
-**/app/experiments** folder. Also, usually you want to subclass `Experiments::Experiment` 
+**/app/experiments** folder. Also, usually you want to subclass `Verdict::Experiment` 
 to set some default options for your app's environment, and call `define` on that class
 instead.
 
@@ -48,7 +48,7 @@ Refer to the experiment elsewhere in your codebase like this:
 
 ``` ruby
 context = { ... } # anything you want to pass along to the qualify block. 
-case Experiments['my experiment'].switch(shop, context)
+case Verdict['my experiment'].switch(shop, context)
 when :test
   # Handle test group
 when :control
@@ -71,12 +71,12 @@ an object that responds to the following tho methods:
 
 In which `experiment` is the Experiment instance, `subject_identifier` is a  
 string that uniquely identifies the subject, and `assignment` is an
-`Experiment::Assignment` instance. By default it will use `subject.id.to_s` as
+`Verdict::Assignment` instance. By default it will use `subject.id.to_s` as
 `subject_identifier`, but you can change that by overriding the 
 `def subject_identifier(subject)` method on the experiment.
 
-The library will also log every assignment to `Experiments.logger`. The Railtie
-sets `Experiment.logger` to `Rails.logger`, so experiment assignments will show
+The library will also log every assignment to `Verdict.logger`. The Railtie
+sets `Verdict.logger` to `Rails.logger`, so experiment assignments will show
 up in your Rails log. You can override the logging by overriding the 
 `def log_assignment(assignment)` method on the experiment.
 
