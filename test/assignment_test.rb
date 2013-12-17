@@ -52,8 +52,7 @@ class AssignmentTest < MiniTest::Unit::TestCase
   end
 
   def test_json_representation
-    Time.stubs(:now).returns(Time.parse('2013-01-01T00:00:00Z'))
-    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', @group, Time.parse('2012-01-01T00:00:00Z'))
+    assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', @group, Time.new(2013, 1, 1, 0, 0, 0, '+00:00'))
     json = JSON.parse(assignment.to_json)
 
     assert_equal 'assignment test', json['experiment']
@@ -61,15 +60,17 @@ class AssignmentTest < MiniTest::Unit::TestCase
     assert_equal true, json['qualified']
     assert_equal true, json['returning']
     assert_equal 'control', json['group']
-    assert_equal '2012-01-01T00:00:00Z', json['created_at']
-
-    non_assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, nil)
-    json = JSON.parse(non_assignment.to_json)
-    assert_equal 'assignment test', json['experiment']
-    assert_equal 'test_subject_id', json['subject']
-    assert_equal false, json['qualified']
-    assert_equal false, json['returning']
-    assert_equal nil, json['group']
     assert_equal '2013-01-01T00:00:00Z', json['created_at']
+
+    Timecop.freeze(Time.new(2012, 1, 1, 0, 0, 0, '+00:00')) do
+      non_assignment = Experiments::Assignment.new(@experiment, 'test_subject_id', nil, nil)
+      json = JSON.parse(non_assignment.to_json)
+      assert_equal 'assignment test', json['experiment']
+      assert_equal 'test_subject_id', json['subject']
+      assert_equal false, json['qualified']
+      assert_equal false, json['returning']
+      assert_equal nil, json['group']
+      assert_equal '2012-01-01T00:00:00Z', json['created_at']
+    end
   end
 end

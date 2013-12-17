@@ -248,17 +248,18 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_qualify_based_on_experiment_start_timestamp
-    Time.stubs(:now).returns(Time.parse('2012-01-01T00:00:00Z'))
-    e = Experiments::Experiment.new('test') do
-      qualify { |subject| subject.created_at >= self.started_at }
-      groups { group :all, 100 }
+    Timecop.freeze(Time.new(2012)) do
+      e = Experiments::Experiment.new('test') do
+        qualify { |subject| subject.created_at >= self.started_at }
+        groups { group :all, 100 }
+      end
+
+      subject = stub(id: 'old', created_at: Time.new(2011))
+      assert !e.assign(subject).qualified?
+
+      subject = stub(id: 'new', created_at: Time.new(2013))
+      assert e.assign(subject).qualified?
     end
-
-    subject = stub(id: 'old', created_at: Time.parse('2011-01-01T00:00:00Z'))
-    assert !e.assign(subject).qualified?
-
-    subject = stub(id: 'new', created_at: Time.parse('2013-01-01T00:00:00Z'))
-    assert e.assign(subject).qualified?
   end
 
   def test_experiment_starting_behavior

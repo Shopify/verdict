@@ -2,6 +2,7 @@ require "bundler/setup"
 require "minitest/autorun"
 require "minitest/pride"
 require "mocha/setup"
+require 'timecop'
 require "experiments"
 require "redis"
 

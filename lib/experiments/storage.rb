@@ -91,7 +91,7 @@ module Experiments::Storage
         experiment.subject_assignment(
           subject_identifier, 
           experiment.group(hash['group']),
-          Time.parse(hash['created_at'])
+          DateTime.parse(hash['created_at']).to_time
         )
       end
     rescue ::Redis::BaseError => e
@@ -116,7 +116,7 @@ module Experiments::Storage
 
     def retrieve_start_timestamp(experiment)
       if started_at = redis.get(generate_experiment_start_timestamp_key(experiment))
-        DateTime.parse(started_at)
+        DateTime.parse(started_at).to_time
       end
     end
 

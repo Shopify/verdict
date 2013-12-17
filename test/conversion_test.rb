@@ -25,13 +25,13 @@ class ConversionTest < MiniTest::Unit::TestCase
   end
 
   def test_json_representation
-    conversion = Experiments::Conversion.new(@experiment, 'test_subject_id', :test_goal, Time.parse('2013-01-01T00:00:00Z'))
+    conversion = Experiments::Conversion.new(@experiment, 'test_subject_id', :test_goal, Time.new(2013, 1, 1, 4, 5, 6, '+00:00'))
     json = JSON.parse(conversion.to_json)
 
     assert_equal 'conversion test',      json['experiment']
     assert_equal 'test_subject_id',      json['subject']
     assert_equal 'test_goal',            json['goal']
     assert_equal 'test_goal',            json['goal']
-    assert_equal '2013-01-01T00:00:00Z', json['created_at']
+    assert_equal '2013-01-01T04:05:06Z', json['created_at']
   end
 end
