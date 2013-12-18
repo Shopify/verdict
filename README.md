@@ -1,4 +1,4 @@
-# Verdict
+# Verdict [![Build Status](https://travis-ci.org/Shopify/verdict.png)](https://travis-ci.org/Shopify/verdict)
 
 This library allows you to define and use experiments in your application.
 
