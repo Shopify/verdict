@@ -37,6 +37,18 @@ class ExperimentTest < MiniTest::Unit::TestCase
     assert_equal nil, non_qualified.group
   end
 
+  def test_disqualify_empty_identifier
+    e = Verdict::Experiment.new('test', disqualify_empty_identifier: true) do
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+    end
+
+    assert !e.assign(nil).qualified?
+    assert_equal nil, e.convert('', :mygoal)
+  end
+
   def test_assignment
     e = Verdict::Experiment.new('test') do
       qualify { |subject| subject <= 2 }
@@ -45,6 +57,8 @@ class ExperimentTest < MiniTest::Unit::TestCase
         group :b, :rest
       end
     end
+
+    assert_raises(Verdict::EmptySubjectIdentifier) { e.assign(nil) }
 
     assignment = e.assign(1)
     assert_kind_of Verdict::Assignment, assignment
