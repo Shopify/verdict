@@ -14,12 +14,14 @@ class Verdict::Experiment
     @handle = handle.to_s
 
     options = default_options.merge(options)
-    @qualifier         = options[:qualifier]
-    @event_logger      = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
-    @subject_storage   = options[:storage] || Verdict::Storage::MemoryStorage.new
-    @store_unqualified = options[:store_unqualified]
-    @segmenter         = options[:segmenter]
-    @subject_type      = options[:subject_type]
+    @qualifier                   = options[:qualifier]
+    @event_logger                = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
+    @subject_storage             = options[:storage] || Verdict::Storage::MemoryStorage.new
+    @store_unqualified           = options[:store_unqualified]
+    @segmenter                   = options[:segmenter]
+    @subject_type                = options[:subject_type]
+    @disqualify_empty_identifier = options[:disqualify_empty_identifier]
+
     instance_eval(&block) if block_given?
   end
 
@@ -83,6 +85,8 @@ class Verdict::Experiment
     conversion = subject_conversion(identifier, goal)
     event_logger.log_conversion(conversion)
     conversion
+  rescue Verdict::EmptySubjectIdentifier
+    raise unless disqualify_empty_identifier?
   end
 
   def assign(subject, context = nil)
@@ -96,6 +100,16 @@ class Verdict::Experiment
     store_assignment(assignment)
   rescue Verdict::StorageError
     subject_assignment(identifier, nil, nil)
+  rescue Verdict::EmptySubjectIdentifier
+    if disqualify_empty_identifier?
+      subject_assignment(identifier, nil, nil)
+    else
+      raise
+    end
+  end
+
+  def disqualify_empty_identifier?
+    @disqualify_empty_identifier
   end
 
   def disqualify(subject)
