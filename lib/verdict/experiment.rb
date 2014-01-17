@@ -86,7 +86,7 @@ class Verdict::Experiment
     event_logger.log_conversion(conversion)
     conversion
   rescue Verdict::EmptySubjectIdentifier
-    # noop
+    raise unless disqualify_empty_identifier?
   end
 
   def assign(subject, context = nil)
