@@ -72,8 +72,8 @@ class Verdict::Experiment
     segmenter.groups.keys
   end
 
-  def subject_assignment(subject_identifier, group, originally_created_at = nil)
-    Verdict::Assignment.new(self, subject_identifier, group, originally_created_at)
+  def subject_assignment(subject_identifier, group, originally_created_at, temporary = false)
+    Verdict::Assignment.new(self, subject_identifier, group, originally_created_at, temporary)
   end
 
   def subject_conversion(subject_identifier, goal, created_at = Time.now.utc)
@@ -195,25 +195,30 @@ class Verdict::Experiment
   end
 
   def should_store_assignment?(assignment)
-    !assignment.returning? && (store_unqualified? || assignment.qualified?)
+    assignment.permanent? && !assignment.returning? && (store_unqualified? || assignment.qualified?)
   end
 
   def assignment_with_unqualified_persistence(subject_identifier, subject, context)
-    fetch_assignment(subject_identifier) || (
-      subject_qualifies?(subject, context) ? 
-        subject_assignment(subject_identifier, segmenter.assign(subject_identifier, subject, context), nil) :
-        subject_assignment(subject_identifier, nil, nil)
-    )
+    previous_assignment = fetch_assignment(subject_identifier)
+    return previous_assignment unless previous_assignment.nil?
+    if subject_qualifies?(subject, context)
+      group = segmenter.assign(subject_identifier, subject, context)
+      subject_assignment(subject_identifier, group, nil, group.nil?)
+    else
+      subject_assignment(subject_identifier, nil, nil)
+    end
   end
 
   def assignment_without_unqualified_persistence(subject_identifier, subject, context)
     if subject_qualifies?(subject, context)
-      fetch_assignment(subject_identifier) ||
-        subject_assignment(subject_identifier, segmenter.assign(subject_identifier, subject, context), nil)
+      previous_assignment = fetch_assignment(subject_identifier)
+      return previous_assignment unless previous_assignment.nil?
+      group = segmenter.assign(subject_identifier, subject, context)
+      subject_assignment(subject_identifier, group, nil, group.nil?)
     else 
       subject_assignment(subject_identifier, nil, nil)
     end
-  end  
+  end
 
   def subject_identifier(subject)
     subject.respond_to?(:id) ? subject.id : subject.to_s

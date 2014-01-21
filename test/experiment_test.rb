@@ -153,6 +153,20 @@ class ExperimentTest < MiniTest::Unit::TestCase
     e.assign(mock('subject'))
   end
 
+  def test_dont_store_when_segmenter_returns_nil
+    mock_store = Verdict::Storage::MockStorage.new
+    e = Verdict::Experiment.new('test') do
+      groups { group :all, 100 }
+      storage mock_store, store_unqualified: true
+    end
+
+    e.segmenter.stubs(:assign).returns(nil)
+    mock_store.expects(:store_assignment).never
+
+    assignment = e.assign(mock('subject'))
+    assert !assignment.qualified?
+  end
+
   def test_disqualify
     e = Verdict::Experiment.new('test') do
       groups { group :all, 100 }
@@ -233,7 +247,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
       storage storage_mock
     end
 
-    storage_mock.expects(:retrieve_assignment).returns(e.subject_assignment(mock('subject_identifier'), e.group(:all)))
+    storage_mock.expects(:retrieve_assignment).returns(e.subject_assignment(mock('subject_identifier'), e.group(:all), nil))
     storage_mock.expects(:store_assignment).raises(Verdict::StorageError, 'storage write issues')
     rescued_assignment = e.assign(stub(id: 456))
     assert !rescued_assignment.qualified?
