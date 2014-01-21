@@ -46,6 +46,12 @@ class Verdict::Experiment
     return self
   end
 
+  def rollout_percentage(percentage, rollout_group_name = :enabled)
+    groups(Verdict::RolloutSegmenter) do
+      group rollout_group_name, percentage
+    end
+  end
+
   def qualify(&block)
     @qualifier = block
   end

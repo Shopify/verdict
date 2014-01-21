@@ -84,3 +84,4 @@ end
 
 require 'verdict/static_segmenter'
 require 'verdict/fixed_percentage_segmenter'
+require 'verdict/rollout_segmenter'
