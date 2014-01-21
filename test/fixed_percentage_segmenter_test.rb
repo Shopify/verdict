@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
+class FixedPercentageSegmenterTest < MiniTest::Unit::TestCase
 
   MockExperiment = Struct.new(:handle)
 
@@ -9,7 +9,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_add_up_to_100_percent
-    s = Verdict::StaticPercentageSegmenter.new(MockExperiment.new('test'))
+    s = Verdict::FixedPercentageSegmenter.new(MockExperiment.new('test'))
     s.group :segment1, 1
     s.group :segment2, 54
     s.group :segment3, 27
@@ -24,7 +24,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_definition_ofhalf_and_rest
-    s = Verdict::StaticPercentageSegmenter.new(MockExperiment.new('test'))
+    s = Verdict::FixedPercentageSegmenter.new(MockExperiment.new('test'))
     s.group :first_half, :half
     s.group :second_half, :rest
     s.verify!
@@ -36,7 +36,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
 
   def test_raises_if_less_than_100_percent
     assert_raises(Verdict::SegmentationError) do
-      s = Verdict::StaticPercentageSegmenter.new(MockExperiment.new('test'))
+      s = Verdict::FixedPercentageSegmenter.new(MockExperiment.new('test'))
       s.group :too_little, 99
       s.verify!
     end
@@ -44,14 +44,14 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
 
   def test_raises_if_greather_than_100_percent
     assert_raises(Verdict::SegmentationError) do
-      s = Verdict::StaticPercentageSegmenter.new(MockExperiment.new('test'))
+      s = Verdict::FixedPercentageSegmenter.new(MockExperiment.new('test'))
       s.group :too_much, 101
       s.verify!
     end
   end
 
   def test_consistent_assignment_for_subjects
-    s = Verdict::StaticPercentageSegmenter.new(MockExperiment.new('test'))
+    s = Verdict::FixedPercentageSegmenter.new(MockExperiment.new('test'))
     s.group :first_half, :half
     s.group :second_half, :rest
     s.verify!
@@ -63,7 +63,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_fair_segmenting
-    s = Verdict::StaticPercentageSegmenter.new(MockExperiment.new('test'))
+    s = Verdict::FixedPercentageSegmenter.new(MockExperiment.new('test'))
     s.group :first_third, 33
     s.group :second_third, 33
     s.group :final_third, :rest
@@ -82,7 +82,7 @@ class StaticPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_group_json_export
-    s = Verdict::StaticPercentageSegmenter.new(MockExperiment.new('test'))
+    s = Verdict::FixedPercentageSegmenter.new(MockExperiment.new('test'))
     s.group :first_third, 33
     s.group :rest, :rest
     s.verify!

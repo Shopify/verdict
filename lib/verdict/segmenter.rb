@@ -82,4 +82,4 @@ class Verdict::Segmenter
   end
 end
 
-require 'verdict/static_percentage_segmenter'
+require 'verdict/fixed_percentage_segmenter'

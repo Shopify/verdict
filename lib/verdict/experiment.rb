@@ -38,7 +38,7 @@ class Verdict::Experiment
     segmenter.groups[handle.to_s]
   end
 
-  def groups(segmenter_class = Verdict::StaticPercentageSegmenter, &block)
+  def groups(segmenter_class = Verdict::FixedPercentageSegmenter, &block)
     return segmenter.groups unless block_given?
     @segmenter ||= segmenter_class.new(self)
     @segmenter.instance_eval(&block)

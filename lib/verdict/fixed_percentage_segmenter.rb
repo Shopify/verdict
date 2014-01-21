@@ -1,4 +1,4 @@
-  class Verdict::StaticPercentageSegmenter < Verdict::Segmenter
+  class Verdict::FixedPercentageSegmenter < Verdict::Segmenter
 
     class Group < Verdict::Group
 
