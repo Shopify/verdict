@@ -177,7 +177,9 @@ class ExperimentTest < MiniTest::Unit::TestCase
   end
 
   def test_conversion_event_logging
-    e = Verdict::Experiment.new('test')
+    e = Verdict::Experiment.new('test')do
+      groups { group :all, 100 }
+    end
 
     e.stubs(:event_logger).returns(logger = mock('logger'))
     logger.expects(:log_conversion).with(kind_of(Verdict::Conversion))

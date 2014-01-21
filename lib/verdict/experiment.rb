@@ -38,8 +38,8 @@ class Verdict::Experiment
     segmenter.groups[handle.to_s]
   end
 
-  def groups(segmenter_class = Verdict::Segmenter::StaticPercentage, &block)
-    return @segmenter.groups unless block_given?
+  def groups(segmenter_class = Verdict::StaticPercentageSegmenter, &block)
+    return segmenter.groups unless block_given?
     @segmenter ||= segmenter_class.new(self)
     @segmenter.instance_eval(&block)
     @segmenter.verify!
@@ -200,7 +200,7 @@ class Verdict::Experiment
   def assignment_with_unqualified_persistence(subject_identifier, subject, context)
     fetch_assignment(subject_identifier) || (
       subject_qualifies?(subject, context) ? 
-        subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), nil) :
+        subject_assignment(subject_identifier, segmenter.assign(subject_identifier, subject, context), nil) :
         subject_assignment(subject_identifier, nil, nil)
     )
   end
@@ -208,7 +208,7 @@ class Verdict::Experiment
   def assignment_without_unqualified_persistence(subject_identifier, subject, context)
     if subject_qualifies?(subject, context)
       fetch_assignment(subject_identifier) ||
-        subject_assignment(subject_identifier, @segmenter.assign(subject_identifier, subject, context), nil)
+        subject_assignment(subject_identifier, segmenter.assign(subject_identifier, subject, context), nil)
     else 
       subject_assignment(subject_identifier, nil, nil)
     end
