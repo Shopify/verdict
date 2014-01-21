@@ -2,12 +2,13 @@ class Verdict::Assignment
 
   attr_reader :experiment, :subject_identifier, :group, :created_at
 
-  def initialize(experiment, subject_identifier, group, originally_created_at)
+  def initialize(experiment, subject_identifier, group, originally_created_at, temporary = false)
     @experiment         = experiment
     @subject_identifier = subject_identifier
     @group              = group
     @returning          = !originally_created_at.nil?
     @created_at         = originally_created_at || Time.now.utc
+    @temporary          = temporary
   end
 
   def subject
@@ -16,6 +17,14 @@ class Verdict::Assignment
 
   def qualified?
     !group.nil?
+  end
+
+  def permanent?
+    !@temporary
+  end
+
+  def temporary?
+    @temporary
   end
 
   def returning
