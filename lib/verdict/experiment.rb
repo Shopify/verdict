@@ -84,6 +84,7 @@ class Verdict::Experiment
     identifier = retrieve_subject_identifier(subject)
     conversion = subject_conversion(identifier, goal)
     event_logger.log_conversion(conversion)
+    segmenter.conversion_feedback(identifier, subject, conversion)
     conversion
   rescue Verdict::EmptySubjectIdentifier
     raise unless disqualify_empty_identifier?

@@ -65,6 +65,21 @@ class Verdict::Segmenter
   def assign(identifier, subject, context)
     raise NotImplementedError
   end
+
+
+  # This method is called whenever a subjects converts to a goal, i.e., when Experiment#convert
+  # is called. You can use this to implement a feedback loop in your segmenter.
+  #
+  # - The identifier parameter is a string that uniquely identifies the subject.
+  # - The subject paramater is the  subject instance that was passed to the framework,
+  #   when the application code calls Experiment#assign or Experiment#switch.
+  # - The conversion parameter is a Verdict::Conversion instance that describes what
+  #   goal the subject converted to.
+  #
+  # The return value of this method is not used.
+  def conversion_feedback(identifier, subject, conversion)
+    # noop by default
+  end
 end
 
 require 'verdict/static_percentage_segmenter'

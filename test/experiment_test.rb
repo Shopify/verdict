@@ -181,10 +181,12 @@ class ExperimentTest < MiniTest::Unit::TestCase
       groups { group :all, 100 }
     end
 
+    subject = stub(id: 'test_subject')
     e.stubs(:event_logger).returns(logger = mock('logger'))
     logger.expects(:log_conversion).with(kind_of(Verdict::Conversion))
+    e.segmenter.expects(:conversion_feedback).with('test_subject', subject, kind_of(Verdict::Conversion))
 
-    conversion = e.convert(subject = stub(id: 'test_subject'), :my_goal)
+    conversion = e.convert(subject, :my_goal)
     assert_equal 'test_subject', conversion.subject_identifier
     assert_equal :my_goal, conversion.goal 
   end
