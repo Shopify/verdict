@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class MemorySubjectStorageTest < MiniTest::Unit::TestCase
+class MemorySubjectStorageTest < Minitest::Test
 
   def setup
     @storage = storage = Verdict::Storage::MemoryStorage.new

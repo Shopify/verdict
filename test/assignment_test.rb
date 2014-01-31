@@ -1,7 +1,7 @@
 require 'test_helper'
 require 'json'
 
-class AssignmentTest < MiniTest::Unit::TestCase
+class AssignmentTest < Minitest::Test
 
   def setup
     @experiment = Verdict::Experiment.new('assignment test')
@@ -11,8 +11,8 @@ class AssignmentTest < MiniTest::Unit::TestCase
   def test_basic_properties
     assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', @group, Time.now.utc)
     assert_equal 'test_subject_id', assignment.subject_identifier
-    assert_equal @experiment, assignment.experiment 
-    assert_equal @group, assignment.group 
+    assert_equal @experiment, assignment.experiment
+    assert_equal @group, assignment.group
     assert assignment.returning?
     assert assignment.qualified?
     assert_equal :control, assignment.to_sym
@@ -20,7 +20,7 @@ class AssignmentTest < MiniTest::Unit::TestCase
     assert_kind_of Time, assignment.created_at
 
     non_assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, nil)
-    assert_equal nil, non_assignment.group 
+    assert_equal nil, non_assignment.group
     assert !non_assignment.returning?
     assert !non_assignment.qualified?
     assert_equal nil, non_assignment.to_sym

@@ -1,7 +1,7 @@
 require 'json'
 require 'test_helper'
 
-class ExperimentTest < MiniTest::Unit::TestCase
+class ExperimentTest < Minitest::Test
 
   def test_no_qualifier
     e = Verdict::Experiment.new('test')
@@ -109,7 +109,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
     mock_store.expects(:retrieve_assignment).returns(qualified_assignment).once
     mock_store.expects(:store_assignment).never
     e.assign(mock('subject'))
-  end    
+  end
 
   def test_new_unqualified_assignment_with_store_unqualified
     mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
@@ -202,7 +202,7 @@ class ExperimentTest < MiniTest::Unit::TestCase
 
     conversion = e.convert(subject, :my_goal)
     assert_equal 'test_subject', conversion.subject_identifier
-    assert_equal :my_goal, conversion.goal 
+    assert_equal :my_goal, conversion.goal
   end
 
   def test_json

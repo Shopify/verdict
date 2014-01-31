@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class MetadataTest < MiniTest::Unit::TestCase
+class MetadataTest < Minitest::Test
 
   def test_experiment_metadata
     experiment = Verdict::Experiment.new('experiment metadata') do

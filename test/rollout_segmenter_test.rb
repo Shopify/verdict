@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RolloutPercentageSegmenterTest < MiniTest::Unit::TestCase
+class RolloutPercentageSegmenterTest < Minitest::Test
 
   def setup
     @experiment = Verdict::Experiment.new('test') do
@@ -11,7 +11,7 @@ class RolloutPercentageSegmenterTest < MiniTest::Unit::TestCase
   def test_assignment
     included_subject = stub(id: 1)
     excluded_subject = stub(id: 2)
-    
+
     included_assignment = @experiment.assign(included_subject)
     assert included_assignment.qualified?
     assert included_assignment.permanent?

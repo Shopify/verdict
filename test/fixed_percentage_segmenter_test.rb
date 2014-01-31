@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class FixedPercentageSegmenterTest < MiniTest::Unit::TestCase
+class FixedPercentageSegmenterTest < Minitest::Test
 
   def test_add_up_to_100_percent
     s = Verdict::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
@@ -50,7 +50,7 @@ class FixedPercentageSegmenterTest < MiniTest::Unit::TestCase
     s.group :second_half, :rest
     s.verify!
 
-    3.times do 
+    3.times do
       assert s.groups['first_half']  === s.assign(1, nil, nil)
       assert s.groups['second_half'] === s.assign(2, nil, nil)
     end
@@ -64,8 +64,8 @@ class FixedPercentageSegmenterTest < MiniTest::Unit::TestCase
     s.verify!
 
     assignments = { :first_third => 0, :second_third => 0, :final_third => 0 }
-    200.times do |n| 
-      assignment = s.assign(n, nil, nil) 
+    200.times do |n|
+      assignment = s.assign(n, nil, nil)
       assignments[assignment.to_sym] += 1
     end
 

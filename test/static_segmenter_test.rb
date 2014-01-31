@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class StaticSegmenterTest < MiniTest::Unit::TestCase
+class StaticSegmenterTest < Minitest::Test
 
   def setup
     @segmenter = Verdict::StaticSegmenter.new(Verdict::Experiment.new('test'))
