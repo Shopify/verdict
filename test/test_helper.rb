@@ -1,3 +1,9 @@
+require 'simplecov'
+SimpleCov.start do
+  add_filter "/vendor/"
+  add_filter "/test/"
+end
+
 require "bundler/setup"
 require "minitest/autorun"
 require "minitest/pride"
