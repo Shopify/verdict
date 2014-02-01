@@ -1,4 +1,7 @@
-# Verdict [![Build Status](https://travis-ci.org/Shopify/verdict.png)](https://travis-ci.org/Shopify/verdict)
+# Verdict
+
+[![Build Status](https://travis-ci.org/Shopify/verdict.png)](https://travis-ci.org/Shopify/verdict)
+[![Code Climate](https://codeclimate.com/github/Shopify/verdict.png)](https://codeclimate.com/github/Shopify/verdict)
 
 This library allows you to define and use experiments in your application.
 
