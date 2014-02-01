@@ -3,7 +3,7 @@ require 'test_helper'
 class StaticSegmenterTest < Minitest::Test
 
   def setup
-    @segmenter = Verdict::StaticSegmenter.new(Verdict::Experiment.new('test'))
+    @segmenter = Verdict::Segmenters::StaticSegmenter.new(Verdict::Experiment.new('test'))
     @segmenter.group :beta, ['id1', 'id2']
   end
 

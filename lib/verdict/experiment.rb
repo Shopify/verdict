@@ -39,7 +39,7 @@ class Verdict::Experiment
     segmenter.groups[handle.to_s]
   end
 
-  def groups(segmenter_class = Verdict::FixedPercentageSegmenter, &block)
+  def groups(segmenter_class = Verdict::Segmenters::FixedPercentageSegmenter, &block)
     return segmenter.groups unless block_given?
     @segmenter ||= segmenter_class.new(self)
     @segmenter.instance_eval(&block)
@@ -48,7 +48,7 @@ class Verdict::Experiment
   end
 
   def rollout_percentage(percentage, rollout_group_name = :enabled)
-    groups(Verdict::RolloutSegmenter) do
+    groups(Verdict::Segmenters::RolloutSegmenter) do
       group rollout_group_name, percentage
     end
   end
@@ -192,7 +192,7 @@ class Verdict::Experiment
 
   def to_json(options = {})
     as_json(options).to_json
-  end 
+  end
 
   def fetch_subject(subject_identifier)
     raise NotImplementedError, "Fetching subjects based in identifier is not implemented for eperiment @{handle.inspect}."
@@ -229,7 +229,7 @@ class Verdict::Experiment
       return previous_assignment unless previous_assignment.nil?
       group = segmenter.assign(subject_identifier, subject, context)
       subject_assignment(subject_identifier, group, nil, group.nil?)
-    else 
+    else
       subject_assignment(subject_identifier, nil, nil)
     end
   end
