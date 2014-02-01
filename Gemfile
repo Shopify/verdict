@@ -11,5 +11,5 @@ group :development do
   gem "mocha"
   gem "timecop"
   gem "redis"
-  gem "simplecov"
+  gem "simplecov", platforms: [:mri, :jruby]
 end
