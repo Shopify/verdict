@@ -1,3 +1,3 @@
-require 'verdict/storage/mock'
-require 'verdict/storage/memory'
-require 'verdict/storage/redis'
+require 'verdict/storage/mock_storage'
+require 'verdict/storage/memory_storage'
+require 'verdict/storage/redis_storage'

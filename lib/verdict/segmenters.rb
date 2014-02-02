@@ -1,4 +1,4 @@
-require 'verdict/segmenters/base'
-require 'verdict/segmenters/static'
-require 'verdict/segmenters/fixed_percentage'
-require 'verdict/segmenters/rollout'
+require 'verdict/segmenters/base_segmenter'
+require 'verdict/segmenters/static_segmenter'
+require 'verdict/segmenters/fixed_percentage_segmenter'
+require 'verdict/segmenters/rollout_segmenter'
