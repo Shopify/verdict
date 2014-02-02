@@ -309,4 +309,13 @@ class ExperimentTest < MiniTest::Unit::TestCase
     e.assign(stub(id: '123'))
     assert e.started?, "The experiment should have started after the first assignment"
   end
+
+  def test_no_storage
+    e = Verdict::Experiment.new('starting_test') do
+      groups { group :all, 100 }
+      storage :none
+    end
+
+    assert_kind_of Verdict::Storage::MockStorage, e.storage
+  end
 end

@@ -16,7 +16,7 @@ class Verdict::Experiment
     options = default_options.merge(options)
     @qualifier                   = options[:qualifier]
     @event_logger                = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
-    @subject_storage             = options[:storage] || Verdict::Storage::MemoryStorage.new
+    @subject_storage             = storage(options[:storage] || :memory)
     @store_unqualified           = options[:store_unqualified]
     @segmenter                   = options[:segmenter]
     @subject_type                = options[:subject_type]
@@ -24,6 +24,7 @@ class Verdict::Experiment
 
     instance_eval(&block) if block_given?
   end
+
 
   def subject_type(type = nil)
     return @subject_type if type.nil?
@@ -56,9 +57,16 @@ class Verdict::Experiment
     @qualifier = block
   end
 
-  def storage(subject_storage, options = {})
+  def storage(subject_storage = nil, options = {})
+    return @subject_storage if subject_storage.nil?
+    
     @store_unqualified = options[:store_unqualified] if options.has_key?(:store_unqualified)
-    @subject_storage = subject_storage
+    @subject_storage = case subject_storage
+      when :memory; Verdict::Storage::MemoryStorage.new
+      when :none;   Verdict::Storage::MockStorage.new
+      when Class;   subject_storage.new
+      else          subject_storage
+    end
   end
 
   def segmenter
