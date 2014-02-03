@@ -88,6 +88,10 @@ Regarding the method signatures above, `experiment` is the Experiment instance, 
 
 By default it will use `subject.id.to_s` as `subject_identifier`, but you can change that by overriding `def subject_identifier(subject)` on the experiment.
 
+Storage providers simply store subject assignments and require quick lookups of subject identifiers. They allow for complex (high CPU) assignments, and for assignments that might not always put the same subject in the same group by storing the assignment for later use.
+
+Storage providers are intended for operational use and should not be used for data analysis. For data analysis, you should use the logger.
+
 For more details about these methods, check out the source code for [Verdict::Storage::MockStorage](lib/verdict/storage/mock.rb)
 
 ## Logging
@@ -95,6 +99,11 @@ For more details about these methods, check out the source code for [Verdict::St
 Every assignment will be logged to `Verdict.logger`. For rails apps, this logger will be automatically set to `Rails.logger` so experiment assignments will show up in your Rails log.
 
 You can override the logging by overriding the `def log_assignment(assignment)` method on the experiment.
+
+Logging (as opposed to storage) should be used for data analysis. The logger requires a write-only / forward-only stream to write to, e.g. a log file, Kafka, or an insert-only database table.
+
+It's possible to run an experiment without defining any storage, though this comes with several drawbacks. Logging on the other hand is required in order to analyze the results.
+
 
 ## Contributing
 
