@@ -17,9 +17,7 @@ Add this line to your application's Gemfile, and run `bundle install`:
 
     gem 'verdict'
 
-Or if you prefer, install it globally
-
-    gem install verdict
+If you're using Rails, the Railtie will handle setting the logger to `Rails.logger` and the experiments directory to `app/experiments`. It will also load the rake tasks for you (run `bundle exec rake -T | grep experiments:` for options).
 
 ## Usage
 
