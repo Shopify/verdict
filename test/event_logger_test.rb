@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class EventLoggerTest < MiniTest::Unit::TestCase
+class EventLoggerTest < Minitest::Test
 
   def setup
     @experiment = Verdict::Experiment.new(:logger) do

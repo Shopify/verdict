@@ -1,9 +1,9 @@
 require 'test_helper'
 
-class FixedPercentageSegmenterTest < MiniTest::Unit::TestCase
+class FixedPercentageSegmenterTest < Minitest::Test
 
   def test_add_up_to_100_percent
-    s = Verdict::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
+    s = Verdict::Segmenters::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
     s.group :segment1, 1
     s.group :segment2, 54
     s.group :segment3, 27
@@ -18,7 +18,7 @@ class FixedPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_definition_ofhalf_and_rest
-    s = Verdict::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
+    s = Verdict::Segmenters::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
     s.group :first_half, :half
     s.group :second_half, :rest
     s.verify!
@@ -30,7 +30,7 @@ class FixedPercentageSegmenterTest < MiniTest::Unit::TestCase
 
   def test_raises_if_less_than_100_percent
     assert_raises(Verdict::SegmentationError) do
-      s = Verdict::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
+      s = Verdict::Segmenters::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
       s.group :too_little, 99
       s.verify!
     end
@@ -38,34 +38,34 @@ class FixedPercentageSegmenterTest < MiniTest::Unit::TestCase
 
   def test_raises_if_greather_than_100_percent
     assert_raises(Verdict::SegmentationError) do
-      s = Verdict::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
+      s = Verdict::Segmenters::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
       s.group :too_much, 101
       s.verify!
     end
   end
 
   def test_consistent_assignment_for_subjects
-    s = Verdict::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
+    s = Verdict::Segmenters::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
     s.group :first_half, :half
     s.group :second_half, :rest
     s.verify!
 
-    3.times do 
+    3.times do
       assert s.groups['first_half']  === s.assign(1, nil, nil)
       assert s.groups['second_half'] === s.assign(2, nil, nil)
     end
   end
 
   def test_fair_segmenting
-    s = Verdict::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
+    s = Verdict::Segmenters::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
     s.group :first_third, 33
     s.group :second_third, 33
     s.group :final_third, :rest
     s.verify!
 
     assignments = { :first_third => 0, :second_third => 0, :final_third => 0 }
-    200.times do |n| 
-      assignment = s.assign(n, nil, nil) 
+    200.times do |n|
+      assignment = s.assign(n, nil, nil)
       assignments[assignment.to_sym] += 1
     end
 
@@ -76,7 +76,7 @@ class FixedPercentageSegmenterTest < MiniTest::Unit::TestCase
   end
 
   def test_group_json_export
-    s = Verdict::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
+    s = Verdict::Segmenters::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
     s.group :first_third, 33
     s.group :rest, :rest
     s.verify!

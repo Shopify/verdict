@@ -1,7 +1,7 @@
 require 'test_helper'
 require 'json'
 
-class ConversionTest < MiniTest::Unit::TestCase
+class ConversionTest < Minitest::Test
 
   def setup
     @experiment = Verdict::Experiment.new('conversion test') do

@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class RedisSubjectStorageTest < MiniTest::Unit::TestCase
+class RedisSubjectStorageTest < Minitest::Test
 
   def setup
     @redis = ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
@@ -80,7 +80,7 @@ class RedisSubjectStorageTest < MiniTest::Unit::TestCase
 
   def test_started_at
     key = @storage.send(:generate_experiment_start_timestamp_key, @experiment)
-    
+
     assert !@redis.exists(key)
     a = @experiment.send(:ensure_experiment_has_started)
     assert @redis.exists(key)

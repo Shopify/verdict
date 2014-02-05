@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class ExperimentTest < MiniTest::Unit::TestCase
+class ExperimentTest < Minitest::Test
 
   def setup
     Verdict.repository.clear

@@ -4,3 +4,7 @@ source 'https://rubygems.org'
 gemspec
 gem "rubysl", platform: :rbx
 gem "json", platform: :rbx
+
+group :development do
+  gem "simplecov", platforms: [:mri, :jruby]
+end

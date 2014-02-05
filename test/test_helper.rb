@@ -1,3 +1,11 @@
+unless RUBY_ENGINE == 'rbx'
+  require 'simplecov'
+  SimpleCov.start do
+    add_filter "/vendor/"
+    add_filter "/test/"
+  end
+end
+
 require "bundler/setup"
 require "minitest/autorun"
 require "minitest/pride"

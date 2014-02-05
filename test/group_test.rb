@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class GroupTest < MiniTest::Unit::TestCase
+class GroupTest < Minitest::Test
 
   def setup
     @experiment = Verdict::Experiment.new('a')
@@ -38,5 +38,5 @@ class GroupTest < MiniTest::Unit::TestCase
     assert_equal 'control', json['handle']
     assert_equal 'testing', json['metadata']['name']
     assert_equal 'description', json['metadata']['description']
-  end  
+  end
 end

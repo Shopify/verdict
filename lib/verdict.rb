@@ -1,4 +1,5 @@
 require 'logger'
+require 'digest/md5'
 
 module Verdict
   extend self
@@ -46,7 +47,7 @@ require "verdict/experiment"
 require "verdict/group"
 require "verdict/assignment"
 require "verdict/conversion"
-require "verdict/segmenter"
+require "verdict/segmenters"
 require "verdict/storage"
 require "verdict/event_logger"
 
