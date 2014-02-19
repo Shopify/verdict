@@ -138,6 +138,19 @@ class ExperimentTest < Minitest::Test
     e.assign(mock('subject'))
   end
 
+  def test_subject_assignment_bang_stores_the_subject_assignment
+    mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
+    e = Verdict::Experiment.new('test') do
+      qualify { mock_qualifier.qualifies? }
+      storage mock_store, store_unqualified: true
+      groups { group :all, 100 }
+    end
+
+    group = e.group('all')
+    mock_store.expects(:store_assignment).once
+    e.subject_assignment!(mock('subject'), group, nil)
+  end
+
   def test_returning_qualified_assignment_with_store_unqualified
     mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
     e = Verdict::Experiment.new('test') do
