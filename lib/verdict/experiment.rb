@@ -90,6 +90,12 @@ class Verdict::Experiment
     Verdict::Assignment.new(self, subject_identifier, group, originally_created_at, temporary)
   end
 
+  def subject_assignment!(*args)
+    assignment = subject_assignment(*args)
+    store_assignment(assignment)
+    assignment
+  end
+
   def subject_conversion(subject_identifier, goal, created_at = Time.now.utc)
     Verdict::Conversion.new(self, subject_identifier, goal, created_at)
   end
