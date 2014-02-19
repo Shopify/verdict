@@ -62,11 +62,11 @@ class RedisSubjectStorageTest < Minitest::Test
     assert !@experiment.assign('subject_1').qualified?
   end
 
-  def test_remove_assignment
+  def test_remove_subject_assignment
     experiment_key = @storage.send(:generate_experiment_key, @experiment)
     @experiment.assign('subject_3')
     assert @redis.hexists(experiment_key, 'subject_3')
-    @experiment.remove_subject('subject_3')
+    @experiment.remove_subject_assignment('subject_3')
     assert !@redis.hexists(experiment_key, 'subject_3')
   end
 

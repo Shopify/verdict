@@ -90,12 +90,6 @@ class Verdict::Experiment
     Verdict::Assignment.new(self, subject_identifier, group, originally_created_at, temporary)
   end
 
-  def subject_assignment!(*args)
-    assignment = subject_assignment(*args)
-    store_assignment(assignment)
-    assignment
-  end
-
   def subject_conversion(subject_identifier, goal, created_at = Time.now.utc)
     Verdict::Conversion.new(self, subject_identifier, goal, created_at)
   end
@@ -129,14 +123,24 @@ class Verdict::Experiment
     end
   end
 
-  def disqualify_empty_identifier?
-    @disqualify_empty_identifier
+  def assign_manually(subject, group)
+    identifier = retrieve_subject_identifier(subject)
+    assign_manually_by_identifier(identifier, group)
   end
 
-  def disqualify(subject)
-    identifier = retrieve_subject_identifier(subject)
-    store_assignment(subject_assignment(identifier, nil, nil))
+  def assign_manually_by_identifier(subject_identifier, group)
+    assignment = subject_assignment(subject_identifier, group)
+    store_assignment(assignment)
+    assignment
   end
+
+  def disqualify_manually(subject)
+    assign_manually(subject, nil)
+  end
+
+  def disqualify_manually_by_identifier(subject_identifier)
+    assign_manually_by_identifier(subject_identifier, nil)
+  end    
 
   def store_assignment(assignment)
     @subject_storage.store_assignment(assignment) if should_store_assignment?(assignment)
@@ -144,11 +148,11 @@ class Verdict::Experiment
     assignment
   end
 
-  def remove_subject(subject)
-    remove_subject_identifier(retrieve_subject_identifier(subject))
+  def remove_subject_assignment(subject)
+    remove_subject_assignment_by_identifier(retrieve_subject_identifier(subject))
   end
 
-  def remove_subject_identifier(subject_identifier)
+  def remove_subject_assignment_by_identifier(subject_identifier)
     @subject_storage.remove_assignment(self, subject_identifier)
   end
 
@@ -206,6 +210,10 @@ class Verdict::Experiment
 
   def fetch_assignment(subject_identifier)
     @subject_storage.retrieve_assignment(self, subject_identifier)
+  end
+
+  def disqualify_empty_identifier?
+    @disqualify_empty_identifier
   end
 
   protected

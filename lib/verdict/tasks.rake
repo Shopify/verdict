@@ -34,21 +34,19 @@ namespace :experiments do
   task :assign_manually => 'environment' do
     experiment = Verdict[require_env('experiment')] or raise "Experiment not found"
     group = experiment.group(require_env('group')) or raise "Group not found"
-    assignment = experiment.subject_assignment(require_env('subject'), group)
-    experiment.store_assignment(assignment)
+    experiment.assign_manually_by_identifier(require_env('subject'), group)
   end
 
   desc "Disqualify a subject from an experiment"
   task :disqualify => 'environment' do
     experiment = Verdict[require_env('experiment')] or raise "Experiment not found"
-    assignment = experiment.subject_assignment(require_env('subject'), nil)
-    experiment.store_assignment(assignment)
+    experiment.disqualify_manually_by_identifier(require_env('subject'))
   end
 
   desc "Removes the assignment for a subject so it will be reassigned to the experiment."
   task :remove_assignment => 'environment' do
     experiment = Verdict[require_env('experiment')] or raise "Experiment not found"
-    experiment.remove_subject_identifier(require_env('subject'))
+    experiment.remove_subject_assignment_by_identifier(require_env('subject'))
   end
 
   desc "Runs the cleanup tasks for an experiment"
