@@ -59,7 +59,7 @@ class Verdict::Experiment
 
   def storage(subject_storage = nil, options = {})
     return @subject_storage if subject_storage.nil?
-    
+
     @store_unqualified = options[:store_unqualified] if options.has_key?(:store_unqualified)
     @subject_storage = case subject_storage
       when :memory; Verdict::Storage::MemoryStorage.new
@@ -86,7 +86,7 @@ class Verdict::Experiment
     segmenter.groups.keys
   end
 
-  def subject_assignment(subject_identifier, group, originally_created_at, temporary = false)
+  def subject_assignment(subject_identifier, group, originally_created_at = nil, temporary = false)
     Verdict::Assignment.new(self, subject_identifier, group, originally_created_at, temporary)
   end
 

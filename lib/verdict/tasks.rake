@@ -34,14 +34,14 @@ namespace :experiments do
   task :assign_manually => 'environment' do
     experiment = Verdict[require_env('experiment')] or raise "Experiment not found"
     group = experiment.group(require_env('group')) or raise "Group not found"
-    assignment = experiment.subject_assignment(require_env('subject'), group, false)
+    assignment = experiment.subject_assignment(require_env('subject'), group)
     experiment.store_assignment(assignment)
   end
 
   desc "Disqualify a subject from an experiment"
   task :disqualify => 'environment' do
     experiment = Verdict[require_env('experiment')] or raise "Experiment not found"
-    assignment = experiment.subject_assignment(require_env('subject'), nil, false)
+    assignment = experiment.subject_assignment(require_env('subject'), nil)
     experiment.store_assignment(assignment)
   end
 
