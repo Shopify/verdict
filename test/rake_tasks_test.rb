@@ -26,6 +26,9 @@ class RakeTasksTest < Minitest::Test
     Rake::Task["environment"].reenable
     Rake::Task["verdict:lookup_assignment"].reenable
     Rake::Task["verdict:experiments"].reenable
+    Rake::Task["verdict:assign_manually"].reenable
+    Rake::Task["verdict:disqualify_manually"].reenable
+    Rake::Task["verdict:remove_assignment"].reenable
 
     Verdict.repository.clear
   end
