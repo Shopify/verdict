@@ -130,6 +130,10 @@ class Verdict::Experiment
 
   def assign_manually_by_identifier(subject_identifier, group)
     assignment = subject_assignment(subject_identifier, group)
+    if !assignment.qualified? && !store_unqualified?
+      raise Verdict::Error, "Unqualified subject assignments are not stored for this experiment, so manual disqualification is impossible. Consider setting :store_unqualified to true for this experiment."
+    end
+
     store_assignment(assignment)
     assignment
   end
