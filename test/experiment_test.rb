@@ -139,9 +139,8 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_assign_manually_stores_assignment
-    mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
+    mock_store = Verdict::Storage::MockStorage.new
     e = Verdict::Experiment.new('test') do
-      qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
       groups { group :all, 100 }
     end
@@ -151,8 +150,24 @@ class ExperimentTest < Minitest::Test
     e.assign_manually(mock('subject'), group)
   end
 
-  def test_disqualify
+  def test_disqualify_manually
+    e = Verdict::Experiment.new('test', store_unqualified: true) do
+      groups { group :all, 100 }
+    end
 
+    subject = stub(id: 'walrus')
+    original_assignment = e.assign(subject)
+    assert original_assignment.qualified?
+    new_assignment = e.disqualify_manually(subject)
+    assert !new_assignment.qualified?
+  end
+
+  def test_disqualify_manually_fails_with_store_unqualified_disabled
+    e = Verdict::Experiment.new('test', store_unqualified: false) do
+      groups { group :all, 100 }
+    end
+
+    assert_raises(Verdict::Error) { e.disqualify_manually('subject') }
   end
 
   def test_returning_qualified_assignment_with_store_unqualified
@@ -182,18 +197,6 @@ class ExperimentTest < Minitest::Test
 
     assignment = e.assign(mock('subject'))
     assert !assignment.qualified?
-  end
-
-  def test_disqualify_manually
-    e = Verdict::Experiment.new('test') do
-      groups { group :all, 100 }
-    end
-
-    subject = stub(id: 'walrus')
-    original_assignment = e.assign(subject)
-    assert original_assignment.qualified?
-    new_assignment = e.disqualify_manually(subject)
-    assert !new_assignment.qualified?
   end
 
   def test_assignment_event_logging
