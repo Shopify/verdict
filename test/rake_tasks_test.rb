@@ -45,7 +45,7 @@ class RakeTasksTest < Minitest::Test
 
   def test_experiment_list
     Rake.application.invoke_task("verdict:experiments")
-    assert_equal 'rake | Groups: a (50%), b (50%)', @stdout.string.rstrip
+    assert_equal 'rake | Groups: a (50%), b (50%)', @stdout.string.chomp
   end
 
   def test_lookup_assignment_fails_without_experiment_env_variable
@@ -58,39 +58,32 @@ class RakeTasksTest < Minitest::Test
     assert_raises(ArgumentError) { Rake.application.invoke_task("verdict:lookup_assignment") }
   end
 
-  def test_lookup_qualified_assignment
-    @experiment.assign_manually('1', @experiment.group(:b))
-    Rake.application.invoke_task("verdict:lookup_assignment")
-    assert_equal 'Subject 1 is assigned to group `b` of experiment `rake`.', @stdout.string.rstrip
-  end
-
-  def test_lookup_unqualified_assignment
-    @experiment.disqualify_manually('1')
-    Rake.application.invoke_task("verdict:lookup_assignment")
-    assert_equal 'Subject 1 is unqualified for experiment `rake`.', @stdout.string.rstrip
-  end
-
-  def test_lookup_unknown_subject
-    Rake.application.invoke_task("verdict:lookup_assignment")
-    assert_equal 'Subject 1 is not assigned to experiment `rake` yet.', @stdout.string.rstrip
-  end
-
   def test_assign_manually
     Rake.application.invoke_task("verdict:assign_manually")
+    assert_equal 'Subject `1` has been assigned to group `a` of experiment `rake`.', @stdout.string.chomp
+
+    @stdout.string = ""
     Rake.application.invoke_task("verdict:lookup_assignment")
-    assert_equal 'Subject 1 is assigned to group `a` of experiment `rake`.', @stdout.string.rstrip
+    assert_equal 'Subject `1` is assigned to group `a` of experiment `rake`.', @stdout.string.chomp
   end
 
   def test_disqualify_manually
     Rake.application.invoke_task("verdict:disqualify_manually")
+    assert_equal 'Subject `1` has been disqualified from experiment `rake`.', @stdout.string.chomp
+
+    @stdout.string = ""
     Rake.application.invoke_task("verdict:lookup_assignment")
-    assert_equal 'Subject 1 is unqualified for experiment `rake`.', @stdout.string.rstrip
+    assert_equal 'Subject `1` is unqualified for experiment `rake`.', @stdout.string.chomp
   end
 
   def test_remove_assignment
     @experiment.assign('1')
     Rake.application.invoke_task("verdict:remove_assignment")
+    assert_equal 'Removed assignment of subject with identifier `1`.', @stdout.string.lines[0].chomp
+    assert_equal 'The subject will be reasigned when it encounters the experiment `rake` again.', @stdout.string.lines[1].chomp
+
+    @stdout.string = ""
     Rake.application.invoke_task("verdict:lookup_assignment")
-    assert_equal 'Subject 1 is not assigned to experiment `rake` yet.', @stdout.string.rstrip
+    assert_equal 'Subject `1` is not assigned to experiment `rake` yet.', @stdout.string.chomp
   end
 end
