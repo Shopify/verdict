@@ -20,8 +20,8 @@ module Verdict
       end
 
       def remove_assignment(experiment, subject_identifier)
-        @assignments[assignment.experiment.handle] ||= {}
-        @assignments[assignment.experiment.handle].delete(subject_identifier)
+        @assignments[experiment.handle] ||= {}
+        @assignments[experiment.handle].delete(subject_identifier)
       end
 
       def clear_experiment(experiment)
