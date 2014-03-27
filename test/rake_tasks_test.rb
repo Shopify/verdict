@@ -79,8 +79,8 @@ class RakeTasksTest < Minitest::Test
   def test_remove_assignment
     @experiment.assign('1')
     Rake.application.invoke_task("verdict:remove_assignment")
-    assert_equal 'Removed assignment of subject with identifier `1`.', @stdout.string.lines[0].chomp
-    assert_equal 'The subject will be reasigned when it encounters the experiment `rake` again.', @stdout.string.lines[1].chomp
+    assert_equal 'Removed assignment of subject with identifier `1`.', @stdout.string.lines.to_a[0].chomp
+    assert_equal 'The subject will be reasigned when it encounters the experiment `rake` again.', @stdout.string.lines.to_a[1].chomp
 
     @stdout.string = ""
     Rake.application.invoke_task("verdict:lookup_assignment")
