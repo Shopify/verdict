@@ -52,8 +52,8 @@ module Verdict
         end
       end
 
-      def self.salt
-        ""
+      class << self
+        attr_accessor :salt
       end
     end
   end
