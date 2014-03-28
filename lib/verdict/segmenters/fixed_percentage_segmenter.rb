@@ -26,7 +26,7 @@ module Verdict
       end
 
       def assign(identifier, subject, context)
-        percentile = Digest::MD5.hexdigest("#{@experiment.handle}#{identifier}").to_i(16) % 100
+        percentile = Digest::MD5.hexdigest("#{@experiment.handle}#{identifier}#{self.class.salt}").to_i(16) % 100
         groups.values.find { |group| group.percentile_range.include?(percentile) }
       end
 
@@ -50,6 +50,10 @@ module Verdict
         def as_json(options = {})
           super(options).merge(percentage: percentage_size)
         end
+      end
+
+      def self.salt
+        ""
       end
     end
   end
