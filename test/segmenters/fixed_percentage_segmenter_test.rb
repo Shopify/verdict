@@ -85,4 +85,25 @@ class FixedPercentageSegmenterTest < Minitest::Test
     assert_equal 'rest', json['handle']
     assert_equal 67, json['percentage']
   end
+
+  def test_salt_changes_segmentation
+    s = Verdict::Segmenters::FixedPercentageSegmenter.new(Verdict::Experiment.new('test'))
+    s.group :a, 50
+    s.group :b, 50
+    s.verify!
+
+    groups = { 'a' => 0, 'b' => 0 }
+    100.times { |n| groups[s.assign(n.to_s, nil, nil).handle] += 1 }
+
+    assert_equal 54, groups['a']
+    assert_equal 46, groups['b']
+
+    Verdict::Segmenters::FixedPercentageSegmenter.stubs(:salt).returns("whatever")
+
+    groups = { 'a' => 0, 'b' => 0 }
+    100.times { |n| groups[s.assign(n.to_s, nil, nil).handle] += 1 }
+
+    assert_equal 50, groups['a']
+    assert_equal 50, groups['b']
+  end
 end
