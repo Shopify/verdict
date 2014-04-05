@@ -90,7 +90,7 @@ Storage providers simply store subject assignments and require quick lookups of 
 
 Storage providers are intended for operational use and should not be used for data analysis. For data analysis, you should use the logger.
 
-For more details about these methods, check out the source code for [Verdict::Storage::MockStorage](lib/verdict/storage/mock.rb)
+For more details about these methods, check out the source code for [Verdict::Storage::MockStorage](lib/verdict/storage/mock_storage.rb)
 
 ## Logging
 
