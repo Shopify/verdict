@@ -78,7 +78,6 @@ an object that responds to the following methods:
 * `store_assignment(assignment)`
 * `retrieve_assignment(experiment, subject_identifier)`
 * `remove_assignment(experiment, subject_identifier)`
-* `clear_experiment(experiment)`
 * `retrieve_start_timestamp(experiment)`
 * `store_start_timestamp(experiment, timestamp)`
 

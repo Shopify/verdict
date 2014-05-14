@@ -278,8 +278,8 @@ class ExperimentTest < Minitest::Test
       groups { group :all, 100 }
     end
 
-    e.subject_storage.expects(:retrieve_start_timestamp).returns(nil)
-    e.subject_storage.expects(:store_start_timestamp).once
+    e.storage.expects(:retrieve_start_timestamp).returns(nil)
+    e.storage.expects(:store_start_timestamp).once
     e.send(:ensure_experiment_has_started)
   end
 
@@ -289,8 +289,8 @@ class ExperimentTest < Minitest::Test
     end
 
     e.send(:ensure_experiment_has_started)
-    e.subject_storage.expects(:retrieve_start_timestamp).never
-    e.subject_storage.expects(:store_start_timestamp).never
+    e.storage.expects(:retrieve_start_timestamp).never
+    e.storage.expects(:store_start_timestamp).never
     e.send(:ensure_experiment_has_started)
   end
 
@@ -299,8 +299,8 @@ class ExperimentTest < Minitest::Test
       groups { group :all, 100 }
     end
 
-    e.subject_storage.expects(:retrieve_start_timestamp).returns(Time.now.utc)
-    e.subject_storage.expects(:store_start_timestamp).never
+    e.storage.expects(:retrieve_start_timestamp).returns(Time.now.utc)
+    e.storage.expects(:store_start_timestamp).never
     e.send(:ensure_experiment_has_started)
   end
 

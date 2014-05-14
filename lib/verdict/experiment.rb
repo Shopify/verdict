@@ -2,7 +2,7 @@ class Verdict::Experiment
 
   include Verdict::Metadata
 
-  attr_reader :handle, :qualifier, :subject_storage, :event_logger
+  attr_reader :handle, :qualifier, :storage, :event_logger
 
   def self.define(handle, *args, &block)
     experiment = self.new(handle, *args, &block)
@@ -16,7 +16,7 @@ class Verdict::Experiment
     options = default_options.merge(options)
     @qualifier                   = options[:qualifier]
     @event_logger                = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
-    @subject_storage             = storage(options[:storage] || :memory)
+    @storage                     = storage(options[:storage] || :memory)
     @store_unqualified           = options[:store_unqualified]
     @segmenter                   = options[:segmenter]
     @subject_type                = options[:subject_type]
@@ -57,15 +57,15 @@ class Verdict::Experiment
     @qualifier = block
   end
 
-  def storage(subject_storage = nil, options = {})
-    return @subject_storage if subject_storage.nil?
+  def storage(storage = nil, options = {})
+    return @storage if storage.nil?
 
     @store_unqualified = options[:store_unqualified] if options.has_key?(:store_unqualified)
-    @subject_storage = case subject_storage
+    @storage = case storage
       when :memory; Verdict::Storage::MemoryStorage.new
       when :none;   Verdict::Storage::MockStorage.new
-      when Class;   subject_storage.new
-      else          subject_storage
+      when Class;   storage.new
+      else          storage
     end
   end
 
@@ -75,7 +75,7 @@ class Verdict::Experiment
   end
 
   def started_at
-    @started_at ||= @subject_storage.retrieve_start_timestamp(self)
+    @started_at ||= @storage.retrieve_start_timestamp(self)
   end
 
   def started?
@@ -147,7 +147,7 @@ class Verdict::Experiment
   end    
 
   def store_assignment(assignment)
-    @subject_storage.store_assignment(assignment) if should_store_assignment?(assignment)
+    @storage.store_assignment(assignment) if should_store_assignment?(assignment)
     event_logger.log_assignment(assignment)
     assignment
   end
@@ -157,7 +157,7 @@ class Verdict::Experiment
   end
 
   def remove_subject_assignment_by_identifier(subject_identifier)
-    @subject_storage.remove_assignment(self, subject_identifier)
+    @storage.remove_assignment(self, subject_identifier)
   end
 
   def switch(subject, context = nil)
@@ -170,10 +170,6 @@ class Verdict::Experiment
 
   def lookup_assignment_for_identifier(subject_identifier)
     fetch_assignment(subject_identifier)
-  end
-
-  def wrapup
-    @subject_storage.clear_experiment(self)
   end
 
   def retrieve_subject_identifier(subject)
@@ -213,7 +209,7 @@ class Verdict::Experiment
   end
 
   def fetch_assignment(subject_identifier)
-    @subject_storage.retrieve_assignment(self, subject_identifier)
+    @storage.retrieve_assignment(self, subject_identifier)
   end
 
   def disqualify_empty_identifier?
@@ -262,11 +258,11 @@ class Verdict::Experiment
   end
 
   def set_start_timestamp
-    @subject_storage.store_start_timestamp(self, started_now = Time.now.utc)
+    @storage.store_start_timestamp(self, started_now = Time.now.utc)
     started_now
   end
 
   def ensure_experiment_has_started
-    @started_at ||= @subject_storage.retrieve_start_timestamp(self) || set_start_timestamp
+    @started_at ||= @storage.retrieve_start_timestamp(self) || set_start_timestamp
   end
 end

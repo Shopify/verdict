@@ -1,6 +1,6 @@
 require 'test_helper'
 
-class MemorySubjectStorageTest < Minitest::Test
+class MemoryStorageTest < Minitest::Test
 
   def setup
     @storage = storage = Verdict::Storage::MemoryStorage.new
@@ -10,12 +10,6 @@ class MemorySubjectStorageTest < Minitest::Test
     end
 
     @subject = stub(id: 'bootscale')
-  end
-
-  def test_wrapup
-    @experiment.assign(@subject)
-    @experiment.wrapup
-    assert @experiment.lookup(@subject).nil?
   end
 
   def test_with_memory_store
@@ -32,14 +26,18 @@ class MemorySubjectStorageTest < Minitest::Test
   end
 
   def test_remove_assignment
-    assert !@experiment.assign(@subject).returning?
-    @experiment.wrapup
+    assignment = @experiment.assign(@subject)
+    assert !assignment.returning?
+
+    assert @experiment.assign(@subject).returning?
+    @storage.remove_assignment(@experiment, @subject.id)
     assert !@experiment.assign(@subject).returning?
   end
 
   def test_started_at
-    assert @storage.start_timestamps[@experiment.handle].nil?
+    assert @storage.get(@experiment.handle.to_s, 'started_at').nil?
     @experiment.send(:ensure_experiment_has_started)
-    assert @storage.start_timestamps[@experiment.handle].instance_of?(Time)
+    refute @storage.get(@experiment.handle.to_s, 'started_at').nil?
+    assert_instance_of Time, @experiment.started_at
   end
 end

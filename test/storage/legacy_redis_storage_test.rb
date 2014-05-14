@@ -1,11 +1,11 @@
 require 'test_helper'
 
-class RedisSubjectStorageTest < Minitest::Test
+class LegacyRedisStorageTest < Minitest::Test
 
   def setup
     @redis = ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
-    @storage = storage = Verdict::Storage::RedisStorage.new(@redis)
-    @experiment = Verdict::Experiment.new(:redis_storage) do
+    @storage = storage = Verdict::Storage::LegacyRedisStorage.new(@redis)
+    @experiment = Verdict::Experiment.new(:legacy_redis_storage) do
       qualify { |s| s == 'subject_1' }
       groups { group :all, 100 }
       storage storage, store_unqualified: true
@@ -13,11 +13,12 @@ class RedisSubjectStorageTest < Minitest::Test
   end
 
   def teardown
-    @storage.clear_experiment(@experiment)
+    @redis.del('experiments/legacy_redis_storage')
+    @redis.del('experiments/legacy_redis_storage/started_at')
   end
 
   def test_generate_experiment_key_should_generate_namespaced_key
-    assert_equal 'experiments/redis_storage', @storage.send(:generate_experiment_key, @experiment)
+    assert_equal 'experiments/legacy_redis_storage', @storage.send(:generate_experiment_key, @experiment)
   end
 
   def test_store_and_retrieve_qualified_assignment
@@ -68,14 +69,6 @@ class RedisSubjectStorageTest < Minitest::Test
     assert @redis.hexists(experiment_key, 'subject_3')
     @experiment.remove_subject_assignment('subject_3')
     assert !@redis.hexists(experiment_key, 'subject_3')
-  end
-
-  def test_clear_experiment
-    experiment_key = @storage.send(:generate_experiment_key, @experiment)
-    new_assignment = @experiment.assign('subject_3')
-    assert @redis.exists(experiment_key)
-    @experiment.wrapup
-    assert !@redis.exists(experiment_key)
   end
 
   def test_started_at

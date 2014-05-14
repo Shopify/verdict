@@ -1,39 +1,25 @@
 module Verdict
   module Storage
-    class MemoryStorage
-      attr_reader :assignments, :start_timestamps
+    class MemoryStorage < BaseStorage
+      attr_reader :storage
 
       def initialize
-        @assignments = {}
-        @start_timestamps = {}
+        @storage = {}
       end
 
-      def store_assignment(assignment)
-        @assignments[assignment.experiment.handle] ||= {}
-        @assignments[assignment.experiment.handle][assignment.subject_identifier] = assignment.returning
-        true
+      def get(scope, key)
+        @storage[scope] ||= {}
+        @storage[scope][key]
       end
 
-      def retrieve_assignment(experiment, subject_identifier)
-        experiment_store = @assignments[experiment.handle] || {}
-        experiment_store[subject_identifier]
+      def set(scope, key, value)
+        @storage[scope] ||= {}
+        @storage[scope][key] = value
       end
 
-      def remove_assignment(experiment, subject_identifier)
-        @assignments[experiment.handle] ||= {}
-        @assignments[experiment.handle].delete(subject_identifier)
-      end
-
-      def clear_experiment(experiment)
-        @assignments.delete(experiment.handle)
-      end
-
-      def retrieve_start_timestamp(experiment)
-        @start_timestamps[experiment.handle]
-      end
-
-      def store_start_timestamp(experiment, timestamp)
-        @start_timestamps[experiment.handle] = timestamp
+      def remove(scope, key)
+        @storage[scope] ||= {}
+        @storage[scope].delete(key)
       end
     end
   end
