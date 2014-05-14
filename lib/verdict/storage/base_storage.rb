@@ -1,6 +1,7 @@
 module Verdict
   module Storage
     class BaseStorage
+
       # Should store the assignments to allow quick lookups.
       # - Assignments should be unique on the combination of
       #   `assignment.experiment.handle` and `assignment.subject_identifier`.
@@ -43,14 +44,26 @@ module Verdict
       end
 
 
+      # Retrieves a key in a given scope from storage.
+      # - The scope and key are both provided as string.
+      # - Should return a string value if the key is found in the scope, nil otherwise.
+      # - Should raise Verdict::StorageError if anything goes wrong.
       def get(scope, key)
         raise NotImplementedError
       end
 
+      # Retrieves a key in a given scope from storage.
+      # - The scope, key, and value are all provided as string.
+      # - Should return true if the item was successfully stored.
+      # - Should raise Verdict::StorageError if anything goes wrong.
       def set(scope, key, value)
         raise NotImplementedError
       end
 
+      # Retrieves a key in a given scope from storage.
+      # - The scope and key are both provided as string.
+      # - Should return true if the item was successfully removed from storage.
+      # - Should raise Verdict::StorageError if anything goes wrong.
       def remove(scope, key)
         raise NotImplementedError
       end
