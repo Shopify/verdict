@@ -19,7 +19,7 @@ class ConversionTest < Minitest::Test
   end
 
   def test_assignment_lookup
-    @experiment.subject_storage.expects(:retrieve_assignment).with(@experiment, 'test_subject_id')
+    @experiment.storage.expects(:retrieve_assignment).with(@experiment, 'test_subject_id')
     conversion = Verdict::Conversion.new(@experiment, 'test_subject_id', :test_goal)
     conversion.assignment
   end
