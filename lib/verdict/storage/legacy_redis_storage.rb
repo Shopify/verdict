@@ -1,6 +1,6 @@
 module Verdict
   module Storage
-    class LegacyRedisStorage < BaseStorage
+    class LegacyRedisStorage
       attr_accessor :redis, :key_prefix
 
       def initialize(redis = nil, options = {})
