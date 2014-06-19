@@ -1,3 +1,7 @@
+---
+layout: index
+---
+
 # Verdict
 
 [![Build Status](https://travis-ci.org/Shopify/verdict.png)](https://travis-ci.org/Shopify/verdict)
