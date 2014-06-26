@@ -2,8 +2,6 @@
 layout: index
 ---
 
-# Verdict
-
 [![Build Status](https://travis-ci.org/Shopify/verdict.png)](https://travis-ci.org/Shopify/verdict)
 [![Code Climate](https://codeclimate.com/github/Shopify/verdict.png)](https://codeclimate.com/github/Shopify/verdict)
 
@@ -29,22 +27,21 @@ The `Verdict::Experiment` class is used to create an experiment, define control 
 
 You define an experiment like so:
 
-``` ruby
-Verdict::Experiment.define :my_experiment do
+    ruby
+    Verdict::Experiment.define :my_experiment do
 
-  # This block should return true if the subject is qualified to participate
-  qualify { |subject, context|  ... }
+      # This block should return true if the subject is qualified to participate
+      qualify { |subject, context|  ... }
 
-  # Specify the groups and the percentages
-  groups do
-    group :test, :half
-    group :control, :rest
-  end
+      # Specify the groups and the percentages
+      groups do
+        group :test, :half
+        group :control, :rest
+      end
 
-  # Specify how assignments will be stored.
-  storage Verdict::Storage::MemoryStorage.new
-end
-```
+      # Specify how assignments will be stored.
+      storage Verdict::Storage::MemoryStorage.new
+    end
 
 Usually you'll want to place this in a file called **my_experiment.rb** in the
 **/app/experiments** folder.
@@ -57,17 +54,16 @@ At the relevant point in your application, you can check the group that a partic
 
 You'll need to pass along the subject (think User, Product or any other Model class) as well as any context to be used for qualifying the subject.
 
-``` ruby
-context = { ... } # anything you want to pass along to the qualify block.
-case Verdict['my experiment'].switch(shop, context)
-when :test
-  # Handle test group
-when :control
-  # Handle control group
-else
-  # Handle unqualified subjects.
-end
-```
+    ruby
+    context = { ... } # anything you want to pass along to the qualify block.
+    case Verdict['my experiment'].switch(shop, context)
+    when :test
+      # Handle test group
+    when :control
+      # Handle control group
+    else
+      # Handle unqualified subjects.
+    end
 
 ## Storage
 
@@ -105,7 +101,6 @@ Logging (as opposed to storage) should be used for data analysis. The logger req
 
 It's possible to run an experiment without defining any storage, though this comes with several drawbacks. Logging on the other hand is required in order to analyze the results.
 
-
 ## Contributing
 
 1. Fork it
@@ -113,3 +108,7 @@ It's possible to run an experiment without defining any storage, though this com
 3. Commit your changes, including tests (`git commit -am 'Added some feature'`)
 4. Push to the branch (`git push origin my-new-feature`)
 5. Create new Pull Request, and mention @wvanbergen.
+
+## License
+
+Copyright (c) 2013 Shopify. Released under the [MIT-LICENSE](http://opensource.org/licenses/MIT).
