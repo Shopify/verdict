@@ -76,6 +76,8 @@ class Verdict::Experiment
 
   def started_at
     @started_at ||= @storage.retrieve_start_timestamp(self)
+  rescue Verdict::StorageError => e
+    nil
   end
 
   def started?
@@ -264,5 +266,7 @@ class Verdict::Experiment
 
   def ensure_experiment_has_started
     @started_at ||= @storage.retrieve_start_timestamp(self) || set_start_timestamp
+  rescue Verdict::StorageError
+    @started_at ||= Time.now.utc
   end
 end
