@@ -82,6 +82,15 @@ class Verdict::Experiment
     !@started_at.nil?
   end
 
+  def end_experiment
+    @storage.store_ended(self)
+    @ended = true
+  end
+
+  def ended?
+    @ended ||= @storage.retrieve_ended(self)
+  end
+
   def group_handles
     segmenter.groups.keys
   end
@@ -144,7 +153,7 @@ class Verdict::Experiment
 
   def disqualify_manually_by_identifier(subject_identifier)
     assign_manually_by_identifier(subject_identifier, nil)
-  end    
+  end
 
   def store_assignment(assignment)
     @storage.store_assignment(assignment) if should_store_assignment?(assignment)
@@ -254,6 +263,7 @@ class Verdict::Experiment
 
   def subject_qualifies?(subject, context = nil)
     ensure_experiment_has_started
+    @segmenter = Verdict::Segmenters::ExperimentEndedSegementer.new(@segmenter) if ended?
     everybody_qualifies? || @qualifier.call(subject, context)
   end
 

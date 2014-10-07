@@ -43,6 +43,15 @@ module Verdict
         set(experiment.handle.to_s, 'started_at', timestamp.utc.strftime('%FT%TZ'))
       end
 
+      # Retrieves the start timestamp of the experiment
+      def retrieve_ended(experiment)
+        !!get(experiment.handle.to_s, 'ended')
+      end
+
+      # Stores the timestamp on which the experiment was started
+      def store_ended(experiment)
+        set(experiment.handle.to_s, 'ended', true)
+      end
 
       # Retrieves a key in a given scope from storage.
       # - The scope and key are both provided as string.

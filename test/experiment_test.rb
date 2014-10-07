@@ -22,7 +22,7 @@ class ExperimentTest < Minitest::Test
 
     subject_stub = Struct.new(:id, :country)
     ca_subject = subject_stub.new(1, 'CA')
-    us_subject = subject_stub.new(1, 'US')
+    us_subject = subject_stub.new(2, 'US')
 
     assert e.qualifier.call(ca_subject)
     assert !e.qualifier.call(us_subject)
@@ -337,5 +337,33 @@ class ExperimentTest < Minitest::Test
     end
 
     assert_kind_of Verdict::Storage::MockStorage, e.storage
+  end
+
+  def test_ended_experiment_disqualifies_all_new_assignments
+    e = Verdict::Experiment.new('test') do
+      qualify { |subject| true }
+      groups { group :all, 100 }
+    end
+
+    e.end_experiment
+
+    subject = stub(id: '123')
+    refute e.assign(subject).qualified?
+
+    subject = stub(id: '456')
+    refute e.assign(subject).qualified?
+  end
+
+  def test_ended_experiment_still_returns_previous_assignments
+    e = Verdict::Experiment.new('tttttt') do
+      qualify { |subject| true }
+      groups { group :booo, 100 }
+    end
+
+    subject = stub(id: '123')
+    assert_equal :booo, e.assign(subject).to_sym
+
+    e.end_experiment
+    assert_equal :booo, e.assign(subject).to_sym
   end
 end

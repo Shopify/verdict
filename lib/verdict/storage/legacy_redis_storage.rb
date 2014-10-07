@@ -42,6 +42,14 @@ module Verdict
         redis.setnx(generate_experiment_start_timestamp_key(experiment), timestamp.to_s)
       end
 
+      def retrieve_ended(experiment)
+        redis.get(generate_experiment_ended_key(experiment))
+      end
+
+      def store_ended(experiment)
+        redis.setnx(generate_experiment_ended_key(experiment), true)
+      end
+
 
       private
 
@@ -51,6 +59,10 @@ module Verdict
 
       def generate_experiment_start_timestamp_key(experiment)
         "#{@key_prefix}#{experiment.handle}/started_at"
+      end
+
+      def generate_experiment_ended_key(experiment)
+        "#{@key_prefix}#{experiment.handle}/ended"
       end
     end
   end

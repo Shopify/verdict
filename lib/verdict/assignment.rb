@@ -41,7 +41,7 @@ class Verdict::Assignment
 
   def to_sym
     qualified? ? group.to_sym : nil
-  end  
+  end
 
   def as_json(options = {})
     {
