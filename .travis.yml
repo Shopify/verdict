@@ -1,4 +1,6 @@
 language: ruby
+install:
+  - bundle install --retry=3
 script: bundle exec rake
 rvm:
   - 1.9.3
