@@ -201,7 +201,8 @@ class Verdict::Experiment
       has_qualifier: has_qualifier?,
       groups: segmenter.groups.values.map { |g| g.as_json(options) },
       metadata: metadata,
-      started_at: started_at.nil? ? nil : started_at.utc.strftime('%FT%TZ')
+      started_at: started_at.nil? ? nil : started_at.utc.strftime('%FT%TZ'),
+      ended: ended?
     }
 
     data.tap do |data|
