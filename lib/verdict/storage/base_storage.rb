@@ -34,12 +34,16 @@ module Verdict
       # Retrieves the start timestamp of the experiment
       def retrieve_start_timestamp(experiment)
         if timestamp = get(experiment.handle.to_s, 'started_at')
+          Experiments::ExperimentStartDate.store(experiment.handle.to_s, timestamp.to_time)
           Time.parse(timestamp)
         end
+      rescue Redis::CannotConnectError
+        Experiments::ExperimentStartDate.retrieve(experiment.handle.to_s)
       end
 
       # Stores the timestamp on which the experiment was started
       def store_start_timestamp(experiment, timestamp)
+        Experiments::ExperimentStartDate.store(experiment.handle.to_s, timestamp)
         set(experiment.handle.to_s, 'started_at', timestamp.utc.strftime('%FT%TZ'))
       end
 
