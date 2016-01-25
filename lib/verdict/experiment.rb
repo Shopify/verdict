@@ -21,6 +21,7 @@ class Verdict::Experiment
     @segmenter                   = options[:segmenter]
     @subject_type                = options[:subject_type]
     @disqualify_empty_identifier = options[:disqualify_empty_identifier]
+    @timestamps_out_of_band      = options[:timestamps_out_of_band]
 
     instance_eval(&block) if block_given?
   end
@@ -33,6 +34,10 @@ class Verdict::Experiment
 
   def store_unqualified?
     @store_unqualified
+  end
+
+  def timestamps_out_of_band?
+    @timestamps_out_of_band
   end
 
   def group(handle)

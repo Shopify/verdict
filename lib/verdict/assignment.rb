@@ -1,12 +1,11 @@
 class Verdict::Assignment
-
   attr_reader :experiment, :subject_identifier, :group, :created_at
 
   def initialize(experiment, subject_identifier, group, originally_created_at, temporary = false)
     @experiment         = experiment
     @subject_identifier = subject_identifier
     @group              = group
-    @returning          = !originally_created_at.nil?
+    @first              = originally_created_at.nil? || experiment.timestamps_out_of_band?
     @created_at         = originally_created_at || Time.now.utc
     @temporary          = temporary
   end
@@ -32,7 +31,7 @@ class Verdict::Assignment
   end
 
   def returning?
-    @returning
+    !@first
   end
 
   def handle
