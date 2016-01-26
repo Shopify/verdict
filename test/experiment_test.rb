@@ -75,6 +75,22 @@ class ExperimentTest < Minitest::Test
     assert_equal nil, e.switch(3)
   end
 
+  def test_experiment_without_timestamps_out_of_band_option
+    e = Verdict::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    refute e.timestamps_out_of_band?
+  end
+
+  def test_experiment_with_timestamps_out_of_band_option
+    e = Verdict::Experiment.new('test', timestamps_out_of_band: true) do
+      groups { group :all, 100 }
+    end   
+
+    assert e.timestamps_out_of_band?
+  end
+
   def test_subject_identifier
     e = Verdict::Experiment.new('test')
     assert_equal '123', e.retrieve_subject_identifier(stub(id: 123, to_s: '456'))
