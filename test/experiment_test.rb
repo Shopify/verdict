@@ -75,20 +75,20 @@ class ExperimentTest < Minitest::Test
     assert_equal nil, e.switch(3)
   end
 
-  def test_experiment_without_timestamps_out_of_band_option
+  def test_experiment_without_manual_assignment_timestamps_option
     e = Verdict::Experiment.new('test') do
       groups { group :all, 100 }
     end
 
-    refute e.timestamps_out_of_band?
+    refute e.manual_assignment_timestamps?
   end
 
-  def test_experiment_with_timestamps_out_of_band_option
-    e = Verdict::Experiment.new('test', timestamps_out_of_band: true) do
+  def test_experiment_with_manual_assignment_timestamps_option
+    e = Verdict::Experiment.new('test', manual_assignment_timestamps: true) do
       groups { group :all, 100 }
     end   
 
-    assert e.timestamps_out_of_band?
+    assert e.manual_assignment_timestamps?
   end
 
   def test_subject_identifier

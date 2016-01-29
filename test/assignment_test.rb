@@ -82,8 +82,8 @@ class AssignmentTest < Minitest::Test
     refute assignment_without_timestamp.returning?
   end
 
-  def test_returning_with_timestamps_out_of_band_experiment_option
-    experiment = Verdict::Experiment.new('assignment test', timestamps_out_of_band: true)
+  def test_returning_with_manual_assignment_timestamps_experiment_option
+    experiment = Verdict::Experiment.new('assignment test', manual_assignment_timestamps: true)
 
     assignment_with_timestamp = Verdict::Assignment.new(experiment, 'test_subject_id', @group, Time.now.utc)
     refute assignment_with_timestamp.returning?

@@ -5,7 +5,7 @@ class Verdict::Assignment
     @experiment         = experiment
     @subject_identifier = subject_identifier
     @group              = group
-    @first              = originally_created_at.nil? || experiment.timestamps_out_of_band?
+    @first              = originally_created_at.nil? || experiment.manual_assignment_timestamps?
     @created_at         = originally_created_at || Time.now.utc
     @temporary          = temporary
   end
@@ -31,7 +31,7 @@ class Verdict::Assignment
   end
 
   def returning?
-    !@first
+    @first.nil?
   end
 
   def handle
