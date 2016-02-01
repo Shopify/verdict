@@ -14,13 +14,14 @@ class Verdict::Experiment
     @handle = handle.to_s
 
     options = default_options.merge(options)
-    @qualifier                   = options[:qualifier]
-    @event_logger                = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
-    @storage                     = storage(options[:storage] || :memory)
-    @store_unqualified           = options[:store_unqualified]
-    @segmenter                   = options[:segmenter]
-    @subject_type                = options[:subject_type]
-    @disqualify_empty_identifier = options[:disqualify_empty_identifier]
+    @qualifier                    = options[:qualifier]
+    @event_logger                 = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
+    @storage                      = storage(options[:storage] || :memory)
+    @store_unqualified            = options[:store_unqualified]
+    @segmenter                    = options[:segmenter]
+    @subject_type                 = options[:subject_type]
+    @disqualify_empty_identifier  = options[:disqualify_empty_identifier]
+    @manual_assignment_timestamps = options[:manual_assignment_timestamps]
 
     instance_eval(&block) if block_given?
   end
@@ -33,6 +34,10 @@ class Verdict::Experiment
 
   def store_unqualified?
     @store_unqualified
+  end
+
+  def manual_assignment_timestamps?
+    @manual_assignment_timestamps
   end
 
   def group(handle)

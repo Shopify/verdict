@@ -73,4 +73,22 @@ class AssignmentTest < Minitest::Test
       assert_equal '2012-01-01T00:00:00Z', json['created_at']
     end
   end
+
+  def test_returning_assignment
+    assignment_with_timestamp = Verdict::Assignment.new(@experiment, 'test_subject_id', @group, Time.now.utc)
+    assert assignment_with_timestamp.returning?
+
+    assignment_without_timestamp = Verdict::Assignment.new(@experiment, 'test_subject_id', @group, nil)
+    refute assignment_without_timestamp.returning?
+  end
+
+  def test_returning_with_manual_assignment_timestamps_experiment_option
+    experiment = Verdict::Experiment.new('assignment test', manual_assignment_timestamps: true)
+
+    assignment_with_timestamp = Verdict::Assignment.new(experiment, 'test_subject_id', @group, Time.now.utc)
+    refute assignment_with_timestamp.returning?
+
+    assignment_without_timestamp = Verdict::Assignment.new(experiment, 'test_subject_id', @group, nil)
+    refute assignment_without_timestamp.returning?
+  end
 end

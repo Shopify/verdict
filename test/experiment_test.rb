@@ -75,6 +75,22 @@ class ExperimentTest < Minitest::Test
     assert_equal nil, e.switch(3)
   end
 
+  def test_experiment_without_manual_assignment_timestamps_option
+    e = Verdict::Experiment.new('test') do
+      groups { group :all, 100 }
+    end
+
+    refute e.manual_assignment_timestamps?
+  end
+
+  def test_experiment_with_manual_assignment_timestamps_option
+    e = Verdict::Experiment.new('test', manual_assignment_timestamps: true) do
+      groups { group :all, 100 }
+    end   
+
+    assert e.manual_assignment_timestamps?
+  end
+
   def test_subject_identifier
     e = Verdict::Experiment.new('test')
     assert_equal '123', e.retrieve_subject_identifier(stub(id: 123, to_s: '456'))
