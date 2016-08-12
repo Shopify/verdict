@@ -16,7 +16,7 @@ module Verdict
       discovery
     end
 
-    @repository
+    Hash[@repository.sort]
   end
 
   def discovery
