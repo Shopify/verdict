@@ -185,14 +185,6 @@ class Verdict::Experiment
     as_json(options).to_json
   end
 
-  def fetch_subject(subject_identifier)
-    raise NotImplementedError, "Fetching subjects based in identifier is not implemented for eperiment @{handle.inspect}."
-  end
-
-  def fetch_assignment(subject_identifier)
-    @storage.retrieve_assignment(self, subject_identifier)
-  end
-
   def disqualify_empty_identifier?
     @disqualify_empty_identifier
   end
@@ -273,5 +265,13 @@ class Verdict::Experiment
 
   def lookup_assignment_for_identifier(subject_identifier)
     fetch_assignment(subject_identifier)
+  end
+
+  def fetch_subject(subject_identifier)
+    raise NotImplementedError, "Fetching subjects based in identifier is not implemented for eperiment @{handle.inspect}."
+  end
+
+  def fetch_assignment(subject_identifier)
+    @storage.retrieve_assignment(self, subject_identifier)
   end
 end
