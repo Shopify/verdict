@@ -93,17 +93,17 @@ class Verdict::Experiment
     segmenter.groups.keys
   end
 
-  def subject_assignment(subject_identifier, group, originally_created_at = nil, temporary = false)
-    Verdict::Assignment.new(self, subject_identifier, group, originally_created_at, temporary)
+  def subject_assignment(subject, group, originally_created_at = nil, temporary = false)
+    Verdict::Assignment.new(self, subject, group, originally_created_at, temporary)
   end
 
-  def subject_conversion(subject_identifier, goal, created_at = Time.now.utc)
-    Verdict::Conversion.new(self, subject_identifier, goal, created_at)
+  def subject_conversion(subject, goal, created_at = Time.now.utc)
+    Verdict::Conversion.new(self, subject, goal, created_at)
   end
 
   def convert(subject, goal)
     identifier = retrieve_subject_identifier(subject)
-    conversion = subject_conversion(identifier, goal)
+    conversion = subject_conversion(subject, goal)
     event_logger.log_conversion(conversion)
     segmenter.conversion_feedback(identifier, subject, conversion)
     conversion
@@ -121,22 +121,17 @@ class Verdict::Experiment
 
     store_assignment(assignment)
   rescue Verdict::StorageError
-    subject_assignment(identifier, nil, nil)
+    subject_assignment(subject, nil, nil)
   rescue Verdict::EmptySubjectIdentifier
     if disqualify_empty_identifier?
-      subject_assignment(identifier, nil, nil)
+      subject_assignment(subject, nil, nil)
     else
       raise
     end
   end
 
   def assign_manually(subject, group)
-    identifier = retrieve_subject_identifier(subject)
-    assign_manually_by_identifier(identifier, group)
-  end
-
-  def assign_manually_by_identifier(subject_identifier, group)
-    assignment = subject_assignment(subject_identifier, group)
+    assignment = subject_assignment(subject, group)
     if !assignment.qualified? && !store_unqualified?
       raise Verdict::Error, "Unqualified subject assignments are not stored for this experiment, so manual disqualification is impossible. Consider setting :store_unqualified to true for this experiment."
     end
@@ -149,10 +144,6 @@ class Verdict::Experiment
     assign_manually(subject, nil)
   end
 
-  def disqualify_manually_by_identifier(subject_identifier)
-    assign_manually_by_identifier(subject_identifier, nil)
-  end    
-
   def store_assignment(assignment)
     @storage.store_assignment(assignment) if should_store_assignment?(assignment)
     event_logger.log_assignment(assignment)
@@ -160,11 +151,7 @@ class Verdict::Experiment
   end
 
   def remove_subject_assignment(subject)
-    remove_subject_assignment_by_identifier(retrieve_subject_identifier(subject))
-  end
-
-  def remove_subject_assignment_by_identifier(subject_identifier)
-    @storage.remove_assignment(self, subject_identifier)
+    @storage.remove_assignment(self, subject)
   end
 
   def switch(subject, context = nil)
@@ -172,11 +159,7 @@ class Verdict::Experiment
   end
 
   def lookup(subject)
-    lookup_assignment_for_identifier(retrieve_subject_identifier(subject))
-  end
-
-  def lookup_assignment_for_identifier(subject_identifier)
-    fetch_assignment(subject_identifier)
+    fetch_assignment(subject)
   end
 
   def retrieve_subject_identifier(subject)
@@ -211,14 +194,6 @@ class Verdict::Experiment
     as_json(options).to_json
   end
 
-  def fetch_subject(subject_identifier)
-    raise NotImplementedError, "Fetching subjects based in identifier is not implemented for eperiment @{handle.inspect}."
-  end
-
-  def fetch_assignment(subject_identifier)
-    @storage.retrieve_assignment(self, subject_identifier)
-  end
-
   def disqualify_empty_identifier?
     @disqualify_empty_identifier
   end
@@ -234,24 +209,24 @@ class Verdict::Experiment
   end
 
   def assignment_with_unqualified_persistence(subject_identifier, subject, context)
-    previous_assignment = fetch_assignment(subject_identifier)
+    previous_assignment = lookup(subject)
     return previous_assignment unless previous_assignment.nil?
     if subject_qualifies?(subject, context)
       group = segmenter.assign(subject_identifier, subject, context)
-      subject_assignment(subject_identifier, group, nil, group.nil?)
+      subject_assignment(subject, group, nil, group.nil?)
     else
-      subject_assignment(subject_identifier, nil, nil)
+      subject_assignment(subject, nil, nil)
     end
   end
 
   def assignment_without_unqualified_persistence(subject_identifier, subject, context)
     if subject_qualifies?(subject, context)
-      previous_assignment = fetch_assignment(subject_identifier)
+      previous_assignment = lookup(subject)
       return previous_assignment unless previous_assignment.nil?
       group = segmenter.assign(subject_identifier, subject, context)
-      subject_assignment(subject_identifier, group, nil, group.nil?)
+      subject_assignment(subject, group, nil, group.nil?)
     else
-      subject_assignment(subject_identifier, nil, nil)
+      subject_assignment(subject, nil, nil)
     end
   end
 
@@ -273,5 +248,13 @@ class Verdict::Experiment
     @started_at ||= @storage.retrieve_start_timestamp(self) || set_start_timestamp
   rescue Verdict::StorageError
     @started_at ||= Time.now.utc
+  end
+
+  def fetch_assignment(subject)
+    @storage.retrieve_assignment(self, subject)
+  end
+
+  def fetch_subject(subject_identifier)
+    raise NotImplementedError, "Fetching subjects based in identifier is not implemented for experiment @{handle.inspect}."
   end
 end

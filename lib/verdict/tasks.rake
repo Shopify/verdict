@@ -71,7 +71,7 @@ namespace :verdict do
   task :disqualify_manually => 'environment' do
     experiment         = Verdict::Rake.experiment
     subject_identifier = Verdict::Rake.subject_identifier
-
+    #TODO remove by_subject_identifier
     experiment.disqualify_manually_by_identifier(subject_identifier)
     Verdict::Rake.stdout.puts "Subject `#{subject_identifier}` has been disqualified from experiment `#{experiment.handle}`."
   end

@@ -30,11 +30,7 @@ class AssignmentTest < Minitest::Test
 
   def test_subject_lookup
     assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
-    assert_raises(NotImplementedError) { assignment.subject }
-
-    @experiment.expects(:fetch_subject).with('test_subject_id').returns(subject = mock('subject'))
-    assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
-    assert_equal subject, assignment.subject
+    assert_equal 'test_subject_id', assignment.subject
   end
 
   def test_triple_equals
