@@ -15,7 +15,8 @@ module Verdict
       # Should do a fast lookup of an assignment of the subject for the given experiment.
       # - Should return nil if not found in store
       # - Should return an Assignment instance otherwise.
-      def retrieve_assignment(experiment, subject_identifier)
+      def retrieve_assignment(experiment, subject)
+        subject_identifier = experiment.retrieve_subject_identifier(subject)
         if value = get(experiment.handle.to_s, "assignment_#{subject_identifier}")
           hash = JSON.parse(value)
           experiment.subject_assignment(
@@ -27,7 +28,8 @@ module Verdict
       end
 
       # Should remove the subject from storage, so it will be reassigned later.
-      def remove_assignment(experiment, subject_identifier)
+      def remove_assignment(experiment, subject)
+        subject_identifier = experiment.retrieve_subject_identifier(subject)
         remove(experiment.handle.to_s, "assignment_#{subject_identifier}")
       end
 
@@ -43,7 +45,7 @@ module Verdict
         set(experiment.handle.to_s, 'started_at', timestamp.utc.strftime('%FT%TZ'))
       end
 
-
+      protected
       # Retrieves a key in a given scope from storage.
       # - The scope and key are both provided as string.
       # - Should return a string value if the key is found in the scope, nil otherwise.

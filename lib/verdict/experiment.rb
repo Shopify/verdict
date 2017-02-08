@@ -96,7 +96,7 @@ class Verdict::Experiment
   def subject_assignment(subject_identifier, group, originally_created_at = nil, temporary = false)
     Verdict::Assignment.new(self, subject_identifier, group, originally_created_at, temporary)
   end
-  
+
   def convert(subject, goal)
     identifier = retrieve_subject_identifier(subject)
     conversion = subject_conversion(identifier, goal)
