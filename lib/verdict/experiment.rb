@@ -96,11 +96,7 @@ class Verdict::Experiment
   def subject_assignment(subject_identifier, group, originally_created_at = nil, temporary = false)
     Verdict::Assignment.new(self, subject_identifier, group, originally_created_at, temporary)
   end
-
-  def subject_conversion(subject_identifier, goal, created_at = Time.now.utc)
-    Verdict::Conversion.new(self, subject_identifier, goal, created_at)
-  end
-
+  
   def convert(subject, goal)
     identifier = retrieve_subject_identifier(subject)
     conversion = subject_conversion(identifier, goal)
@@ -135,23 +131,9 @@ class Verdict::Experiment
     assign_manually_by_identifier(identifier, group)
   end
 
-  def assign_manually_by_identifier(subject_identifier, group)
-    assignment = subject_assignment(subject_identifier, group)
-    if !assignment.qualified? && !store_unqualified?
-      raise Verdict::Error, "Unqualified subject assignments are not stored for this experiment, so manual disqualification is impossible. Consider setting :store_unqualified to true for this experiment."
-    end
-
-    store_assignment(assignment)
-    assignment
-  end
-
   def disqualify_manually(subject)
     assign_manually(subject, nil)
   end
-
-  def disqualify_manually_by_identifier(subject_identifier)
-    assign_manually_by_identifier(subject_identifier, nil)
-  end    
 
   def store_assignment(assignment)
     @storage.store_assignment(assignment) if should_store_assignment?(assignment)
@@ -163,20 +145,12 @@ class Verdict::Experiment
     remove_subject_assignment_by_identifier(retrieve_subject_identifier(subject))
   end
 
-  def remove_subject_assignment_by_identifier(subject_identifier)
-    @storage.remove_assignment(self, subject_identifier)
-  end
-
   def switch(subject, context = nil)
     assign(subject, context).to_sym
   end
 
   def lookup(subject)
     lookup_assignment_for_identifier(retrieve_subject_identifier(subject))
-  end
-
-  def lookup_assignment_for_identifier(subject_identifier)
-    fetch_assignment(subject_identifier)
   end
 
   def retrieve_subject_identifier(subject)
@@ -273,5 +247,31 @@ class Verdict::Experiment
     @started_at ||= @storage.retrieve_start_timestamp(self) || set_start_timestamp
   rescue Verdict::StorageError
     @started_at ||= Time.now.utc
+  end
+
+  def subject_conversion(subject_identifier, goal, created_at = Time.now.utc)
+    Verdict::Conversion.new(self, subject_identifier, goal, created_at)
+  end
+
+  def assign_manually_by_identifier(subject_identifier, group)
+    assignment = subject_assignment(subject_identifier, group)
+    if !assignment.qualified? && !store_unqualified?
+      raise Verdict::Error, "Unqualified subject assignments are not stored for this experiment, so manual disqualification is impossible. Consider setting :store_unqualified to true for this experiment."
+    end
+
+    store_assignment(assignment)
+    assignment
+  end
+
+  def disqualify_manually_by_identifier(subject_identifier)
+    assign_manually_by_identifier(subject_identifier, nil)
+  end
+
+  def remove_subject_assignment_by_identifier(subject_identifier)
+    @storage.remove_assignment(self, subject_identifier)
+  end
+
+  def lookup_assignment_for_identifier(subject_identifier)
+    fetch_assignment(subject_identifier)
   end
 end
