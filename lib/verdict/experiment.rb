@@ -159,7 +159,7 @@ class Verdict::Experiment
   end
 
   def lookup(subject)
-    fetch_assignment(subject)
+    @storage.retrieve_assignment(self, subject)
   end
 
   def retrieve_subject_identifier(subject)
@@ -192,6 +192,10 @@ class Verdict::Experiment
 
   def to_json(options = {})
     as_json(options).to_json
+  end
+
+  def fetch_subject(subject_identifier)
+    raise NotImplementedError, "Fetching subjects based in identifier is not implemented for experiment @{handle.inspect}."
   end
 
   def disqualify_empty_identifier?
@@ -248,13 +252,5 @@ class Verdict::Experiment
     @started_at ||= @storage.retrieve_start_timestamp(self) || set_start_timestamp
   rescue Verdict::StorageError
     @started_at ||= Time.now.utc
-  end
-
-  def fetch_assignment(subject)
-    @storage.retrieve_assignment(self, subject)
-  end
-
-  def fetch_subject(subject_identifier)
-    raise NotImplementedError, "Fetching subjects based in identifier is not implemented for experiment @{handle.inspect}."
   end
 end

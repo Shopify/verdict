@@ -28,9 +28,12 @@ class AssignmentTest < Minitest::Test
     assert_kind_of Time, assignment.created_at
   end
 
-  def test_subject_lookup
-    assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
-    assert_equal 'test_subject_id', assignment.subject
+  def test_subject_identifier_lookup
+    klass = Struct.new(:id)
+    subject = klass.new(123)
+
+    assignment = Verdict::Assignment.new(@experiment, subject, nil, Time.now.utc)
+    assert_equal '123', assignment.subject_identifier
   end
 
   def test_triple_equals

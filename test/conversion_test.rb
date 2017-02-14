@@ -9,9 +9,12 @@ class ConversionTest < Minitest::Test
     end
   end
 
-  def test_subject_lookup
-    conversion = Verdict::Conversion.new(@experiment, 'test_subject_id', :test_goal)
-    assert_equal 'test_subject_id', conversion.subject
+  def test_subject_identifier_lookup
+    klass = Struct.new(:id)
+    subject = klass.new(123)
+
+    conversion = Verdict::Conversion.new(@experiment, subject, :test_goal)
+    assert_equal '123', conversion.subject_identifier
   end
 
   def test_assignment_lookup

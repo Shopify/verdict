@@ -3,12 +3,19 @@ require 'stringio'
 
 class RakeTasksTest < Minitest::Test
 
+  TestSubjectClass = Struct.new(:id)
+  class TestExperiment < Verdict::Experiment
+    def fetch_subject(subject_identifier)
+      TestSubjectClass.new(subject_identifier.to_i)
+    end
+  end
+
   def setup
     require 'rake' unless defined?(Rake)
     Rake::Task.define_task(:environment) 
     Rake.application.rake_require('verdict/tasks')
-    
-    @experiment = Verdict::Experiment.define(:rake, store_unqualified: true) do
+
+    @experiment = TestExperiment.define(:rake, store_unqualified: true) do
       groups do
         group :a, 50
         group :b, 50
