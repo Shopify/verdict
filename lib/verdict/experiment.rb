@@ -202,6 +202,11 @@ class Verdict::Experiment
     @disqualify_empty_identifier
   end
 
+  def subject_qualifies?(subject, context = nil)
+    ensure_experiment_has_started
+    everybody_qualifies? || @qualifier.call(subject, context)
+  end
+
   protected
 
   def default_options
@@ -236,11 +241,6 @@ class Verdict::Experiment
 
   def subject_identifier(subject)
     subject.respond_to?(:id) ? subject.id : subject.to_s
-  end
-
-  def subject_qualifies?(subject, context = nil)
-    ensure_experiment_has_started
-    everybody_qualifies? || @qualifier.call(subject, context)
   end
 
   def set_start_timestamp

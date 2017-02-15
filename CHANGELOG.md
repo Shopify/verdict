@@ -1,7 +1,7 @@
-### v0.6.0
-* **BREAKING CHANGE:**
+## v0.6.0
+**This version has breaking changes**
 
-*Experiment*
+### Verdict::Experiment
 * replaced following public methods from `Experiment` that took a `subject_identifier` with an equivalent method which takes a `subject`
 
 | old method                                | new method                   |
@@ -16,19 +16,23 @@
  * subject_assignment
  * subject_conversion
 
-*Base Storage*
+#### Improved Testability
+`Verdict::Experiment#subject_qualifies?(subject, context = nil)` is now public, so it's easier to test
+the qualification logic for your experiments.
+
+### Verdict::BaseStorage
 * `BaseStorage` now takes an instance of `subject` instead of `subject_identifier` and fetches the subject_identifier using the method in `Experiment`
 * `BaseStorage` methods `get`,`set`, and`remove` made protected
 
-*Assignment*
+### Verdict::Assignment
 * `initialize` method now takes a `subject` instead of a `subject_identifier`
 * Assignment now stores a reference to `subject` instead of `subject_identifier`
 
-*Conversion*
+### Verdict::Conversion
 * `initialize` method now takes a `subject` instead of a `subject_identifier`
 * Conversion now stores a reference to `subject` instead of `subject_identifier`
 
-*Rake Tasks*
+### Rake Tasks
 * In order to use the following Rake Tasks you must implement `fetch_subject(subject_identifier)` in `Experiment`
  * lookup_assignment
  * assign_manually
