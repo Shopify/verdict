@@ -121,10 +121,10 @@ class Verdict::Experiment
 
     store_assignment(assignment)
   rescue Verdict::StorageError
-    subject_assignment(subject, nil, nil)
+    nil_assignment(subject)
   rescue Verdict::EmptySubjectIdentifier
     if disqualify_empty_identifier?
-      subject_assignment(subject, nil, nil)
+      nil_assignment(subject)
     else
       raise
     end
@@ -224,7 +224,7 @@ class Verdict::Experiment
       group = segmenter.assign(subject_identifier, subject, context)
       subject_assignment(subject, group, nil, group.nil?)
     else
-      subject_assignment(subject, nil, nil)
+      nil_assignment(subject)
     end
   end
 
@@ -235,7 +235,7 @@ class Verdict::Experiment
       group = segmenter.assign(subject_identifier, subject, context)
       subject_assignment(subject, group, nil, group.nil?)
     else
-      subject_assignment(subject, nil, nil)
+      nil_assignment(subject)
     end
   end
 
@@ -252,5 +252,9 @@ class Verdict::Experiment
     @started_at ||= @storage.retrieve_start_timestamp(self) || set_start_timestamp
   rescue Verdict::StorageError
     @started_at ||= Time.now.utc
+  end
+
+  def nil_assignment(subject)
+    subject_assignment(subject, nil, nil)
   end
 end
