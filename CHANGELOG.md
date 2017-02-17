@@ -32,3 +32,8 @@ the qualification logic for your experiments.
 
 ### Rake Tasks
 * In order to use the included helper Rake Tasks, you must implement `fetch_subject(subject_identifier)` in `Experiment`.
+
+### Unsupported Ruby Versions
+Support has been removed for the following Ruby versions:
+- 1.9.X
+- Rubinius
