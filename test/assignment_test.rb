@@ -28,13 +28,12 @@ class AssignmentTest < Minitest::Test
     assert_kind_of Time, assignment.created_at
   end
 
-  def test_subject_lookup
-    assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
-    assert_raises(NotImplementedError) { assignment.subject }
+  def test_subject_identifier_lookup
+    klass = Struct.new(:id)
+    subject = klass.new(123)
 
-    @experiment.expects(:fetch_subject).with('test_subject_id').returns(subject = mock('subject'))
-    assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, Time.now.utc)
-    assert_equal subject, assignment.subject
+    assignment = Verdict::Assignment.new(@experiment, subject, nil, Time.now.utc)
+    assert_equal '123', assignment.subject_identifier
   end
 
   def test_triple_equals

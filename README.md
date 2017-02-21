@@ -76,13 +76,14 @@ You can set up storage for your experiment by calling the `storage` method with
 an object that responds to the following methods:
 
 * `store_assignment(assignment)`
-* `retrieve_assignment(experiment, subject_identifier)`
-* `remove_assignment(experiment, subject_identifier)`
+* `retrieve_assignment(experiment, subject)`
+* `remove_assignment(experiment, subject)`
 * `retrieve_start_timestamp(experiment)`
 * `store_start_timestamp(experiment, timestamp)`
 
-Regarding the method signatures above, `experiment` is the Experiment instance, `subject_identifier` is a string that uniquely identifies the subject, and `assignment` is a `Verdict::Assignment` instance.
+Regarding the method signatures above, `experiment` is the Experiment instance, `subject` is the Subject instance, and `assignment` is a `Verdict::Assignment` instance.
 
+The `subject` instance will be identified internally by its `subject_identifier`
 By default it will use `subject.id.to_s` as `subject_identifier`, but you can change that by overriding `def subject_identifier(subject)` on the experiment.
 
 Storage providers simply store subject assignments and require quick lookups of subject identifiers. They allow for complex (high CPU) assignments, and for assignments that might not always put the same subject in the same group by storing the assignment for later use.

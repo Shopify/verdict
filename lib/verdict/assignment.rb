@@ -1,17 +1,13 @@
 class Verdict::Assignment
-  attr_reader :experiment, :subject_identifier, :group, :created_at
+  attr_reader :experiment, :subject, :group, :created_at
 
-  def initialize(experiment, subject_identifier, group, originally_created_at, temporary = false)
+  def initialize(experiment, subject, group, originally_created_at, temporary = false)
     @experiment         = experiment
-    @subject_identifier = subject_identifier
+    @subject            = subject
     @group              = group
     @first              = originally_created_at.nil? || experiment.manual_assignment_timestamps?
     @created_at         = originally_created_at || Time.now.utc
     @temporary          = temporary
-  end
-
-  def subject
-    @subject ||= experiment.fetch_subject(subject_identifier)
   end
 
   def qualified?
@@ -27,11 +23,15 @@ class Verdict::Assignment
   end
 
   def returning
-    self.class.new(@experiment, @subject_identifier, @group, @created_at)
+    self.class.new(@experiment, @subject, @group, @created_at)
   end
 
   def returning?
     @first.nil?
+  end
+
+  def subject_identifier
+    experiment.retrieve_subject_identifier(subject)
   end
 
   def handle
@@ -40,7 +40,7 @@ class Verdict::Assignment
 
   def to_sym
     qualified? ? group.to_sym : nil
-  end  
+  end
 
   def as_json(options = {})
     {

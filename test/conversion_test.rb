@@ -9,13 +9,12 @@ class ConversionTest < Minitest::Test
     end
   end
 
-  def test_subject_lookup
-    conversion = Verdict::Conversion.new(@experiment, 'test_subject_id', :test_goal)
-    assert_raises(NotImplementedError) { conversion.subject }
+  def test_subject_identifier_lookup
+    klass = Struct.new(:id)
+    subject = klass.new(123)
 
-    @experiment.expects(:fetch_subject).with('test_subject_id').returns(subject = mock('subject'))
-    conversion = Verdict::Conversion.new(@experiment, 'test_subject_id', :test_goal)
-    assert_equal subject, conversion.subject
+    conversion = Verdict::Conversion.new(@experiment, subject, :test_goal)
+    assert_equal '123', conversion.subject_identifier
   end
 
   def test_assignment_lookup

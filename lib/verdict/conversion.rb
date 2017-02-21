@@ -1,20 +1,20 @@
 class Verdict::Conversion
 
-  attr_reader :experiment, :subject_identifier, :goal, :created_at
+  attr_reader :experiment, :subject, :goal, :created_at
 
-  def initialize(experiment, subject_identifier, goal, created_at = Time.now.utc)
+  def initialize(experiment, subject, goal, created_at = Time.now.utc)
     @experiment = experiment
-    @subject_identifier = subject_identifier
+    @subject = subject
     @goal = goal
     @created_at = created_at
   end
 
-  def subject
-    experiment.fetch_subject(subject_identifier)
+  def subject_identifier
+    experiment.retrieve_subject_identifier(subject)
   end
 
   def assignment
-    experiment.fetch_assignment(subject_identifier)
+    experiment.lookup(subject)
   end
 
   def as_json(options = {})

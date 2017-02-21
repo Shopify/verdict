@@ -27,6 +27,10 @@ module Verdict
     def self.subject_identifier
       Verdict::Rake.require_env('subject')
     end
+
+    def self.subject
+      experiment.fetch_subject(subject_identifier)
+    end
   end
 end
 
@@ -46,8 +50,9 @@ namespace :verdict do
   task :lookup_assignment => 'environment' do
     experiment         = Verdict::Rake.experiment
     subject_identifier = Verdict::Rake.subject_identifier
+    subject            = Verdict::Rake.subject
 
-    assignment = experiment.lookup_assignment_for_identifier(subject_identifier)
+    assignment = experiment.lookup(subject)
     if assignment.nil?
       Verdict::Rake.stdout.puts "Subject `#{subject_identifier}` is not assigned to experiment `#{experiment.handle}` yet."
     elsif assignment.qualified?
@@ -62,8 +67,9 @@ namespace :verdict do
     experiment         = Verdict::Rake.experiment
     group              = Verdict::Rake.group
     subject_identifier = Verdict::Rake.subject_identifier
+    subject            = Verdict::Rake.subject
 
-    experiment.assign_manually_by_identifier(Verdict::Rake.require_env('subject'), group)
+    experiment.assign_manually(subject, group)
     Verdict::Rake.stdout.puts "Subject `#{subject_identifier}` has been assigned to group `#{group.handle}` of experiment `#{experiment.handle}`."
   end
 
@@ -71,8 +77,9 @@ namespace :verdict do
   task :disqualify_manually => 'environment' do
     experiment         = Verdict::Rake.experiment
     subject_identifier = Verdict::Rake.subject_identifier
+    subject            = Verdict::Rake.subject
 
-    experiment.disqualify_manually_by_identifier(subject_identifier)
+    experiment.disqualify_manually(subject)
     Verdict::Rake.stdout.puts "Subject `#{subject_identifier}` has been disqualified from experiment `#{experiment.handle}`."
   end
 
@@ -80,8 +87,9 @@ namespace :verdict do
   task :remove_assignment => 'environment' do
     experiment         = Verdict::Rake.experiment
     subject_identifier = Verdict::Rake.subject_identifier
+    subject            = Verdict::Rake.subject
 
-    experiment.remove_subject_assignment_by_identifier(subject_identifier)
+    experiment.remove_subject_assignment(subject)
     Verdict::Rake.stdout.puts "Removed assignment of subject with identifier `#{subject_identifier}`."
     Verdict::Rake.stdout.puts "The subject will be reasigned when it encounters the experiment `#{experiment.handle}` again."
   end
