@@ -104,7 +104,7 @@ It's possible to run an experiment without defining any storage, though this com
 ## Interested in running experiments? 
 
 We are actively looking to hire engineers on the Growth Team at Shopify. Check out our open position:
-[Senior Software Engineer](https://www.shopify.com/careers/senior-software-engineer-growth-r-d-956988?utm_source=open-source-verdict).
+[Senior Software Engineer](https://www.shopify.com/careers/senior-software-engineer-growth-r-d-956988?utm_source=open-source-verdict&utm_medium=on-page-link&utm_campaign=hiring-engineering).
 
 ## Contributing
 
