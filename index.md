@@ -101,6 +101,11 @@ Logging (as opposed to storage) should be used for data analysis. The logger req
 
 It's possible to run an experiment without defining any storage, though this comes with several drawbacks. Logging on the other hand is required in order to analyze the results.
 
+## Interested in running experiments? 
+
+We are actively looking to hire engineers on the Growth Team at Shopify. Check out our open position:
+https://www.shopify.com/careers/senior-software-engineer-growth-r-d-956988
+
 ## Contributing
 
 1. Fork it
