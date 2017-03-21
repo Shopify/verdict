@@ -26,7 +26,6 @@ class Verdict::Experiment
     instance_eval(&block) if block_given?
   end
 
-
   def subject_type(type = nil)
     return @subject_type if type.nil?
     @subject_type = type
@@ -120,12 +119,17 @@ class Verdict::Experiment
   end
 
   def assign(subject, context = nil)
-    identifier = retrieve_subject_identifier(subject)
-    assignment = if store_unqualified?
-      assignment_with_unqualified_persistence(identifier, subject, context)
-    else
-      assignment_without_unqualified_persistence(identifier, subject, context)
-    end
+    previous_assignment = lookup(subject)
+
+    subject_identifier = retrieve_subject_identifier(subject)
+    assignment = if previous_assignment
+                   previous_assignment
+                 elsif subject_qualifies?(subject, context)
+                   group = segmenter.assign(subject_identifier, subject, context)
+                   subject_assignment(subject, group, nil, group.nil?)
+                 else
+                   nil_assignment(subject)
+                 end
 
     store_assignment(assignment)
   rescue Verdict::StorageError
@@ -223,28 +227,6 @@ class Verdict::Experiment
 
   def should_store_assignment?(assignment)
     assignment.permanent? && !assignment.returning? && (store_unqualified? || assignment.qualified?)
-  end
-
-  def assignment_with_unqualified_persistence(subject_identifier, subject, context)
-    previous_assignment = lookup(subject)
-    return previous_assignment unless previous_assignment.nil?
-    if subject_qualifies?(subject, context)
-      group = segmenter.assign(subject_identifier, subject, context)
-      subject_assignment(subject, group, nil, group.nil?)
-    else
-      nil_assignment(subject)
-    end
-  end
-
-  def assignment_without_unqualified_persistence(subject_identifier, subject, context)
-    if subject_qualifies?(subject, context)
-      previous_assignment = lookup(subject)
-      return previous_assignment unless previous_assignment.nil?
-      group = segmenter.assign(subject_identifier, subject, context)
-      subject_assignment(subject, group, nil, group.nil?)
-    else
-      nil_assignment(subject)
-    end
   end
 
   def subject_identifier(subject)
