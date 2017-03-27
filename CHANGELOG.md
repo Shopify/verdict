@@ -1,3 +1,7 @@
+## v0.6.1
+
+* Make Verdict Railtie `.freeze` the eager_load_paths it changes as Rails itself does.
+
 ## v0.6.0
 **This version has breaking changes**
 
