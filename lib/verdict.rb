@@ -11,19 +11,16 @@ module Verdict
   end
 
   def repository
-    if @repository.nil?
-      @repository = {}
-      discovery
-    end
-
+    discovery if @repository.nil?
     @repository
   end
 
   def discovery
+    @repository = {}
     Dir[File.join(Verdict.directory, '**', '*.rb')].each { |f| load f } if @directory
   end
 
-  def clear_respository_cache
+  def clear_repository_cache
     @repository = nil
   end
 
