@@ -1,3 +1,8 @@
+## v0.6.2
+
+* Implement Verdict.clear_repository_cache, which fixes autoloading issues with Rails.
+* Integrated Verdict.clear_repository_cache with our Railtie.
+
 ## v0.6.1
 
 * Make Verdict Railtie `.freeze` the eager_load_paths it changes as Rails itself does.

@@ -8,6 +8,11 @@ class Verdict::Railtie < Rails::Railtie
     app.config.eager_load_paths.freeze
   end
 
+  config.to_prepare do
+    # Clear Verdict's cache in order to avoid "A copy of ... has been removed from the module tree but is still active!"
+    Verdict.clear_repository_cache
+  end
+
   rake_tasks do
     load File.expand_path("./tasks.rake", File.dirname(__FILE__))
   end
