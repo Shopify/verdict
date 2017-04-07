@@ -11,16 +11,17 @@ module Verdict
   end
 
   def repository
-    if @repository.nil?
-      @repository = {}
-      discovery
-    end
-
+    discovery if @repository.nil?
     @repository
   end
 
   def discovery
-    Dir[File.join(Verdict.directory, '**', '*.rb')].each { |f| require f } if @directory
+    @repository = {}
+    Dir[File.join(Verdict.directory, '**', '*.rb')].each { |f| load f } if @directory
+  end
+
+  def clear_repository_cache
+    @repository = nil
   end
 
   class Error < StandardError; end
