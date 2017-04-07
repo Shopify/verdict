@@ -36,6 +36,7 @@ module Verdict
 
       def retrieve_start_timestamp(experiment)
         if started_at = redis.get(generate_experiment_start_timestamp_key(experiment))
+          Experiments::ExperimentStartDate.store(experiment.handle.to_s, started_at.to_time)
           DateTime.parse(started_at).to_time
         end
       rescue ::Redis::BaseError => e
@@ -43,6 +44,7 @@ module Verdict
       end
 
       def store_start_timestamp(experiment, timestamp)
+        Experiments::ExperimentStartDate.store(experiment.handle.to_s, timestamp)
         redis.setnx(generate_experiment_start_timestamp_key(experiment), timestamp.to_s)
       rescue ::Redis::BaseError => e
         raise Verdict::StorageError, "Redis error: #{e.message}"
