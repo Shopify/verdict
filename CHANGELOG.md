@@ -1,3 +1,8 @@
+## v0.6.3
+
+* Fix bug were Verdict.directory is overwritten
+* Allow Verdict.directory to handle multiple directories (using globbing)
+
 ## v0.6.2
 
 * Implement Verdict.clear_repository_cache, which fixes autoloading issues with Rails.
