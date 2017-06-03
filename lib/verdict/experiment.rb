@@ -58,8 +58,16 @@ class Verdict::Experiment
     end
   end
 
-  def qualify(&block)
-    @qualifiers << block
+  def qualify(method_name = nil, &block)
+    if block_given?
+      @qualifiers << block
+    elsif method_name.nil?
+      raise ArgumentError, "no method nor blocked passed!"
+    elsif respond_to?(method_name, true)
+      @qualifiers << method(method_name).to_proc
+    else
+      raise ArgumentError, "No helper for #{method_name.inspect}"
+    end
   end
 
   def storage(storage = nil, options = {})
