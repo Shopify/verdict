@@ -4,12 +4,6 @@ class Verdict::Experiment
 
   attr_reader :handle, :qualifier, :storage, :event_logger
 
-  def self.define(handle, *args, &block)
-    experiment = self.new(handle, *args, &block)
-    raise Verdict::ExperimentHandleNotUnique.new(experiment.handle) if Verdict.repository.has_key?(experiment.handle)
-    Verdict.repository[experiment.handle] = experiment
-  end
-
   def initialize(handle, options = {}, &block)
     @handle = handle.to_s
 
