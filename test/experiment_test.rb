@@ -24,14 +24,44 @@ class ExperimentTest < Minitest::Test
     ca_subject = subject_stub.new(1, 'CA')
     us_subject = subject_stub.new(1, 'US')
 
-    assert e.qualifier.call(ca_subject)
-    assert !e.qualifier.call(us_subject)
+    assert e.qualifiers.all? { |q| q.call(ca_subject) }
+    assert !e.qualifiers.all? { |q| q.call(us_subject) }
 
     qualified = e.assign(ca_subject)
     assert_kind_of Verdict::Assignment, qualified
     assert_equal e.group(:all), qualified.group
 
     non_qualified = e.assign(us_subject)
+    assert_kind_of Verdict::Assignment, non_qualified
+    assert !non_qualified.qualified?
+    assert_equal nil, non_qualified.group
+  end
+
+  def test_multiple_qualifier
+    e = Verdict::Experiment.new('test') do |experiment|
+      qualify { |subject| subject.language == 'fr' }
+      qualify { |subject| subject.country == 'CA' }
+
+      groups do
+        group :all, 100
+      end
+    end
+
+    assert e.has_qualifier?
+    assert !e.everybody_qualifies?
+
+    subject_stub = Struct.new(:id, :country, :language)
+    fr_subject = subject_stub.new(1, 'CA', 'fr')
+    en_subject = subject_stub.new(2, 'CA', 'en')
+
+    assert e.qualifiers.all? { |q| q.call(fr_subject) }
+    assert !e.qualifiers.all? { |q| q.call(en_subject) }
+
+    qualified = e.assign(fr_subject)
+    assert_kind_of Verdict::Assignment, qualified
+    assert_equal e.group(:all), qualified.group
+
+    non_qualified = e.assign(en_subject)
     assert_kind_of Verdict::Assignment, non_qualified
     assert !non_qualified.qualified?
     assert_equal nil, non_qualified.group
