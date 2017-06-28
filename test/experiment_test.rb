@@ -5,7 +5,7 @@ class ExperimentTest < Minitest::Test
 
   def test_no_qualifier
     e = Verdict::Experiment.new('test')
-    assert !e.has_qualifier?
+    refute e.has_qualifier?
     assert e.everybody_qualifies?
   end
 
@@ -18,14 +18,14 @@ class ExperimentTest < Minitest::Test
     end
 
     assert e.has_qualifier?
-    assert !e.everybody_qualifies?
+    refute e.everybody_qualifies?
 
     subject_stub = Struct.new(:id, :country)
     ca_subject = subject_stub.new(1, 'CA')
     us_subject = subject_stub.new(1, 'US')
 
-    assert e.qualifier.call(ca_subject)
-    assert !e.qualifier.call(us_subject)
+    assert e.qualifiers.all? { |q| q.call(ca_subject) }
+    refute e.qualifiers.all? { |q| q.call(us_subject) }
 
     qualified = e.assign(ca_subject)
     assert_kind_of Verdict::Assignment, qualified
@@ -33,7 +33,74 @@ class ExperimentTest < Minitest::Test
 
     non_qualified = e.assign(us_subject)
     assert_kind_of Verdict::Assignment, non_qualified
-    assert !non_qualified.qualified?
+    refute non_qualified.qualified?
+    assert_equal nil, non_qualified.group
+  end
+
+  def test_multiple_qualifier
+    e = Verdict::Experiment.new('test') do |experiment|
+      qualify { |subject| subject.language == 'fr' }
+      qualify { |subject| subject.country == 'CA' }
+
+      groups do
+        group :all, 100
+      end
+    end
+
+    assert e.has_qualifier?
+    refute e.everybody_qualifies?
+
+    subject_stub = Struct.new(:id, :country, :language)
+    fr_subject = subject_stub.new(1, 'CA', 'fr')
+    en_subject = subject_stub.new(2, 'CA', 'en')
+
+    assert e.qualifiers.all? { |q| q.call(fr_subject) }
+    refute e.qualifiers.all? { |q| q.call(en_subject) }
+
+    qualified = e.assign(fr_subject)
+    assert_kind_of Verdict::Assignment, qualified
+    assert_equal e.group(:all), qualified.group
+
+    non_qualified = e.assign(en_subject)
+    assert_kind_of Verdict::Assignment, non_qualified
+    refute non_qualified.qualified?
+    assert_equal nil, non_qualified.group
+  end
+
+  module CountryIsCanadaHelper
+    def country_is_canada(subject, _context)
+      subject.country == 'CA'
+    end
+  end
+  def test_method_qualifier
+
+    e = Verdict::Experiment.new('test') do |experiment|
+      extend CountryIsCanadaHelper
+
+      qualify :country_is_canada
+
+      groups do
+        group :all, 100
+      end
+    end
+
+    assert e.has_qualifier?
+    refute e.everybody_qualifies?
+
+    subject_stub = Struct.new(:id, :country)
+    ca_subject = subject_stub.new(1, 'CA')
+    us_subject = subject_stub.new(1, 'US')
+
+    assert e.qualifiers.all? { |q| q.call(ca_subject, nil) }
+    refute e.qualifiers.all? { |q| q.call(us_subject, nil) }
+
+    qualified = e.assign(ca_subject)
+    assert_kind_of Verdict::Assignment, qualified
+    assert_equal e.group(:all), qualified.group
+
+    non_qualified = e.assign(us_subject)
+    assert_kind_of Verdict::Assignment, non_qualified
+    refute non_qualified.qualified?
     assert_equal nil, non_qualified.group
   end
 
@@ -45,7 +112,7 @@ class ExperimentTest < Minitest::Test
       end
     end
 
-    assert !e.assign(nil).qualified?
+    refute e.assign(nil).qualified?
     assert_equal nil, e.convert('', :mygoal)
   end
 
@@ -63,12 +130,12 @@ class ExperimentTest < Minitest::Test
     assignment = e.assign(1)
     assert_kind_of Verdict::Assignment, assignment
     assert assignment.qualified?
-    assert !assignment.returning?
+    refute assignment.returning?
     assert_equal assignment.group, e.group(:a)
 
     assignment = e.assign(3)
     assert_kind_of Verdict::Assignment, assignment
-    assert !assignment.qualified?
+    refute assignment.qualified?
 
     assert_equal :a,  e.switch(1)
     assert_equal :b,  e.switch(2)
@@ -175,7 +242,7 @@ class ExperimentTest < Minitest::Test
     original_assignment = e.assign(subject)
     assert original_assignment.qualified?
     new_assignment = e.disqualify_manually(subject)
-    assert !new_assignment.qualified?
+    refute new_assignment.qualified?
   end
 
   def test_disqualify_manually_fails_with_store_unqualified_disabled
@@ -212,7 +279,7 @@ class ExperimentTest < Minitest::Test
     mock_store.expects(:store_assignment).never
 
     assignment = e.assign(mock('subject'))
-    assert !assignment.qualified?
+    refute assignment.qualified?
   end
 
   def test_assignment_event_logging
@@ -273,7 +340,7 @@ class ExperimentTest < Minitest::Test
 
     storage_mock.stubs(:retrieve_assignment).raises(Verdict::StorageError, 'storage read issues')
     rescued_assignment = e.assign(stub(id: 123))
-    assert !rescued_assignment.qualified?
+    refute rescued_assignment.qualified?
   end
 
   def test_storage_write_failure
@@ -286,7 +353,7 @@ class ExperimentTest < Minitest::Test
     storage_mock.expects(:retrieve_assignment).returns(e.subject_assignment(mock('subject_identifier'), e.group(:all), nil))
     storage_mock.expects(:store_assignment).raises(Verdict::StorageError, 'storage write issues')
     rescued_assignment = e.assign(stub(id: 456))
-    assert !rescued_assignment.qualified?
+    refute rescued_assignment.qualified?
   end
 
   def test_initial_started_at
@@ -328,7 +395,7 @@ class ExperimentTest < Minitest::Test
       end
 
       subject = stub(id: 'old', created_at: Time.new(2011))
-      assert !e.assign(subject).qualified?
+      refute e.assign(subject).qualified?
 
       subject = stub(id: 'new', created_at: Time.new(2013))
       assert e.assign(subject).qualified?
@@ -340,7 +407,7 @@ class ExperimentTest < Minitest::Test
       groups { group :all, 100 }
     end
 
-    assert !e.started?, "The experiment should not have started yet"
+    refute e.started?, "The experiment should not have started yet"
 
     e.assign(stub(id: '123'))
     assert e.started?, "The experiment should have started after the first assignment"

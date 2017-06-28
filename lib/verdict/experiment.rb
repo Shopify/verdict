@@ -2,7 +2,7 @@ class Verdict::Experiment
 
   include Verdict::Metadata
 
-  attr_reader :handle, :qualifier, :storage, :event_logger
+  attr_reader :handle, :qualifiers, :storage, :event_logger
 
   def self.define(handle, *args, &block)
     experiment = self.new(handle, *args, &block)
@@ -14,7 +14,7 @@ class Verdict::Experiment
     @handle = handle.to_s
 
     options = default_options.merge(options)
-    @qualifier                    = options[:qualifier]
+    @qualifiers                   = Array(options[:qualifier] || options[:qualifiers])
     @event_logger                 = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
     @storage                      = storage(options[:storage] || :memory)
     @store_unqualified            = options[:store_unqualified]
@@ -58,8 +58,16 @@ class Verdict::Experiment
     end
   end
 
-  def qualify(&block)
-    @qualifier = block
+  def qualify(method_name = nil, &block)
+    if block_given?
+      @qualifiers << block
+    elsif method_name.nil?
+      raise ArgumentError, "no method nor blocked passed!"
+    elsif respond_to?(method_name, true)
+      @qualifiers << method(method_name).to_proc
+    else
+      raise ArgumentError, "No helper for #{method_name.inspect}"
+    end
   end
 
   def storage(storage = nil, options = {})
@@ -169,7 +177,7 @@ class Verdict::Experiment
   end
 
   def has_qualifier?
-    !@qualifier.nil?
+    @qualifiers.any?
   end
 
   def everybody_qualifies?
@@ -204,7 +212,7 @@ class Verdict::Experiment
 
   def subject_qualifies?(subject, context = nil)
     ensure_experiment_has_started
-    everybody_qualifies? || @qualifier.call(subject, context)
+    everybody_qualifies? || @qualifiers.all? { |qualifier| qualifier.call(subject, context) }
   end
 
   protected
