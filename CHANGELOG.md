@@ -1,3 +1,10 @@
+## v0.7.0
+**This version has breaking changes**
+
+* Experiment can now specify multiple qualify blocks
+  * `Verdict::Experiment#qualifier` has been removed in favor for `Verdict::Experiment#qualifiers`, which returns an array of procs
+* Allow pass of an argument to qualify with a method name as a symbol, instead of a block
+
 ## v0.6.3
 
 * Fix bug were Verdict.directory is overwritten
