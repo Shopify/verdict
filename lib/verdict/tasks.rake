@@ -16,7 +16,7 @@ module Verdict
 
     def self.experiment
       experiment_handle = Verdict::Rake.require_env('experiment')
-      Verdict[experiment_handle] or raise "Experiment `#{handle}` not found"
+      Verdict[experiment_handle] or raise "Experiment `#{experiment_handle}` not found"
     end
 
     def self.group
