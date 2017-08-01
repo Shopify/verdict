@@ -22,7 +22,7 @@ class ExperimentTest < Minitest::Test
 
     subject_stub = Struct.new(:id, :country)
     ca_subject = subject_stub.new(1, 'CA')
-    us_subject = subject_stub.new(1, 'US')
+    us_subject = subject_stub.new(2, 'US')
 
     assert e.qualifiers.all? { |q| q.call(ca_subject) }
     refute e.qualifiers.all? { |q| q.call(us_subject) }
@@ -89,7 +89,7 @@ class ExperimentTest < Minitest::Test
 
     subject_stub = Struct.new(:id, :country)
     ca_subject = subject_stub.new(1, 'CA')
-    us_subject = subject_stub.new(1, 'US')
+    us_subject = subject_stub.new(2, 'US')
 
     assert e.qualifiers.all? { |q| q.call(ca_subject, nil) }
     refute e.qualifiers.all? { |q| q.call(us_subject, nil) }
@@ -153,7 +153,7 @@ class ExperimentTest < Minitest::Test
   def test_experiment_with_manual_assignment_timestamps_option
     e = Verdict::Experiment.new('test', manual_assignment_timestamps: true) do
       groups { group :all, 100 }
-    end   
+    end
 
     assert e.manual_assignment_timestamps?
   end
@@ -166,20 +166,7 @@ class ExperimentTest < Minitest::Test
     assert_raises(Verdict::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(to_s: '')) }
   end
 
-  def test_new_unqualified_assignment_without_store_unqualified
-    mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
-    e = Verdict::Experiment.new('test') do
-      qualify { mock_qualifier.qualifies? }
-      storage mock_store, store_unqualified: false
-    end
-
-    mock_qualifier.expects(:qualifies?).returns(false)
-    mock_store.expects(:retrieve_assignment).never
-    mock_store.expects(:store_assignment).never
-    e.assign(mock('subject'))
-  end
-
-  def test_returning_qualified_assignment_without_store_unqualified
+  def test_assignment_without_store_unqualified_always_fetches_old_assignment_if_available
     mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
     e = Verdict::Experiment.new('test') do
       qualify { mock_qualifier.qualifies? }
@@ -188,8 +175,22 @@ class ExperimentTest < Minitest::Test
     end
 
     qualified_assignment = e.subject_assignment(mock('identifier'), e.group(:all), Time.now)
-    mock_qualifier.expects(:qualifies?).returns(true)
+
     mock_store.expects(:retrieve_assignment).returns(qualified_assignment).once
+    mock_store.expects(:store_assignment).never
+    e.assign(mock('subject'))
+  end
+
+  def test_new_unqualified_assignment_without_store_unqualified_does_not_store_if_merchant_not_qualified
+    mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
+    e = Verdict::Experiment.new('test') do
+      qualify { mock_qualifier.qualifies? }
+      storage mock_store, store_unqualified: false
+      groups { group :all, 100 }
+    end
+
+    mock_qualifier.expects(:qualifies?).returns(false)
+    mock_store.expects(:retrieve_assignment).returns(nil).once
     mock_store.expects(:store_assignment).never
     e.assign(mock('subject'))
   end
