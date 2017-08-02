@@ -1,3 +1,23 @@
+## v0.8.0
+**This version has breaking changes**
+
+* Experiments that have `store_unqualified` set to `false` will now have previous assignments loaded on `assign` regardless of whether or not the merchant no longer qualifies
+* Here's the change in logic for `assign` based on whether or not the `store_unqualified` flag is on:
+
+Old behaviour:
+
+| store_unqualified                                                           | true | false |
+|-----------------------------------------------------------------------------|------|-------|
+| assignments for subjects that don't qualify are persisted in the database                   | yes  | no    |
+| existing assignments are returned (even if subject doesn't qualify anymore) | yes  | no    |
+
+New behaviour:
+
+| store_unqualified                                                           | true | false |
+|-----------------------------------------------------------------------------|------|-------|
+| assignments for subjects that don't qualify are persisted in the database                   | yes  | no    |
+| existing assignments are returned (even if subject doesn't qualify anymore) | yes  | **yes** |
+
 ## v0.7.0
 **This version has breaking changes**
 
