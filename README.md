@@ -55,7 +55,7 @@ You'll need to pass along the subject (think User, Product or any other Model cl
 
 ``` ruby
 context = { ... } # anything you want to pass along to the qualify block.
-case Verdict['my experiment'].switch(shop, context)
+case Verdict['my_experiment'].switch(shop, context)
 when :test
   # Handle test group
 when :control
