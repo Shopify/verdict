@@ -17,7 +17,9 @@ module Verdict
 
   def discovery
     @repository = {}
-    Dir[File.join(Verdict.directory, '**', '*.rb')].each { |f| load f } if @directory
+    @discovery ||= if @directory
+      Dir[File.join(Verdict.directory, '**', '*.rb')].each { |f| load f }
+    end
   end
 
   def clear_repository_cache
