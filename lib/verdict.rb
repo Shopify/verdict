@@ -29,6 +29,7 @@ module Verdict
   class InvalidSubject < Verdict::Error; end
   class EmptySubjectIdentifier < Verdict::Error; end
   class StorageError < Verdict::Error; end
+  class PriorError < Verdict::Error; end
 
   class ExperimentHandleNotUnique < Verdict::Error
     attr_reader :handle
