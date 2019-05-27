@@ -20,6 +20,6 @@ class StaticSegmenterTest < Minitest::Test
 
   def test_assigment
     assert_equal @segmenter.groups['beta'], @segmenter.assign('id2', stub(id: 'id2'), nil)
-    assert_equal nil, @segmenter.assign('id3', stub(id: 'id3'), nil)
+    assert_nil @segmenter.assign('id3', stub(id: 'id3'), nil)
   end
 end

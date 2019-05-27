@@ -12,6 +12,7 @@ class Verdict::Railtie < Rails::Railtie
   config.to_prepare do
     # Clear Verdict's cache in order to avoid "A copy of ... has been removed from the module tree but is still active!"
     Verdict.clear_repository_cache
+    Verdict.discovery
   end
 
   rake_tasks do

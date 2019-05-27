@@ -34,7 +34,7 @@ class ExperimentTest < Minitest::Test
     non_qualified = e.assign(us_subject)
     assert_kind_of Verdict::Assignment, non_qualified
     refute non_qualified.qualified?
-    assert_equal nil, non_qualified.group
+    assert_nil non_qualified.group
   end
 
   def test_multiple_qualifier
@@ -64,7 +64,7 @@ class ExperimentTest < Minitest::Test
     non_qualified = e.assign(en_subject)
     assert_kind_of Verdict::Assignment, non_qualified
     refute non_qualified.qualified?
-    assert_equal nil, non_qualified.group
+    assert_nil non_qualified.group
   end
 
   module CountryIsCanadaHelper
@@ -101,7 +101,7 @@ class ExperimentTest < Minitest::Test
     non_qualified = e.assign(us_subject)
     assert_kind_of Verdict::Assignment, non_qualified
     refute non_qualified.qualified?
-    assert_equal nil, non_qualified.group
+    assert_nil non_qualified.group
   end
 
   def test_disqualify_empty_identifier
@@ -113,7 +113,7 @@ class ExperimentTest < Minitest::Test
     end
 
     refute e.assign(nil).qualified?
-    assert_equal nil, e.convert('', :mygoal)
+    assert_nil e.convert('', :mygoal)
   end
 
   def test_assignment
@@ -139,7 +139,7 @@ class ExperimentTest < Minitest::Test
 
     assert_equal :a,  e.switch(1)
     assert_equal :b,  e.switch(2)
-    assert_equal nil, e.switch(3)
+    assert_nil e.switch(3)
   end
 
   def test_experiment_without_manual_assignment_timestamps_option
