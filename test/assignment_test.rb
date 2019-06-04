@@ -20,11 +20,11 @@ class AssignmentTest < Minitest::Test
     assert_kind_of Time, assignment.created_at
 
     non_assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', nil, nil)
-    assert_equal nil, non_assignment.group
+    assert_nil non_assignment.group
     assert !non_assignment.returning?
     assert !non_assignment.qualified?
-    assert_equal nil, non_assignment.to_sym
-    assert_equal nil, non_assignment.handle
+    assert_nil non_assignment.to_sym
+    assert_nil non_assignment.handle
     assert_kind_of Time, assignment.created_at
   end
 
@@ -68,7 +68,7 @@ class AssignmentTest < Minitest::Test
       assert_equal 'test_subject_id', json['subject']
       assert_equal false, json['qualified']
       assert_equal false, json['returning']
-      assert_equal nil, json['group']
+      assert_nil json['group']
       assert_equal '2012-01-01T00:00:00Z', json['created_at']
     end
   end

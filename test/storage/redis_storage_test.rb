@@ -47,7 +47,8 @@ class RedisStorageTest < Minitest::Test
     returning_assignment = @experiment.assign('subject_2')
     assert returning_assignment.returning?
     assert_equal new_assignment.experiment, returning_assignment.experiment
-    assert_equal new_assignment.group, returning_assignment.group
+    assert_nil new_assignment.group
+    assert_nil returning_assignment.group
   end
 
   def test_assign_should_return_unqualified_when_redis_is_unavailable_for_reads

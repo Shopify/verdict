@@ -12,7 +12,7 @@ class RakeTasksTest < Minitest::Test
 
   def setup
     require 'rake' unless defined?(Rake)
-    Rake::Task.define_task(:environment) 
+    Rake::Task.define_task(:environment)
     Rake.application.rake_require('verdict/tasks')
 
     @experiment = TestExperiment.define(:rake, store_unqualified: true) do
