@@ -1,3 +1,7 @@
+## Unreleased
+
+* Fix typo in `Experiment#fetch_subject` error message.
+
 ## v0.9.0
 **This version has breaking changes**
 * Eagerly load experiment definitions when booting Rails, so that multi-threaded applications do not face a race-condition when populating experiments.
