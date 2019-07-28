@@ -207,7 +207,7 @@ class Verdict::Experiment
   end
 
   def fetch_subject(subject_identifier)
-    raise NotImplementedError, "Fetching subjects based in identifier is not implemented for experiment #{@handle.inspect}."
+    raise NotImplementedError, "Fetching subjects based on identifier is not implemented for experiment #{@handle.inspect}."
   end
 
   def disqualify_empty_identifier?
