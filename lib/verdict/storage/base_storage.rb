@@ -45,6 +45,10 @@ module Verdict
         set(experiment.handle.to_s, 'started_at', timestamp.utc.strftime('%FT%TZ'))
       end
 
+      def cleanup(_scope)
+        raise NotImplementedError
+      end
+
       protected
       # Retrieves a key in a given scope from storage.
       # - The scope and key are both provided as string.

@@ -16,10 +16,6 @@ class RedisStorageTest < Minitest::Test
     @redis.del('experiments/redis_storage')
   end
 
-  def experiment_key
-    'experiments/redis_storage'
-  end
-
   def test_store_and_retrieve_qualified_assignment
     refute @redis.hexists(experiment_key, 'assignment_subject_1')
 
@@ -73,5 +69,28 @@ class RedisStorageTest < Minitest::Test
     a = @experiment.send(:ensure_experiment_has_started)
     assert @redis.hexists(experiment_key, "started_at")
     assert_equal a, @experiment.started_at
+  end
+
+  def test_cleanup
+    SecureRandom.expects(:uuid).returns("uuid")
+    1000.times do |n|
+      @experiment.assign("something_#{n}")
+    end
+
+    assert_operator @redis, :exists, experiment_key
+
+    @storage.cleanup(:redis_storage)
+    refute_operator @redis, :exists, experiment_key
+    refute_operator @redis, :exists, temp_experiment_key
+  end
+
+  private
+
+  def experiment_key
+    "experiments/redis_storage"
+  end
+
+  def temp_experiment_key
+    "experiments/temp:uuid"
   end
 end

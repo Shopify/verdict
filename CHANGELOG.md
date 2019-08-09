@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Add `Experiment#cleanup` to remove stored redis hashes.
+
 * Fix typo in `Experiment#fetch_subject` error message.
 
 ## v0.9.0

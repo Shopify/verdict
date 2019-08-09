@@ -162,6 +162,10 @@ class Verdict::Experiment
     assignment
   end
 
+  def cleanup
+    @storage.cleanup(handle.to_s)
+  end
+
   def remove_subject_assignment(subject)
     @storage.remove_assignment(self, subject)
   end
