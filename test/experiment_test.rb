@@ -422,4 +422,32 @@ class ExperimentTest < Minitest::Test
 
     assert_kind_of Verdict::Storage::MockStorage, e.storage
   end
+
+  def test_cleanup
+    redis = ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
+    storage = Verdict::Storage::RedisStorage.new(redis)
+    experiment = Verdict::Experiment.new(:cleanup_test) do
+      groups { group :all, 100 }
+      storage storage, store_unqualified: true
+    end
+
+    experiment.assign("something")
+    assert_operator redis, :exists, "experiments/cleanup_test"
+
+    experiment.cleanup
+    refute_operator redis, :exists, "experiments/cleanup_test"
+  ensure
+    redis.del("experiments/cleanup_test")
+  end
+
+  def test_cleanup_without_redis
+    experiment = Verdict::Experiment.new(:cleanup_test) do
+      groups { group :all, 100 }
+    end
+
+    assert_raises(NotImplementedError) do
+      experiment.assign("something")
+      experiment.cleanup
+    end
+  end
 end
