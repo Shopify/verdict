@@ -72,7 +72,6 @@ class RedisStorageTest < Minitest::Test
   end
 
   def test_cleanup
-    SecureRandom.expects(:uuid).returns("uuid")
     1000.times do |n|
       @experiment.assign("something_#{n}")
     end
@@ -81,16 +80,11 @@ class RedisStorageTest < Minitest::Test
 
     @storage.cleanup(:redis_storage)
     refute_operator @redis, :exists, experiment_key
-    refute_operator @redis, :exists, temp_experiment_key
   end
 
   private
 
   def experiment_key
     "experiments/redis_storage"
-  end
-
-  def temp_experiment_key
-    "experiments/temp:uuid"
   end
 end
