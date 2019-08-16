@@ -1,11 +1,11 @@
-## Unreleased
+## v0.10.0
 
 * Add `Experiment#cleanup` to remove stored redis hashes.
-
 * Fix typo in `Experiment#fetch_subject` error message.
 
 ## v0.9.0
 **This version has breaking changes**
+
 * Eagerly load experiment definitions when booting Rails, so that multi-threaded applications do not face a race-condition when populating experiments.
 * Fixes deprecated `assert_equal` tests that return nil.
 
