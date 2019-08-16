@@ -29,9 +29,8 @@ module Verdict
       end
 
       def cleanup(scope)
-        temp_scope = move_to_temp(scope)
-        clear(temp_scope)
-        redis.del(scope_key(temp_scope))
+        clear(scope)
+        redis.del(scope_key(scope))
       rescue ::Redis::BaseError => e
         raise Verdict::StorageError, "Redis error: #{e.message}"
       end
@@ -40,12 +39,6 @@ module Verdict
 
       def scope_key(scope)
         "#{@key_prefix}#{scope}"
-      end
-
-      def move_to_temp(scope)
-        "temp:#{SecureRandom.uuid}".tap do |temp_scope|
-          redis.rename(scope_key(scope), scope_key(temp_scope))
-        end
       end
 
       def clear(scope, cursor: 0)
