@@ -28,8 +28,8 @@ module Verdict
         raise Verdict::StorageError, "Redis error: #{e.message}"
       end
 
-      def cleanup(scope)
-        clear(scope)
+      def clear(scope)
+        scrub(scope)
         redis.del(scope_key(scope))
       rescue ::Redis::BaseError => e
         raise Verdict::StorageError, "Redis error: #{e.message}"
@@ -41,12 +41,12 @@ module Verdict
         "#{@key_prefix}#{scope}"
       end
 
-      def clear(scope, cursor: 0)
+      def scrub(scope, cursor: 0)
         cursor, results = redis.hscan(scope_key(scope), cursor, count: PAGE_SIZE)
         results.map(&:first).each do |key|
           remove(scope, key)
         end
-        clear(scope, cursor: cursor) unless cursor.to_i.zero?
+        scrub(scope, cursor: cursor) unless cursor.to_i.zero?
       end
     end
   end

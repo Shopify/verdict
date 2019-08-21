@@ -71,6 +71,18 @@ class RedisStorageTest < Minitest::Test
     assert_equal a, @experiment.started_at
   end
 
+  def test_cleanup_with_scope_argument
+    1000.times do |n|
+      @experiment.assign("something_#{n}")
+    end
+
+    assert_operator @redis, :exists, experiment_key
+
+    Verdict.default_logger.expects(:warn).with(regexp_matches(/deprecated/))
+    @storage.cleanup(:redis_storage)
+    refute_operator @redis, :exists, experiment_key
+  end
+
   def test_cleanup
     1000.times do |n|
       @experiment.assign("something_#{n}")
@@ -78,7 +90,7 @@ class RedisStorageTest < Minitest::Test
 
     assert_operator @redis, :exists, experiment_key
 
-    @storage.cleanup(:redis_storage)
+    @storage.cleanup(@experiment)
     refute_operator @redis, :exists, experiment_key
   end
 
