@@ -12,9 +12,9 @@ module Verdict
       attr_accessor :cookies
       attr_reader :cookie_lifespan
 
-      def initialize(options = {})
-        @cookies = options[:cookies] || {}
-        @cookie_lifespan = options[:cookie_lifespan] || DEFAULT_COOKIE_LIFESPAN_SECONDS
+      def initialize(cookies: {}, cookie_lifespan: DEFAULT_COOKIE_LIFESPAN_SECONDS)
+        @cookies = cookies
+        @cookie_lifespan = cookie_lifespan
       end
 
       def store_assignment(assignment)

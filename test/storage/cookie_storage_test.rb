@@ -18,7 +18,9 @@ class CookieStorageTest < Minitest::Test
   end
 
   def test_cookie_lifespan_has_a_default
-    refute_nil Verdict::Storage::CookieStorage.new.cookie_lifespan
+    cookie_lifespan = Verdict::Storage::CookieStorage.new.cookie_lifespan
+
+    assert_equal Verdict::Storage::CookieStorage::DEFAULT_COOKIE_LIFESPAN_SECONDS, cookie_lifespan
   end
 
   def test_cookie_lifespan_can_be_configured
