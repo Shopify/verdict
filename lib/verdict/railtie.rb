@@ -1,5 +1,7 @@
 class Verdict::Railtie < Rails::Railtie
   initializer "experiments.configure_rails_initialization" do |app|
+    app.config.eager_load_namespaces << Verdict
+
     Verdict.default_logger = Rails.logger
 
     Verdict.directory ||= Rails.root.join('app', 'experiments')
