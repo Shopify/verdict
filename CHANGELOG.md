@@ -1,8 +1,12 @@
+## Unreleased
+
+* Add `CookieStorage` storage backend. This backend is a distributed store for Verdict and does not support experiment timestamps. It is designed to be used with Rails applications and requires that `.cookies` be set to the `CookieJar` instance before use.
+
 ## v0.12.0
 
 * Allow options to be passed to `Experiment#cleanup` so they can be forwarded to storage.
 
-* Changed `Experiment#cleanup` to accept an argument of type `Verdict::Experiment`.       
+* Changed `Experiment#cleanup` to accept an argument of type `Verdict::Experiment`.
   Passing a `String`/`Symbol` argument is still supported, but will log a deprecation warning.
 
 ## v0.11.0
