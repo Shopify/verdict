@@ -414,6 +414,16 @@ class ExperimentTest < Minitest::Test
     assert e.started?, "The experiment should have started after the first assignment"
   end
 
+  def test_experiment_set_start_timestamp_handles_storage_that_does_not_implement_timestamps
+    e = Verdict::Experiment.new('starting_test') do
+      groups { group :all, 100 }
+    end
+
+    e.storage.expects(:store_start_timestamp).raises(NotImplementedError)
+
+    assert_nil e.send(:set_start_timestamp)
+  end
+
   def test_no_storage
     e = Verdict::Experiment.new('starting_test') do
       groups { group :all, 100 }

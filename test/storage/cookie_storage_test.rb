@@ -68,7 +68,7 @@ class CookieStorageTest < Minitest::Test
     assert_nil @storage.retrieve_start_timestamp(nil)
   end
 
-  def test_store_start_timestamp_always_returns_true
-    assert @storage.store_start_timestamp(nil, nil)
+  def test_store_start_timestamp_raises_not_implemented_error
+    assert_raises(NotImplementedError) { @storage.store_start_timestamp(nil, nil) }
   end
 end

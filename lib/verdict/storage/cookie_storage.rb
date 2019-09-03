@@ -45,7 +45,7 @@ module Verdict
       end
 
       def store_start_timestamp(_experiment, _timestamp)
-        true
+        raise NotImplementedError
       end
 
       protected
