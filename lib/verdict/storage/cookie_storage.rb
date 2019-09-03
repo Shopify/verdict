@@ -13,8 +13,8 @@ module Verdict
       attr_accessor :cookies
       attr_reader :cookie_lifespan
 
-      def initialize(cookies: {}, cookie_lifespan: DEFAULT_COOKIE_LIFESPAN_SECONDS)
-        @cookies = cookies
+      def initialize(cookie_lifespan: DEFAULT_COOKIE_LIFESPAN_SECONDS)
+        @cookies = nil
         @cookie_lifespan = cookie_lifespan
       end
 
@@ -56,10 +56,12 @@ module Verdict
       protected
 
       def get(scope, key)
+        ensure_cookies_is_set
         cookies[scope_key(scope, key)]
       end
 
       def set(scope, key, value)
+        ensure_cookies_is_set
         cookies[scope_key(scope, key)] = {
           value: value,
           expires: Time.now.utc.advance(seconds: cookie_lifespan),
@@ -67,10 +69,15 @@ module Verdict
       end
 
       def remove(scope, key)
+        ensure_cookies_is_set
         cookies.delete(scope_key(scope, key))
       end
 
       private
+
+      def ensure_cookies_is_set
+        raise Verdict::StorageError, 'cookies must be an instance of ActionDispatch::Cookies::CookieJar' if cookies.nil?
+      end
 
       def digest_of(value)
         Digest::MD5.hexdigest(value)

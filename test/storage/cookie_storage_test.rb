@@ -1,13 +1,16 @@
 # frozen_string_literal: true
 
 require 'test_helper'
+require 'fake_app'
 
 class CookieStorageTest < Minitest::Test
   def setup
-    @storage = storage = Verdict::Storage::CookieStorage.new
+    @storage = Verdict::Storage::CookieStorage.new.tap do |s|
+      s.cookies = ActionDispatch::Cookies::CookieJar.new(nil)
+    end
     @experiment = Verdict::Experiment.new(:cookie_storage_test) do
       groups { group :all, 100 }
-      storage storage, store_unqualified: true
+      storage @storage, store_unqualified: true
     end
     @subject = stub(id: 'bob')
     @assignment = Verdict::Assignment.new(@experiment, @subject, @experiment.group(:all), nil)
@@ -23,6 +26,14 @@ class CookieStorageTest < Minitest::Test
     storage = Verdict::Storage::CookieStorage.new(cookie_lifespan: 60)
 
     assert_equal 60, storage.cookie_lifespan
+  end
+
+  def test_raises_storage_error_when_cookies_is_nil
+    storage = Verdict::Storage::CookieStorage.new
+
+    assert_raises(Verdict::StorageError) { storage.store_assignment(@assignment) }
+    assert_raises(Verdict::StorageError) { storage.retrieve_assignment(@experiment, @subject) }
+    assert_raises(Verdict::StorageError) { storage.remove_assignment(@experiment, @subject) }
   end
 
   def test_store_assignment_returns_true_when_an_assignment_is_stored
