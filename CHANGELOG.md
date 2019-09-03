@@ -1,3 +1,7 @@
+## v0.11.0
+
+* Automatic eager loading when inside a Rails app.
+
 ## v0.10.0
 
 * Add `Experiment#cleanup` to remove stored redis hashes.
