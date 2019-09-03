@@ -6,11 +6,7 @@ class CookieStorageTest < Minitest::Test
   def setup
     @storage = storage = Verdict::Storage::CookieStorage.new
     @experiment = Verdict::Experiment.new(:cookie_storage_test) do
-      name 1234
-      groups do
-        group :all, 100 do name 5678
-        end
-      end
+      groups { group :all, 100 }
       storage storage, store_unqualified: true
     end
     @subject = stub(id: 'bob')
@@ -49,7 +45,6 @@ class CookieStorageTest < Minitest::Test
 
   def test_retrieve_assignment_returns_nil_when_the_assignment_group_is_invalid
     invalid_group = Verdict::Group.new(@experiment, :invalid)
-    invalid_group.name('invalid')
     assignment = Verdict::Assignment.new(@experiment, @subject, invalid_group, nil)
 
     @storage.store_assignment(assignment)

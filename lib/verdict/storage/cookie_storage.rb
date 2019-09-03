@@ -8,6 +8,7 @@ module Verdict
     # that `name` will be an obsfucated value, or one that we comfortable being "public".
     class CookieStorage < BaseStorage
       DEFAULT_COOKIE_LIFESPAN_SECONDS = 15778476 # 6 months
+      KEY = :assignment
 
       attr_accessor :cookies
       attr_reader :cookie_lifespan
@@ -18,26 +19,30 @@ module Verdict
       end
 
       def store_assignment(assignment)
-        hash = { group: assignment.group.name, created_at: assignment.created_at.strftime('%FT%TZ') }
-        set("verdict_#{assignment.experiment.name}", nil, JSON.dump(hash))
+        data = {
+          group: digest_of(assignment.group.to_s),
+          created_at: assignment.created_at.strftime('%FT%TZ')
+        }
+
+        set(assignment.experiment.handle.to_s, KEY, JSON.dump(data))
       end
 
       def retrieve_assignment(experiment, subject)
-        if (value = get("verdict_#{experiment.name}", nil))
-          hash = parse_cookie_value(value)
-          group = experiment.groups.values.find { |g| g.name == hash['group'] }
+        if (value = get(experiment.handle.to_s, KEY))
+          data = parse_cookie_value(value)
+          group = find_group_by_digest(experiment, data['group'])
 
           if group.nil?
             experiment.remove_subject_assignment(subject)
             return nil
           end
 
-          experiment.subject_assignment(subject, group, Time.xmlschema(hash['created_at']))
+          experiment.subject_assignment(subject, group, Time.xmlschema(data['created_at']))
         end
       end
 
       def remove_assignment(experiment, _subject)
-        remove("verdict_#{experiment.name}", nil)
+        remove(experiment.handle.to_s, KEY)
       end
 
       def retrieve_start_timestamp(_experiment)
@@ -50,22 +55,32 @@ module Verdict
 
       protected
 
-      def get(scope, _key)
-        cookies[scope]
+      def get(scope, key)
+        cookies[scope_key(scope, key)]
       end
 
-      def set(scope, _key, value)
-        cookies[scope] = {
+      def set(scope, key, value)
+        cookies[scope_key(scope, key)] = {
           value: value,
           expires: Time.now.utc.advance(seconds: cookie_lifespan),
         }
       end
 
-      def remove(scope, _key)
-        cookies.delete(scope)
+      def remove(scope, key)
+        cookies.delete(scope_key(scope, key))
       end
 
       private
+
+      def digest_of(value)
+        Digest::MD5.hexdigest(value)
+      end
+
+      def find_group_by_digest(experiment, digest)
+        experiment.groups.values.find do |group|
+          digest_of(group.to_s) == digest
+        end
+      end
 
       def parse_cookie_value(value)
         value = value[:value] if value.is_a?(Hash)
@@ -73,6 +88,10 @@ module Verdict
         JSON.parse(value)
       rescue
         {}
+      end
+
+      def scope_key(scope, key)
+        "#{digest_of(scope)}_#{key}"
       end
     end
   end
