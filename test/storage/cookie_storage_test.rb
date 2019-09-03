@@ -38,6 +38,7 @@ class CookieStorageTest < Minitest::Test
 
   def test_store_assignment_returns_true_when_an_assignment_is_stored
     assert @storage.store_assignment(@assignment)
+    refute_nil @storage.retrieve_assignment(@experiment, @subject)
   end
 
   def test_retrieve_assignment_returns_an_assignment
