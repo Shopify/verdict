@@ -15,6 +15,10 @@ module Verdict
     @repository
   end
 
+  def eager_load!
+    discovery
+  end
+
   def discovery
     @repository = {}
     Dir[File.join(Verdict.directory, '**', '*.rb')].each { |f| load f } if @directory
