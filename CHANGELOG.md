@@ -1,4 +1,4 @@
-## Next version
+## Unreleased
 
 * Changed `Experiment#cleanup` to accept an argument of type `Verdict::Experiment`.       
   Passing a `String`/`Symbol` argument is still supported, but will log a deprecation warning.
