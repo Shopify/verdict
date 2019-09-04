@@ -45,11 +45,21 @@ module Verdict
         set(experiment.handle.to_s, 'started_at', timestamp.utc.strftime('%FT%TZ'))
       end
 
-      def cleanup(_scope)
-        raise NotImplementedError
+      # Deletes all assignments (and any other stored data) for the given experiment
+      def cleanup(experiment_or_scope)
+        if experiment_or_scope.is_a?(Symbol) || experiment_or_scope.is_a?(String)
+          Verdict.default_logger.warn(
+            "Passing a scope string/symbol to #{self.class}#cleanup is deprecated, " \
+            'pass a Verdict::Experiment instance instead.'
+          )
+          clear(experiment_or_scope)
+        else
+          clear(experiment_or_scope.handle.to_s)
+        end
       end
 
       protected
+
       # Retrieves a key in a given scope from storage.
       # - The scope and key are both provided as string.
       # - Should return a string value if the key is found in the scope, nil otherwise.
@@ -58,7 +68,7 @@ module Verdict
         raise NotImplementedError
       end
 
-      # Retrieves a key in a given scope from storage.
+      # Sets the value of a key in a given scope from storage.
       # - The scope, key, and value are all provided as string.
       # - Should return true if the item was successfully stored.
       # - Should raise Verdict::StorageError if anything goes wrong.
@@ -66,11 +76,19 @@ module Verdict
         raise NotImplementedError
       end
 
-      # Retrieves a key in a given scope from storage.
+      # Removes a key in a given scope from storage.
       # - The scope and key are both provided as string.
       # - Should return true if the item was successfully removed from storage.
       # - Should raise Verdict::StorageError if anything goes wrong.
       def remove(scope, key)
+        raise NotImplementedError
+      end
+
+      # Removes all keys in a given scope from storage.
+      # - The scope is provided as string.
+      # - Should return true if all items were successfully removed from storage.
+      # - Should raise Verdict::StorageError if anything goes wrong.
+      def clear(scope)
         raise NotImplementedError
       end
     end

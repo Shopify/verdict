@@ -1,3 +1,8 @@
+## Unreleased
+
+* Changed `Experiment#cleanup` to accept an argument of type `Verdict::Experiment`.       
+  Passing a `String`/`Symbol` argument is still supported, but will log a deprecation warning.
+
 ## v0.11.0
 
 * Automatic eager loading when inside a Rails app.
