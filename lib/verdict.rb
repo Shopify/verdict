@@ -58,3 +58,4 @@ require "verdict/event_logger"
 
 Verdict.default_logger ||= Logger.new("/dev/null")
 Verdict.directory = nil
+Verdict.clear_repository_cache

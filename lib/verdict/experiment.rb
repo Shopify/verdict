@@ -2,7 +2,7 @@ class Verdict::Experiment
 
   include Verdict::Metadata
 
-  attr_reader :handle, :qualifiers, :storage, :event_logger
+  attr_reader :handle, :qualifiers, :event_logger
 
   def self.define(handle, *args, &block)
     experiment = self.new(handle, *args, &block)
@@ -11,6 +11,7 @@ class Verdict::Experiment
   end
 
   def initialize(handle, options = {}, &block)
+    @started_at = nil
     @handle = handle.to_s
 
     options = default_options.merge(options)
@@ -88,7 +89,7 @@ class Verdict::Experiment
 
   def started_at
     @started_at ||= @storage.retrieve_start_timestamp(self)
-  rescue Verdict::StorageError => e
+  rescue Verdict::StorageError
     nil
   end
 
@@ -193,15 +194,13 @@ class Verdict::Experiment
   end
 
   def as_json(options = {})
-    data = {
+    {
       handle: handle,
       has_qualifier: has_qualifier?,
-      groups: segmenter.groups.values.map { |g| g.as_json(options) },
+      groups: segmenter.groups.values.map { |group| group.as_json(options) },
       metadata: metadata,
       started_at: started_at.nil? ? nil : started_at.utc.strftime('%FT%TZ')
-    }
-
-    data.tap do |data|
+    }.tap do |data|
       data[:subject_type] = subject_type.to_s unless subject_type.nil?
     end
   end

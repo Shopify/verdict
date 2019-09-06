@@ -5,7 +5,14 @@ class VerdictRailsTest < Minitest::Test
   def setup
     Verdict.clear_repository_cache
     new_rails_app = Dummy::Application.new
+    new_rails_app.config.eager_load = false
     new_rails_app.initialize!
+  end
+
+  def teardown
+    Verdict.default_logger = Logger.new("/dev/null")
+    Verdict.directory = nil
+    Verdict.clear_repository_cache
   end
 
   def test_verdict_railtie_should_find_directory_path
