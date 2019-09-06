@@ -10,6 +10,8 @@ module Verdict
         @key_prefix = options[:key_prefix] || 'experiments/'
       end
 
+      protected
+
       def get(scope, key)
         redis.hget(scope_key(scope), key)
       rescue ::Redis::BaseError => e
