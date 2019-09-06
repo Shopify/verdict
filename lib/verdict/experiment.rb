@@ -163,7 +163,7 @@ class Verdict::Experiment
   end
 
   def cleanup
-    @storage.cleanup(handle.to_s)
+    @storage.cleanup(self)
   end
 
   def remove_subject_assignment(subject)
