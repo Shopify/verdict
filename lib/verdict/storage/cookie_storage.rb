@@ -93,7 +93,7 @@ module Verdict
         value = value[:value] if value.is_a?(Hash)
 
         JSON.parse(value)
-      rescue
+      rescue JSON::ParserError, TypeError
         {}
       end
 
