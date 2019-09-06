@@ -28,7 +28,7 @@ module Verdict
         raise Verdict::StorageError, "Redis error: #{e.message}"
       end
 
-      def clear(scope)
+      def clear(scope, options)
         scrub(scope)
         redis.del(scope_key(scope))
       rescue ::Redis::BaseError => e

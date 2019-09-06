@@ -162,8 +162,8 @@ class Verdict::Experiment
     assignment
   end
 
-  def cleanup
-    @storage.cleanup(self)
+  def cleanup(options = {})
+    @storage.cleanup(self, options)
   end
 
   def remove_subject_assignment(subject)

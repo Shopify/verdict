@@ -424,7 +424,6 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_cleanup
-    redis = ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
     storage = Verdict::Storage::RedisStorage.new(redis)
     experiment = Verdict::Experiment.new(:cleanup_test) do
       groups { group :all, 100 }
@@ -440,6 +439,16 @@ class ExperimentTest < Minitest::Test
     redis.del("experiments/cleanup_test")
   end
 
+  def test_cleanup_options
+    experiment = Verdict::Experiment.new(:cleanup_test) do
+      groups { group :all, 100 }
+    end
+
+    experiment.storage.expects(:clear).with(experiment.handle, some: :thing)
+    experiment.assign("something")
+    experiment.cleanup(some: :thing)
+  end
+
   def test_cleanup_without_redis
     experiment = Verdict::Experiment.new(:cleanup_test) do
       groups { group :all, 100 }
@@ -449,5 +458,11 @@ class ExperimentTest < Minitest::Test
       experiment.assign("something")
       experiment.cleanup
     end
+  end
+
+  private
+
+  def redis
+    @redis ||= ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
   end
 end

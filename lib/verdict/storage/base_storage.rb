@@ -46,15 +46,15 @@ module Verdict
       end
 
       # Deletes all assignments (and any other stored data) for the given experiment
-      def cleanup(experiment_or_scope)
+      def cleanup(experiment_or_scope, options = {})
         if experiment_or_scope.is_a?(Symbol) || experiment_or_scope.is_a?(String)
           Verdict.default_logger.warn(
             "Passing a scope string/symbol to #{self.class}#cleanup is deprecated, " \
             'pass a Verdict::Experiment instance instead.'
           )
-          clear(experiment_or_scope)
+          clear(experiment_or_scope, options)
         else
-          clear(experiment_or_scope.handle.to_s)
+          clear(experiment_or_scope.handle.to_s, options)
         end
       end
 
@@ -88,7 +88,7 @@ module Verdict
       # - The scope is provided as string.
       # - Should return true if all items were successfully removed from storage.
       # - Should raise Verdict::StorageError if anything goes wrong.
-      def clear(scope)
+      def clear(scope, options)
         raise NotImplementedError
       end
     end

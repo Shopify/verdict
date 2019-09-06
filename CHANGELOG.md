@@ -1,5 +1,7 @@
 ## Unreleased
 
+* Allow options to be passed to `Experiment#cleanup` so they can be forwarded to storage.
+
 * Changed `Experiment#cleanup` to accept an argument of type `Verdict::Experiment`.       
   Passing a `String`/`Symbol` argument is still supported, but will log a deprecation warning.
 
