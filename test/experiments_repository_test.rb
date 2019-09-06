@@ -28,5 +28,6 @@ class ExperimentTest < Minitest::Test
     json = JSON.parse(Verdict.repository.to_json)
     assert_equal ['test_1', 'test_2'], json.keys
     assert_equal json['test_1'], JSON.parse(e1.to_json)
+    assert_equal json['test_2'], JSON.parse(e2.to_json)
   end
 end

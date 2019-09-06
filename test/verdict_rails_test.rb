@@ -5,6 +5,7 @@ class VerdictRailsTest < Minitest::Test
   def setup
     Verdict.clear_repository_cache
     new_rails_app = Dummy::Application.new
+    new_rails_app.config.eager_load = false
     new_rails_app.initialize!
   end
 
