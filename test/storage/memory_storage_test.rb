@@ -35,9 +35,9 @@ class MemoryStorageTest < Minitest::Test
   end
 
   def test_started_at
-    assert @storage.get(@experiment.handle.to_s, 'started_at').nil?
+    assert @storage.send(:get, @experiment.handle.to_s, 'started_at').nil?
     @experiment.send(:ensure_experiment_has_started)
-    refute @storage.get(@experiment.handle.to_s, 'started_at').nil?
+    refute @storage.send(:get, @experiment.handle.to_s, 'started_at').nil?
     assert_instance_of Time, @experiment.started_at
   end
 end

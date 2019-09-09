@@ -7,6 +7,8 @@ module Verdict
         @storage = {}
       end
 
+      protected
+
       def get(scope, key)
         @storage[scope] ||= {}
         @storage[scope][key]

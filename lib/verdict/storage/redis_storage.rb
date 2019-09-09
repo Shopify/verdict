@@ -10,6 +10,8 @@ module Verdict
         @key_prefix = options[:key_prefix] || 'experiments/'
       end
 
+      protected
+
       def get(scope, key)
         redis.hget(scope_key(scope), key)
       rescue ::Redis::BaseError => e
@@ -28,7 +30,7 @@ module Verdict
         raise Verdict::StorageError, "Redis error: #{e.message}"
       end
 
-      def clear(scope)
+      def clear(scope, options)
         scrub(scope)
         redis.del(scope_key(scope))
       rescue ::Redis::BaseError => e

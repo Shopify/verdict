@@ -1,12 +1,14 @@
 module Verdict
   module Storage
     class MockStorage < BaseStorage
-      def set(scope, key, value)
-        false
-      end
+      protected
 
       def get(scope, key)
         nil
+      end
+
+      def set(scope, key, value)
+        false
       end
 
       def remove(scope, key)
