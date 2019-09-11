@@ -1,4 +1,4 @@
-## Unreleased
+## v0.12.0
 
 * Allow options to be passed to `Experiment#cleanup` so they can be forwarded to storage.
 
