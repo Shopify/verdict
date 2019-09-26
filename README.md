@@ -88,7 +88,11 @@ By default it will use `subject.id.to_s` as `subject_identifier`, but you can ch
 
 Storage providers simply store subject assignments and require quick lookups of subject identifiers. They allow for complex (high CPU) assignments, and for assignments that might not always put the same subject in the same group by storing the assignment for later use.
 
-Storage providers are intended for operational use and should not be used for data analysis. For data analysis, you should use the logger.
+Storage providers are intended for operational use and should not be used for data analysis.
+For data analysis, you should use the logger.
+When removing old experiments you might want to clean up corresponding experiment assignments, to reduce the amount of data stored and loaded.
+By using the logger, this data removal doesn't impact historic data or data analysis.
+
 
 For more details about these methods, check out the source code for [Verdict::Storage::MockStorage](lib/verdict/storage/mock_storage.rb)
 
