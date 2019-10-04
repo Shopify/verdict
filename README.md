@@ -71,6 +71,7 @@ Verdict uses a very simple interface for storing experiment assignments. Out of 
 
 * Memory
 * Redis
+* Cookies
 
 You can set up storage for your experiment by calling the `storage` method with
 an object that responds to the following methods:
@@ -94,7 +95,7 @@ When removing old experiments you might want to clean up corresponding experimen
 By using the logger, this data removal doesn't impact historic data or data analysis.
 
 
-For more details about these methods, check out the source code for [Verdict::Storage::MockStorage](lib/verdict/storage/mock_storage.rb)
+For more details about these methods, check out the source code for [`Verdict::Storage::MockStorage`](lib/verdict/storage/mock_storage.rb)
 
 ## Logging
 

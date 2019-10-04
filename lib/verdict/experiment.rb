@@ -239,10 +239,12 @@ class Verdict::Experiment
   def set_start_timestamp
     @storage.store_start_timestamp(self, started_now = Time.now.utc)
     started_now
+  rescue NotImplementedError
+    nil
   end
 
   def ensure_experiment_has_started
-    @started_at ||= @storage.retrieve_start_timestamp(self) || set_start_timestamp
+    @started_at ||= started_at || set_start_timestamp
   rescue Verdict::StorageError
     @started_at ||= Time.now.utc
   end

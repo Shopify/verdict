@@ -1,4 +1,5 @@
 require 'verdict/storage/base_storage'
+require 'verdict/storage/cookie_storage'
 require 'verdict/storage/mock_storage'
 require 'verdict/storage/memory_storage'
 require 'verdict/storage/redis_storage'
