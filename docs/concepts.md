@@ -1,6 +1,6 @@
 # Verdict Concepts
 
-Understanding the following Verdict concepts can help implement experiments and discuss them with peers.
+Understanding the following Verdict concepts can help you implement experiments and discuss them with peers.
 
 - [Experiment](#experiment)
 - [Qualifiers](#qualifiers)
@@ -14,12 +14,13 @@ Understanding the following Verdict concepts can help implement experiments and 
 
 ### Qualifers
 
-Qualifiers are methods that take two parameters, `subject` and `context` and returns `true` if the `subject` can take this experiment, or `false` if the `subject` is not eligible. Experiments can have multiple qualifiers which are evaluated in succession. If a qualifier returns `false` no further qualifiers are checked.
+Qualifiers are methods that take two parameters, `subject` and `context`. They return `true` if the `subject` can take this experiment, or `false` if the `subject` is not eligible. Experiments can have multiple qualifiers which are evaluated in succession. If a qualifier returns `false`, no further qualifiers are checked.
 
-Examples of qualifiers might be:
+Examples of qualifiers might be subjects that:
 
-- Include subjects that originate from SpeedCurve or WebPage Test
-- Include subjects that have added items to their cart.
+- Originate from certain browsers or devices
+- Have a specific `Accept-Language` header
+- Have added items to their cart.
 
 ### Subject
 
