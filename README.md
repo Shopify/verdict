@@ -19,6 +19,8 @@ Add this line to your application's Gemfile, and run `bundle install`:
 
 If you're using Rails, the Railtie will handle setting the logger to `Rails.logger` and the experiments directory to `app/experiments`. It will also load the rake tasks for you (run `bundle exec rake -T | grep experiments:` for options).
 
+You may find the [Concepts](docs/concepts.md) documentation a good place to familiarise yourself with Verdict's nomenclature.
+
 ## Usage
 
 The `Verdict::Experiment` class is used to create an experiment, define control and experiment groups, and to qualify subjects.
@@ -42,8 +44,7 @@ Verdict::Experiment.define :my_experiment do
 end
 ```
 
-Usually you'll want to place this in a file called **my_experiment.rb** in the
-**/app/experiments** folder.
+Usually you'll want to place this in a file called **my_experiment.rb** in the **/app/experiments** folder.
 
 _We recommend that you subclass `Verdict::Experiment` to set some default options for your app's environment, and call `define` on that class instead._
 
@@ -73,8 +74,7 @@ Verdict uses a very simple interface for storing experiment assignments. Out of 
 * Redis
 * Cookies
 
-You can set up storage for your experiment by calling the `storage` method with
-an object that responds to the following methods:
+You can set up storage for your experiment by calling the `storage` method with an object that responds to the following methods:
 
 * `store_assignment(assignment)`
 * `retrieve_assignment(experiment, subject)`
@@ -84,16 +84,13 @@ an object that responds to the following methods:
 
 Regarding the method signatures above, `experiment` is the Experiment instance, `subject` is the Subject instance, and `assignment` is a `Verdict::Assignment` instance.
 
-The `subject` instance will be identified internally by its `subject_identifier`
-By default it will use `subject.id.to_s` as `subject_identifier`, but you can change that by overriding `def subject_identifier(subject)` on the experiment.
+The `subject` instance will be identified internally by its `subject_identifier`. By default it will use `subject.id.to_s` as `subject_identifier`, but you can change that by overriding `def subject_identifier(subject)` on the experiment.
 
 Storage providers simply store subject assignments and require quick lookups of subject identifiers. They allow for complex (high CPU) assignments, and for assignments that might not always put the same subject in the same group by storing the assignment for later use.
 
-Storage providers are intended for operational use and should not be used for data analysis.
-For data analysis, you should use the logger.
-When removing old experiments you might want to clean up corresponding experiment assignments, to reduce the amount of data stored and loaded.
-By using the logger, this data removal doesn't impact historic data or data analysis.
+Storage providers are intended for operational use and should not be used for data analysis. For data analysis, you should use [the logger](#logging).
 
+When removing old experiments you might want to clean up corresponding experiment assignments, to reduce the amount of data stored and loaded. By using the logger, this data removal doesn't impact historic data or data analysis.
 
 For more details about these methods, check out the source code for [`Verdict::Storage::MockStorage`](lib/verdict/storage/mock_storage.rb)
 
@@ -106,12 +103,3 @@ You can override the logging by overriding the `def log_assignment(assignment)` 
 Logging (as opposed to storage) should be used for data analysis. The logger requires a write-only / forward-only stream to write to, e.g. a log file, Kafka, or an insert-only database table.
 
 It's possible to run an experiment without defining any storage, though this comes with several drawbacks. Logging on the other hand is required in order to analyze the results.
-
-
-## Contributing
-
-1. Fork it
-2. Create your feature branch (`git checkout -b my-new-feature`)
-3. Commit your changes, including tests (`git commit -am 'Added some feature'`)
-4. Push to the branch (`git push origin my-new-feature`)
-5. Create new Pull Request, and mention @wvanbergen.
