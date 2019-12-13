@@ -48,6 +48,7 @@ require "verdict/version"
 require "verdict/railtie" if defined?(Rails::Railtie)
 
 require "verdict/metadata"
+require "verdict/experiment_definition"
 require "verdict/experiment"
 require "verdict/group"
 require "verdict/assignment"

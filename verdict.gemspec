@@ -5,7 +5,7 @@ require 'verdict/version'
 
 Gem::Specification.new do |gem|
   gem.name          = "verdict"
-  gem.version       = Verdict::VERSION
+  gem.version       = Verdict::Version::VERSION
   gem.authors       = ["Shopify"]
   gem.email         = ["kevin.mcphillips@shopify.com", "willem@shopify.com"]
   gem.description   = %q{Shopify Experiments classes}
