@@ -1,5 +1,6 @@
 ## Unreleased
 
+* Support eager loading from within a Rails app using Zeitwerk.
 * Add `CookieStorage` storage backend. This backend is a distributed store for Verdict and does not support experiment timestamps. It is designed to be used with Rails applications and requires that `.cookies` be set to the `CookieJar` instance before use.
 
 ## v0.12.0
