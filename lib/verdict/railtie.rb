@@ -5,10 +5,15 @@ class Verdict::Railtie < Rails::Railtie
     Verdict.default_logger = Rails.logger
 
     Verdict.directory ||= Rails.root.join('app', 'experiments')
-    app.config.eager_load_paths -= Dir[Verdict.directory.to_s]
 
-    # Re-freeze eager load paths to ensure they blow up if modified at runtime, as Rails does
-    app.config.eager_load_paths.freeze
+    if Rails.gem_version >= Gem::Version.new('6.0.0') && Rails.autoloaders.zeitwerk_enabled?
+      Rails.autoloaders.main.ignore(Verdict.directory)
+    else
+      app.config.eager_load_paths -= Dir[Verdict.directory.to_s]
+
+      # Re-freeze eager load paths to ensure they blow up if modified at runtime, as Rails does
+      app.config.eager_load_paths.freeze
+    end
   end
 
   config.to_prepare do
