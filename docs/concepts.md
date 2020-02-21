@@ -12,7 +12,7 @@ Understanding the following Verdict concepts can help you implement experiments 
 
 `Experiment`s are defined in `app/experiments` and encapsulate the details of the test including metadata such as the name, description or owners, as well as any [qualifiers](#qualifiers) or the [groups](#groups) available in the test.
 
-### Qualifiers
+### Qualifiers 
 
 Qualifiers are methods that take two parameters, `subject` and `context`. They return `true` if the `subject` can take this experiment, or `false` if the `subject` is not eligible. Experiments can have multiple qualifiers which are evaluated in succession. If a qualifier returns `false`, no further qualifiers are checked.
 
