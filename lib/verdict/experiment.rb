@@ -52,6 +52,17 @@ class Verdict::Experiment
     return self
   end
 
+  # Optional: Together with the "end timestamp", limits the experiment run timeline within
+  # the given time interval. When experiment is not scheduled, subject switch returns nil.
+  # This is useful when the experimenter requires the experiment to run in a strict timeline.
+  def schedule_start_timestamp(timestamp)
+    @schedule_start_timestamp = timestamp
+  end
+
+  def schedule_end_timestamp(timestamp)
+    @schedule_end_timestamp = timestamp
+  end
+
   def rollout_percentage(percentage, rollout_group_name = :enabled)
     groups(Verdict::Segmenters::RolloutSegmenter) do
       group rollout_group_name, percentage
@@ -172,6 +183,7 @@ class Verdict::Experiment
   end
 
   def switch(subject, context = nil)
+    return unless is_scheduled?
     assign(subject, context).to_sym
   end
 
@@ -251,5 +263,17 @@ class Verdict::Experiment
 
   def nil_assignment(subject)
     subject_assignment(subject, nil, nil)
+  end
+
+  private
+
+  def is_scheduled?
+    if @schedule_start_timestamp and @schedule_start_timestamp > Time.now
+      return false
+    end
+    if @schedule_end_timestamp and @schedule_end_timestamp < Time.now
+      return false
+    end
+    return true
   end
 end
