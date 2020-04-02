@@ -470,6 +470,101 @@ class ExperimentTest < Minitest::Test
     end
   end
 
+  def test_is_scheduled
+    e = Verdict::Experiment.new(:json) do
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+      schedule_start_timestamp Time.new(2020, 1, 1)
+      schedule_end_timestamp Time.new(2020, 1, 3)
+    end
+
+    # Within the interval
+    Timecop.freeze(Time.new(2020, 1, 2)) do
+      assert e.send(:is_scheduled?)
+    end
+    # Too early
+    Timecop.freeze(Time.new(2019, 12, 30)) do
+      assert !e.send(:is_scheduled?)
+    end
+    # Too late
+    Timecop.freeze(Time.new(2020, 1, 4)) do
+      assert !e.send(:is_scheduled?)
+    end
+  end
+
+  def test_is_scheduled_no_end_timestamp
+    e = Verdict::Experiment.new(:json) do
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+      schedule_start_timestamp Time.new(2020, 1, 1)
+    end
+
+    # Within the interval because there is no end date
+    Timecop.freeze(Time.new(2030, 1, 1)) do
+      assert e.send(:is_scheduled?)
+    end
+    # Too early
+    Timecop.freeze(Time.new(2019, 12, 30)) do
+      assert !e.send(:is_scheduled?)
+    end
+  end
+
+  def test_is_scheduled_no_start_timestamp
+    e = Verdict::Experiment.new(:json) do
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+      schedule_end_timestamp Time.new(2020, 1, 3)
+    end
+
+    # Within the interval because there is no start date
+    Timecop.freeze(Time.new(2019, 12, 30)) do
+      assert e.send(:is_scheduled?)
+    end
+    # Too late
+    Timecop.freeze(Time.new(2020, 1, 4)) do
+      assert !e.send(:is_scheduled?)
+    end
+  end
+
+  def test_switch_respects_time_schedule
+    e = Verdict::Experiment.new('test') do
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+      schedule_start_timestamp Time.new(2020, 1, 1)
+      schedule_end_timestamp Time.new(2020, 1, 2)
+    end
+
+    Timecop.freeze(Time.new(2020, 1, 3)) do
+      assert_nil e.switch(1)
+    end
+  end
+
+  def test_switch_respects_time_schedule_even_after_assignment
+    e = Verdict::Experiment.new('test') do
+      groups do
+        group :a, :half
+        group :b, :rest
+      end
+    end
+
+    assert_equal :a, e.switch(1)
+
+    e.schedule_start_timestamp Time.new(2020, 1, 1)
+    e.schedule_end_timestamp Time.new(2020, 1, 2)
+
+    Timecop.freeze(Time.new(2020, 1, 3)) do
+      assert_nil e.switch(1)
+    end
+  end
+
   private
 
   def redis
