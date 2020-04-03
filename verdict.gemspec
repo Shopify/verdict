@@ -17,6 +17,8 @@ Gem::Specification.new do |gem|
   gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
   gem.require_paths = ["lib"]
 
+  gem.metadata["allowed_push_host"] = "https://rubygems.org"
+
   gem.add_development_dependency("minitest", '~> 5.2')
   gem.add_development_dependency("rake")
   gem.add_development_dependency("mocha")
