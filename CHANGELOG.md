@@ -1,5 +1,6 @@
-## Unreleased
+## v0.13.0
 
+* Add optional experiment definition methods `schedule_start_timestamp` and `schedule_end_timestamp` to support limiting experiment's lifetime in a pre-determined time interval.
 * Support eager loading from within a Rails app using Zeitwerk.
 * Add `CookieStorage` storage backend. This backend is a distributed store for Verdict and does not support experiment timestamps. It is designed to be used with Rails applications and requires that `.cookies` be set to the `CookieJar` instance before use.
 
