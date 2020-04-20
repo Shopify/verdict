@@ -565,6 +565,24 @@ class ExperimentTest < Minitest::Test
     end
   end
 
+  def test_is_stopped_new_assignment
+    e = Verdict::Experiment.new('test') do
+      groups do
+        group :a, :half
+        group :b, :half
+      end
+      schedule_stop_new_assignment_timestamp Time.new(2020, 1, 1)
+    end
+
+    # new assignments stopped after the stop timestamp
+    Timecop.freeze(Time.new(2020, 1, 2)) do
+      assert e.send(:is_stopped_new_assignments?)
+    end
+    # new assignments didn't stop before the stop timestamp
+    Timecop.freeze(Time.new(2019, 12, 30)) do
+      assert !e.send(:is_stopped_new_assignments?)
+    end
+  end
   private
 
   def redis
