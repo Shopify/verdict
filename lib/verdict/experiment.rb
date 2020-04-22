@@ -65,8 +65,9 @@ class Verdict::Experiment
 
   # Optional: Together with start and end timestamp, limits the experiment assignments within
   # an even tighter time interval. When experiment assignment happens after the stop_new_assignment
-  # timestamp, subject switch returns nil. This is useful when experimenter requires the experiment
-  # to have a cool down period with no new assignments to guarantee stable experiment analysis.
+  # timestamp, subject switch returns nil (i.e. start timestamp -> stop assignment timestamp -> end timestamp).
+  # This is useful when experimenter requires the experiment to have a cool down period with
+  # no new assignments to guarantee stable experiment analysis.
   def schedule_stop_new_assignment_timestamp(timestamp)
     @schedule_stop_new_assignment_timestamp = timestamp
   end
@@ -191,7 +192,7 @@ class Verdict::Experiment
   end
 
   def switch(subject, context = nil)
-    return unless is_scheduled? || (not is_stopped_new_assignments?)
+    return unless is_scheduled? && (not is_stop_new_assignments?)
     assign(subject, context).to_sym
   end
 
@@ -285,8 +286,13 @@ class Verdict::Experiment
     return true
   end
 
-  def is_stopped_new_assignments?
-    if @schedule_stop_new_assignment_timestamp and @schedule_stop_new_assignment_timestamp < Time.now
+  def is_stop_new_assignments?
+    if @schedule_stop_new_assignment_timestamp and
+        @schedule_start_timestamp and
+        @schedule_end_timestamp and
+        @schedule_stop_new_assignment_timestamp > @schedule_start_timestamp and
+        @schedule_stop_new_assignment_timestamp < @schedule_end_timestamp and
+        @schedule_stop_new_assignment_timestamp < Time.now
       return true
     end
     return false

@@ -565,22 +565,86 @@ class ExperimentTest < Minitest::Test
     end
   end
 
-  def test_is_stopped_new_assignment
+  def test_is_stop_new_assignment
     e = Verdict::Experiment.new('test') do
       groups do
         group :a, :half
         group :b, :half
       end
-      schedule_stop_new_assignment_timestamp Time.new(2020, 1, 1)
+      schedule_start_timestamp Time.new(2020, 1, 1)
+      schedule_stop_new_assignment_timestamp Time.new(2020, 1, 15)
+      schedule_end_timestamp Time.new(2020, 2, 1)
     end
 
     # new assignments stopped after the stop timestamp
-    Timecop.freeze(Time.new(2020, 1, 2)) do
-      assert e.send(:is_stopped_new_assignments?)
+    Timecop.freeze(Time.new(2020, 1, 16)) do
+      assert e.send(:is_stop_new_assignments?)
+      assert_nil e.switch(1)
     end
     # new assignments didn't stop before the stop timestamp
-    Timecop.freeze(Time.new(2019, 12, 30)) do
-      assert !e.send(:is_stopped_new_assignments?)
+    Timecop.freeze(Time.new(2020, 1, 3)) do
+      assert !e.send(:is_stop_new_assignments?)
+    end
+  end
+
+  def test_is_stop_new_assignment_with_no_start_or_end_timestamp
+    e = Verdict::Experiment.new('test') do
+      groups do
+        group :a, :half
+        group :b, :half
+      end
+      schedule_start_timestamp Time.new(2020, 4, 1)
+      schedule_stop_new_assignment_timestamp Time.new(2020, 4, 22)
+    end
+
+    #without end timestamp, assignment will not respect stop new assignment timestamp
+    Timecop.freeze(Time.new(2020, 4, 23)) do
+      assert !e.send(:is_stop_new_assignments?)
+    end
+
+    #with end timestamp, assignment will respect stop new assignment timestamp
+    e.schedule_end_timestamp Time.new(2020, 4, 30)
+    Timecop.freeze(Time.new(2020, 4, 23)) do
+      assert e.send(:is_stop_new_assignments?)
+      assert_nil e.switch(1)
+    end
+  end
+
+  def test_switch_respects_stop_new_assignment_timestamp_even_after_assignment
+    e = Verdict::Experiment.new('test') do
+      groups do
+        group :a, :half
+        group :b, :half
+      end
+    end
+
+    assert_equal :a, e.switch(1)
+    
+    e.schedule_start_timestamp Time.new(2020, 4, 1)
+    e.schedule_stop_new_assignment_timestamp Time.new(2020, 4, 15)
+    e.schedule_end_timestamp Time.new(2020, 5, 1)
+
+    # switch respects to stop new assignment timestamp even after the assignment occurred
+    Timecop.freeze(Time.new(2020, 4, 16)) do
+      assert e.send(:is_stop_new_assignments?)
+      assert_nil e.switch(1)
+    end
+  end
+
+  def test_not_is_stop_new_assignment_when_timestamp_not_in_schedule
+    e = Verdict::Experiment.new('test') do
+      groups do
+        group :a, :half
+        group :b, :half
+      end
+      schedule_start_timestamp Time.new(2020, 1, 1)
+      schedule_stop_new_assignment_timestamp Time.new(2019, 12, 1)
+      schedule_end_timestamp Time.new(2020, 2, 1)
+    end
+
+    #stop new timestamp not within interval
+    Timecop.freeze(Time.new(2020, 1, 16)) do
+      assert !e.send(:is_stop_new_assignments?)
     end
   end
   private
