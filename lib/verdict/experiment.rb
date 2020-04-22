@@ -287,12 +287,7 @@ class Verdict::Experiment
   end
 
   def is_stop_new_assignments?
-    if @schedule_stop_new_assignment_timestamp and
-        @schedule_start_timestamp and
-        @schedule_end_timestamp and
-        @schedule_stop_new_assignment_timestamp > @schedule_start_timestamp and
-        @schedule_stop_new_assignment_timestamp < @schedule_end_timestamp and
-        @schedule_stop_new_assignment_timestamp < Time.now
+    if @schedule_stop_new_assignment_timestamp and @schedule_stop_new_assignment_timestamp < Time.now
       return true
     end
     return false
