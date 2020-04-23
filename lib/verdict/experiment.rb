@@ -52,9 +52,16 @@ class Verdict::Experiment
     return self
   end
 
-  # Optional: Together with the "end timestamp", limits the experiment run timeline within
-  # the given time interval. When experiment is not scheduled, subject switch returns nil.
-  # This is useful when the experimenter requires the experiment to run in a strict timeline.
+  # Optional: Together with the "end_timestamp" and "stop_new_assignment_timestamp", limits the experiment run timeline within
+  # the given time interval.
+  #
+  # Timestamps' definitions:
+  # start_timestamp: Experiment's start time. No assignments are made and switch will return nil before this timestamp
+  # stop_new_assignment_timestamp: Experiment's new assignment stop time. No new assignments are made and switch returns nil for new assignments after timestamp
+  # end_timestamp: Experiment's end time. No assignments are made and switch returns nil after this timestamp
+  #
+  # Experiment run timeline:
+  # start_timestamp -> (new assignments occur) -> stop_new_assignment_timestamp -> (no new assignments occur) -> end_timestamp
   def schedule_start_timestamp(timestamp)
     @schedule_start_timestamp = timestamp
   end
@@ -63,11 +70,6 @@ class Verdict::Experiment
     @schedule_end_timestamp = timestamp
   end
 
-  # Optional: Together with start and end timestamp, limits the experiment assignments within
-  # an even tighter time interval. When experiment assignment happens after the stop_new_assignment
-  # timestamp, subject switch returns nil (i.e. start timestamp -> stop assignment timestamp -> end timestamp).
-  # This is useful when experimenter requires the experiment to have a cool down period with
-  # no new assignments to guarantee stable experiment analysis.
   def schedule_stop_new_assignment_timestamp(timestamp)
     @schedule_stop_new_assignment_timestamp = timestamp
   end
@@ -145,7 +147,7 @@ class Verdict::Experiment
     subject_identifier = retrieve_subject_identifier(subject)
     assignment = if previous_assignment
                    previous_assignment
-                 elsif subject_qualifies?(subject, context)
+                 elsif subject_qualifies?(subject, context) && (not is_stop_new_assignments?)
                    group = segmenter.assign(subject_identifier, subject, context)
                    subject_assignment(subject, group, nil, group.nil?)
                  else
@@ -192,7 +194,7 @@ class Verdict::Experiment
   end
 
   def switch(subject, context = nil)
-    return unless is_scheduled? && (not is_stop_new_assignments?)
+    return unless is_scheduled?
     assign(subject, context).to_sym
   end
 
@@ -287,9 +289,6 @@ class Verdict::Experiment
   end
 
   def is_stop_new_assignments?
-    if @schedule_stop_new_assignment_timestamp and @schedule_stop_new_assignment_timestamp < Time.now
-      return true
-    end
-    return false
+    return @schedule_stop_new_assignment_timestamp && @schedule_stop_new_assignment_timestamp < Time.now
   end
 end
