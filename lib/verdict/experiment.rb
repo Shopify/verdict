@@ -55,10 +55,11 @@ class Verdict::Experiment
   # Optional: Together with the "end_timestamp" and "stop_new_assignment_timestamp", limits the experiment run timeline within
   # the given time interval.
   #
-  # Timestamps' definitions:
-  # start_timestamp: Experiment's start time. No assignments are made and switch will return nil before this timestamp
-  # stop_new_assignment_timestamp: Experiment's new assignment stop time. No new assignments are made and switch returns nil for new assignments after timestamp
-  # end_timestamp: Experiment's end time. No assignments are made and switch returns nil after this timestamp
+  # Timestamps definitions:
+  # start_timestamp: Experiment's start time. No assignments are made i.e. switch will return nil before this timestamp.
+  # stop_new_assignment_timestamp: Experiment's new assignment stop time. No new assignments are made
+  # i.e. switch returns nil for new assignments but the existing assignments are preserved.
+  # end_timestamp: Experiment's end time. No assignments are made i.e. switch returns nil after this timestamp.
   #
   # Experiment run timeline:
   # start_timestamp -> (new assignments occur) -> stop_new_assignment_timestamp -> (no new assignments occur) -> end_timestamp
@@ -147,7 +148,7 @@ class Verdict::Experiment
     subject_identifier = retrieve_subject_identifier(subject)
     assignment = if previous_assignment
                    previous_assignment
-                 elsif subject_qualifies?(subject, context) && (not is_stop_new_assignments?)
+                 elsif subject_qualifies?(subject, context) && is_make_new_assignments?
                    group = segmenter.assign(subject_identifier, subject, context)
                    subject_assignment(subject, group, nil, group.nil?)
                  else
@@ -279,16 +280,16 @@ class Verdict::Experiment
   private
 
   def is_scheduled?
-    if @schedule_start_timestamp and @schedule_start_timestamp > Time.now
+    if @schedule_start_timestamp && @schedule_start_timestamp > Time.now
       return false
     end
-    if @schedule_end_timestamp and @schedule_end_timestamp < Time.now
+    if @schedule_end_timestamp && @schedule_end_timestamp < Time.now
       return false
     end
     return true
   end
 
-  def is_stop_new_assignments?
-    return @schedule_stop_new_assignment_timestamp && @schedule_stop_new_assignment_timestamp < Time.now
+  def is_make_new_assignments?
+    return !(@schedule_stop_new_assignment_timestamp && @schedule_stop_new_assignment_timestamp < Time.now)
   end
 end

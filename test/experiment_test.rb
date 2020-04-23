@@ -576,16 +576,17 @@ class ExperimentTest < Minitest::Test
 
     # new assignments stopped after the stop timestamp
     Timecop.freeze(Time.new(2020, 1, 16)) do
-      assert e.send(:is_stop_new_assignments?)
+      assert !e.send(:is_make_new_assignments?)
       assert_nil e.switch(1)
     end
     # new assignments didn't stop before the stop timestamp
     Timecop.freeze(Time.new(2020, 1, 3)) do
-      assert !e.send(:is_stop_new_assignments?)
+      assert e.send(:is_make_new_assignments?)
+      assert :a, e.switch(2)
     end
   end
 
-  def test_switch_respects_stop_new_assignment_timestamp_even_after_assignment
+  def test_switch_preserves_old_assignments_after_stop_new_assignments_timestamp
     e = Verdict::Experiment.new('test') do
       groups do
         group :a, :half
@@ -599,7 +600,7 @@ class ExperimentTest < Minitest::Test
 
     # switch respects to stop new assignment timestamp even after the assignment occurred
     Timecop.freeze(Time.new(2020, 4, 16)) do
-      assert e.send(:is_stop_new_assignments?)
+      assert !e.send(:is_make_new_assignments?)
       # old assignment stay the same
       assert_equal :a, e.switch(1)
       # new assignment returns nil
