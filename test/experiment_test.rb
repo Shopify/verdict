@@ -598,7 +598,7 @@ class ExperimentTest < Minitest::Test
 
     e.schedule_stop_new_assignment_timestamp Time.new(2020, 4, 15)
 
-    # switch respects to stop new assignment timestamp even after the assignment occurred
+    # switch respects to stop new assignment timestamp, old assignment preserves, new assignment returns nil
     Timecop.freeze(Time.new(2020, 4, 16)) do
       assert !e.send(:is_make_new_assignments?)
       # old assignment stay the same
