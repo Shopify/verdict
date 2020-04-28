@@ -608,6 +608,39 @@ class ExperimentTest < Minitest::Test
     end
   end
 
+  def test_schedule_start_timestamp_and_stop_new_assignemnt_timestamp_are_inclusive_but_end_timestamp_is_exclusive
+    e = Verdict::Experiment.new('test') do
+      groups do
+        group :a, :half
+        group :b, :half
+      end
+
+      schedule_start_timestamp Time.new(2020, 1, 1)
+      schedule_stop_new_assignment_timestamp Time.new(2020, 1, 15)
+      schedule_end_timestamp Time.new(2020, 1, 31)
+    end
+
+    # start_timestamp is included
+    Timecop.freeze(Time.new(2020, 1, 1)) do
+      assert e.send(:is_scheduled?)
+      assert_equal :a, e.switch(1)
+    end
+
+    # stop_new_assignment_timestamp is included
+    Timecop.freeze(Time.new(2020, 1, 15)) do
+      assert !e.send(:is_make_new_assignments?)
+      # old assignment preserved
+      assert_equal :a, e.switch(1)
+      # new assignment returns nil
+      assert_nil e.switch(2)
+    end
+
+    # end_timestamp is excluded
+    Timecop.freeze(Time.new(2020, 1, 31)) do
+      assert !e.send(:is_scheduled?)
+      assert_nil e.switch(1)
+    end
+  end
   private
 
   def redis
