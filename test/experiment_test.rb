@@ -629,9 +629,9 @@ class ExperimentTest < Minitest::Test
     # stop_new_assignment_timestamp is included
     Timecop.freeze(Time.new(2020, 1, 15)) do
       assert !e.send(:is_make_new_assignments?)
-      #old assignment preserved
+      # old assignment preserved
       assert_equal :a, e.switch(1)
-      #new assignment returns nil
+      # new assignment returns nil
       assert_nil e.switch(2)
     end
 
