@@ -1,5 +1,5 @@
 ## v0.14.0
-* Add optional experiment definition method `schedule_stop_new_assignment_timestamp` to support limiting experiment's assignment lifetime with another pre-determined time interval. It allows users to have an assignment cooldown period for stable analysis of the experiment results. Experiment's lifetime now becomes: start timestamp -> stop assignment timestamp -> end timestamp. 
+* Add optional experiment definition method `schedule_stop_new_assignment_timestamp` to support limiting experiment's assignment lifetime with another pre-determined time interval. It allows users to have an assignment cooldown period for stable analysis of the experiment results. Experiment's lifetime now becomes: start experiment -> stop new assignments -> end experiment. 
 
 ## v0.13.0
 
