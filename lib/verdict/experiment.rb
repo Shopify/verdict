@@ -274,7 +274,7 @@ class Verdict::Experiment
   end
 
   def nil_assignment(subject)
-    Verdict::Assignment.new(self, subject, nil, nil)
+    subject_assignment(subject, nil, nil)
   end
 
   private
