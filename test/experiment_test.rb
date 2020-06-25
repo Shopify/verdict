@@ -641,6 +641,39 @@ class ExperimentTest < Minitest::Test
       assert_nil e.switch(1)
     end
   end
+
+  def test_custom_qualifiers_success
+    e = Verdict::Experiment.new('test') do
+      groups do
+        group :all, 100
+      end
+    end
+
+    subject = 2
+    custom_qualifier_a = Proc.new { |subject| subject.even? }
+    custom_qualifier_b = Proc.new { |subject| subject > 0 }
+
+    group = e.switch(subject, qualifiers: [custom_qualifier_a, custom_qualifier_b])
+    assert_equal e.group(:all).to_sym, group
+  end
+
+  def test_custom_qualifiers_failure
+    e = Verdict::Experiment.new('test') do
+      groups do
+        group :all, 100
+      end
+    end
+
+    subject = 3
+    custom_qualifier_a = Proc.new { |subject| subject.even? }
+    custom_qualifier_b = Proc.new { |subject| subject > 0 }
+
+    e.switch(subject, qualifiers: [custom_qualifier_a, custom_qualifier_b])
+
+    group = e.switch(subject, qualifiers: [custom_qualifier_a, custom_qualifier_b])
+    assert_nil group
+  end
+
   private
 
   def redis

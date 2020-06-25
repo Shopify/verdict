@@ -142,18 +142,18 @@ class Verdict::Experiment
     raise unless disqualify_empty_identifier?
   end
 
-  def assign(subject, context = nil)
+  def assign(subject, context = nil, dynamic_qualifiers: [])
     previous_assignment = lookup(subject)
 
     subject_identifier = retrieve_subject_identifier(subject)
     assignment = if previous_assignment
-                   previous_assignment
-                 elsif subject_qualifies?(subject, context) && is_make_new_assignments?
-                   group = segmenter.assign(subject_identifier, subject, context)
-                   subject_assignment(subject, group, nil, group.nil?)
-                 else
-                   nil_assignment(subject)
-                 end
+      previous_assignment
+    elsif subject_qualifies?(subject, dynamic_qualifiers, context) && is_make_new_assignments?
+      group = segmenter.assign(subject_identifier, subject, context)
+      subject_assignment(subject, group, nil, group.nil?)
+    else
+      nil_assignment(subject)
+    end
 
     store_assignment(assignment)
   rescue Verdict::StorageError
@@ -194,9 +194,11 @@ class Verdict::Experiment
     @storage.remove_assignment(self, subject)
   end
 
-  def switch(subject, context = nil)
+  # The qualifiers param accepts an array of procs.
+  # This is intended for qualification logic that cannot be defined in the experiment definition
+  def switch(subject, context = nil, qualifiers: [])
     return unless is_scheduled?
-    assign(subject, context).to_sym
+    assign(subject, context, dynamic_qualifiers: qualifiers).to_sym
   end
 
   def lookup(subject)
@@ -241,8 +243,9 @@ class Verdict::Experiment
     @disqualify_empty_identifier
   end
 
-  def subject_qualifies?(subject, context = nil)
+  def subject_qualifies?(subject, dynamic_qualifiers, context = nil)
     ensure_experiment_has_started
+    return false unless dynamic_qualifiers.all? { |qualifier| qualifier.call(subject) }
     everybody_qualifies? || @qualifiers.all? { |qualifier| qualifier.call(subject, context) }
   end
 
