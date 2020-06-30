@@ -1,3 +1,6 @@
+## v0.15.0
+* Add optional `qualifiers` parameter to the `Verdict::Experiment#switch` method. This parameter accepts an array of procs and is used as additional qualifiers. The purpose of this parameter is to allow users to define qualification logic outside of the experiment definition.
+
 ## v0.14.0
 * Add optional experiment definition method `schedule_stop_new_assignment_timestamp` to support limiting experiment's assignment lifetime with another pre-determined time interval. It allows users to have an assignment cooldown period for stable analysis of the experiment results. Experiment's lifetime now becomes: start experiment -> stop new assignments -> end experiment. 
 
