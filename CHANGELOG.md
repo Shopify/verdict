@@ -1,3 +1,6 @@
+## v0.15.1
+* Make the `dynamic_qualifies` parameter in `Verdict::Experiment#subject_qualifies?` optional. This fixes a bug where users that were previously calling this method directly experienced issues after v0.15.0
+
 ## v0.15.0
 * Add optional `qualifiers` parameter to the `Verdict::Experiment#switch` method. This parameter accepts an array of procs and is used as additional qualifiers. The purpose of this parameter is to allow users to define qualification logic outside of the experiment definition.
 
