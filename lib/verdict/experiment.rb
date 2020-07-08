@@ -243,7 +243,7 @@ class Verdict::Experiment
     @disqualify_empty_identifier
   end
 
-  def subject_qualifies?(subject, dynamic_qualifiers, context = nil)
+  def subject_qualifies?(subject, dynamic_qualifiers = [], context = nil)
     ensure_experiment_has_started
     return false unless dynamic_qualifiers.all? { |qualifier| qualifier.call(subject) }
     everybody_qualifies? || @qualifiers.all? { |qualifier| qualifier.call(subject, context) }
