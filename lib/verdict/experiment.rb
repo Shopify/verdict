@@ -148,7 +148,7 @@ class Verdict::Experiment
     subject_identifier = retrieve_subject_identifier(subject)
     assignment = if previous_assignment
       previous_assignment
-    elsif subject_qualifies?(subject, dynamic_qualifiers, context) && is_make_new_assignments?
+    elsif dynamic_subject_qualifies?(subject, dynamic_qualifiers, context) && is_make_new_assignments?
       group = segmenter.assign(subject_identifier, subject, context)
       subject_assignment(subject, group, nil, group.nil?)
     else
@@ -243,7 +243,7 @@ class Verdict::Experiment
     @disqualify_empty_identifier
   end
 
-  def subject_qualifies?(subject, dynamic_qualifiers = [], context = nil)
+  def subject_qualifies?(subject, context = nil, dynamic_qualifiers: [])
     ensure_experiment_has_started
     return false unless dynamic_qualifiers.all? { |qualifier| qualifier.call(subject) }
     everybody_qualifies? || @qualifiers.all? { |qualifier| qualifier.call(subject, context) }
@@ -294,5 +294,16 @@ class Verdict::Experiment
 
   def is_make_new_assignments?
     return !(@schedule_stop_new_assignment_timestamp && @schedule_stop_new_assignment_timestamp <= Time.now)
+  end
+
+  # Used when a Experiment class has overridden the subject_qualifies? method prior to v0.15.0
+  # The previous version of subject_qualifies did not accept dynamic qualifiers, thus this is used to
+  # determine how many parameters to pass
+  def dynamic_subject_qualifies?(subject, dynamic_qualifiers, context)
+    if method(:subject_qualifies?).parameters.include?([:key, :dynamic_qualifiers])
+      subject_qualifies?(subject, context, dynamic_qualifiers: dynamic_qualifiers)
+    else
+      subject_qualifies?(subject, context)
+    end
   end
 end
