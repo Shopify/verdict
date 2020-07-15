@@ -296,7 +296,7 @@ class Verdict::Experiment
     return !(@schedule_stop_new_assignment_timestamp && @schedule_stop_new_assignment_timestamp <= Time.now)
   end
 
-  # Used when a Experiment class has overriden the subject_qualifies? method prior to v0.15.0
+  # Used when a Experiment class has overridden the subject_qualifies? method prior to v0.15.0
   # The previous version of subject_qualifies did not accept dynamic qualifiers, thus this is used to
   # determine how many parameters to pass
   def dynamic_subject_qualifies?(subject, dynamic_qualifiers, context)

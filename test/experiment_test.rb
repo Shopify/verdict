@@ -668,9 +668,18 @@ class ExperimentTest < Minitest::Test
     custom_qualifier_a = Proc.new { |subject| subject.even? }
     custom_qualifier_b = Proc.new { |subject| subject > 0 }
 
-    e.switch(subject, qualifiers: [custom_qualifier_a, custom_qualifier_b])
-
     group = e.switch(subject, qualifiers: [custom_qualifier_a, custom_qualifier_b])
+    assert_nil group
+  end
+
+  def test_dynamic_subject_qualifies_call_overridden_method
+    e = MyExperiment.new('test') do
+      groups do
+        group :all, 100
+      end
+    end
+
+    group = e.switch(4)
     assert_nil group
   end
 
@@ -678,5 +687,12 @@ class ExperimentTest < Minitest::Test
 
   def redis
     @redis ||= ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
+  end
+end
+
+class MyExperiment < Verdict::Experiment
+  def subject_qualifies?(subject, context = nil)
+    return false if subject.even?
+    super
   end
 end
