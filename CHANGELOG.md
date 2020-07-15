@@ -1,3 +1,6 @@
+## v0.15.2
+* Fix edge case where inheriting from `Verdict::Experiment` and overriding `subject_qualifies?` resulted in an error.
+
 ## v0.15.1
 * Make the `dynamic_qualifies` parameter in `Verdict::Experiment#subject_qualifies?` optional. This fixes a bug where users that were previously calling this method directly experienced issues after v0.15.0
 
