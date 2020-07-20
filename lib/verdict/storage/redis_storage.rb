@@ -6,17 +6,24 @@ module Verdict
       attr_accessor :redis, :key_prefix
 
       def initialize(redis = nil, options = {})
-        @redis = redis
-        redis.extend(ConnectionPoolLike) if !redis.nil? && !redis.respond_to?(:with)
+        if !redis.nil? && !redis.respond_to?(:with)
+          @redis = ConnectionPoolLike.new(redis)
+        else
+          @redis = redis
+        end
 
         @key_prefix = options[:key_prefix] || 'experiments/'
       end
 
       protected
 
-      module ConnectionPoolLike
+      class ConnectionPoolLike
+        def initialize(redis)
+          @redis = redis
+        end
+
         def with
-          yield self
+          yield @redis
         end
       end
 
