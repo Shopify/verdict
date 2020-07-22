@@ -1,3 +1,6 @@
+## v0.16.0
+* Allow configuring the `RedisStorage` with a [`ConnectionPool`](https://github.com/mperham/connection_pool) instead of a raw `Redis` connection.
+
 ## v0.15.2
 * Fix edge case where inheriting from `Verdict::Experiment` and overriding `subject_qualifies?` resulted in an error.
 
