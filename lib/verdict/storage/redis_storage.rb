@@ -6,33 +6,56 @@ module Verdict
       attr_accessor :redis, :key_prefix
 
       def initialize(redis = nil, options = {})
-        @redis = redis
+        if !redis.nil? && !redis.respond_to?(:with)
+          @redis = ConnectionPoolLike.new(redis)
+        else
+          @redis = redis
+        end
+
         @key_prefix = options[:key_prefix] || 'experiments/'
       end
 
       protected
 
+      class ConnectionPoolLike
+        def initialize(redis)
+          @redis = redis
+        end
+
+        def with
+          yield @redis
+        end
+      end
+
       def get(scope, key)
-        redis.hget(scope_key(scope), key)
+        redis.with do |conn|
+          conn.hget(scope_key(scope), key)
+        end
       rescue ::Redis::BaseError => e
         raise Verdict::StorageError, "Redis error: #{e.message}"
       end
 
       def set(scope, key, value)
-        redis.hset(scope_key(scope), key, value)
+        redis.with do |conn|
+          conn.hset(scope_key(scope), key, value)
+        end
       rescue ::Redis::BaseError => e
         raise Verdict::StorageError, "Redis error: #{e.message}"
       end
 
       def remove(scope, key)
-        redis.hdel(scope_key(scope), key)
+        redis.with do |conn|
+          conn.hdel(scope_key(scope), key)
+        end
       rescue ::Redis::BaseError => e
         raise Verdict::StorageError, "Redis error: #{e.message}"
       end
 
       def clear(scope, options)
         scrub(scope)
-        redis.del(scope_key(scope))
+        redis.with do |conn|
+          conn.del(scope_key(scope))
+        end
       rescue ::Redis::BaseError => e
         raise Verdict::StorageError, "Redis error: #{e.message}"
       end
@@ -44,10 +67,14 @@ module Verdict
       end
 
       def scrub(scope, cursor: 0)
-        cursor, results = redis.hscan(scope_key(scope), cursor, count: PAGE_SIZE)
+        cursor, results = redis.with do |conn|
+          conn.hscan(scope_key(scope), cursor, count: PAGE_SIZE)
+        end
+
         results.map(&:first).each do |key|
           remove(scope, key)
         end
+
         scrub(scope, cursor: cursor) unless cursor.to_i.zero?
       end
     end
