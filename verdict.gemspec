@@ -25,4 +25,5 @@ Gem::Specification.new do |gem|
   gem.add_development_dependency("timecop")
   gem.add_development_dependency("redis")
   gem.add_development_dependency("rails")
+  gem.add_development_dependency("connection_pool")
 end

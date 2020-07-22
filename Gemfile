@@ -4,7 +4,6 @@ source 'https://rubygems.org'
 gemspec
 gem "rubysl", platform: :rbx
 gem "json", platform: :rbx
-gem "connection_pool"
 
 group :development do
   gem "simplecov", platforms: [:mri, :jruby]
