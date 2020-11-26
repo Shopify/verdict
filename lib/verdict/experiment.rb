@@ -8,7 +8,7 @@ class Verdict::Experiment
 
   class_attribute :qualifiers, default: []
   class_attribute :segmenter
-  class_attribute :storage_instance, default: Verdict::Storage::MemoryStorage.new
+  class_attribute :storage_instance
   class_attribute :store_unqualified
   class_attribute :disqualify_empty_identifier, default: false
   class_attribute :manual_assignment_timestamps, default: false
@@ -58,6 +58,10 @@ class Verdict::Experiment
       when Class;   storage.new
       else          storage
     end
+  end
+
+  def self.inherited(base)
+    self.storage_instance = Verdict::Storage::MemoryStorage.new
   end
 
   def self.define(handle, *args, &block)
