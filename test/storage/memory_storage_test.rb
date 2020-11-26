@@ -1,13 +1,14 @@
 require 'test_helper'
 
 class MemoryStorageTest < Minitest::Test
+  class MemoryStorage < Verdict::Experiment
+    groups { group :all, 100 }
+  end
 
   def setup
-    @storage = storage = Verdict::Storage::MemoryStorage.new
-    @experiment = Verdict::Experiment.new(:memory_storage) do
-      groups { group :all, 100 }
-      storage storage, store_unqualified: true
-    end
+    @storage = Verdict::Storage::MemoryStorage.new
+
+    @experiment = MemoryStorage.new
 
     @subject = stub(id: 'bootscale')
   end

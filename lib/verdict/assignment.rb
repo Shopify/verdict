@@ -27,7 +27,7 @@ class Verdict::Assignment
   end
 
   def returning?
-    @first.nil?
+    !@first
   end
 
   def subject_identifier

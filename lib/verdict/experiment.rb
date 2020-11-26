@@ -1,56 +1,19 @@
+require 'active_support'
+require 'active_support/core_ext/class/attribute'
+require 'active_support/core_ext/string/inflections'
+require "verdict/storage"
 class Verdict::Experiment
 
   include Verdict::Metadata
 
-  attr_reader :handle, :qualifiers, :event_logger
+  class_attribute :qualifiers, default: []
+  class_attribute :segmenter
+  class_attribute :storage_instance, default: Verdict::Storage::MemoryStorage.new
+  class_attribute :store_unqualified
+  class_attribute :disqualify_empty_identifier, default: false
+  class_attribute :manual_assignment_timestamps, default: false
+  class_attribute :subject_type
 
-  def self.define(handle, *args, &block)
-    experiment = self.new(handle, *args, &block)
-    raise Verdict::ExperimentHandleNotUnique.new(experiment.handle) if Verdict.repository.has_key?(experiment.handle)
-    Verdict.repository[experiment.handle] = experiment
-  end
-
-  def initialize(handle, options = {}, &block)
-    @started_at = nil
-    @handle = handle.to_s
-
-    options = default_options.merge(options)
-    @qualifiers                   = Array(options[:qualifier] || options[:qualifiers])
-    @event_logger                 = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
-    @storage                      = storage(options[:storage] || :memory)
-    @store_unqualified            = options[:store_unqualified]
-    @segmenter                    = options[:segmenter]
-    @subject_type                 = options[:subject_type]
-    @disqualify_empty_identifier  = options[:disqualify_empty_identifier]
-    @manual_assignment_timestamps = options[:manual_assignment_timestamps]
-
-    instance_eval(&block) if block_given?
-  end
-
-  def subject_type(type = nil)
-    return @subject_type if type.nil?
-    @subject_type = type
-  end
-
-  def store_unqualified?
-    @store_unqualified
-  end
-
-  def manual_assignment_timestamps?
-    @manual_assignment_timestamps
-  end
-
-  def group(handle)
-    segmenter.groups[handle.to_s]
-  end
-
-  def groups(segmenter_class = Verdict::Segmenters::FixedPercentageSegmenter, &block)
-    return segmenter.groups unless block_given?
-    @segmenter ||= segmenter_class.new(self)
-    @segmenter.instance_eval(&block)
-    @segmenter.verify!
-    return self
-  end
 
   # Optional: Together with the "end_timestamp" and "stop_new_assignment_timestamp", limits the experiment run timeline within
   # the given time interval.
@@ -63,16 +26,73 @@ class Verdict::Experiment
   #
   # Experiment run timeline:
   # start_timestamp -> (new assignments occur) -> stop_new_assignment_timestamp -> (no new assignments occur) -> end_timestamp
-  def schedule_start_timestamp(timestamp)
-    @schedule_start_timestamp = timestamp
+  class_attribute :schedule_start_timestamp
+  class_attribute :schedule_end_timestamp
+  class_attribute :schedule_stop_new_assignment_timestamp
+
+  attr_reader :event_logger
+
+  def self.qualify(method_name = nil, &block)
+    if block_given?
+      self.qualifiers += [block]
+    elsif method_name
+      self.qualifiers += [method_name.to_sym]
+    else
+      raise ArgumentError, "no method nor blocked passed!"
+    end
   end
 
-  def schedule_end_timestamp(timestamp)
-    @schedule_end_timestamp = timestamp
+  def self.groups(segmenter_class = Verdict::Segmenters::FixedPercentageSegmenter, &block)
+    self.segmenter ||= segmenter_class.new(self)
+    segmenter.instance_eval(&block)
+    segmenter.verify!
   end
 
-  def schedule_stop_new_assignment_timestamp(timestamp)
-    @schedule_stop_new_assignment_timestamp = timestamp
+  def self.storage(storage = nil, store_unqualified: false)
+    return storage_instance if storage.nil?
+
+    self.store_unqualified = store_unqualified
+    self.storage_instance = case storage
+      when :memory; Verdict::Storage::MemoryStorage.new
+      when :none;   Verdict::Storage::MockStorage.new
+      when Class;   storage.new
+      else          storage
+    end
+  end
+
+  def self.define(handle, *args, &block)
+    experiment = self.new(handle, *args, &block)
+    raise Verdict::ExperimentHandleNotUnique.new(experiment.handle) if Verdict.repository.has_key?(experiment.handle)
+    Verdict.repository[experiment.handle] = experiment
+  end
+
+  def self.handle
+    self.name.underscore
+  end
+
+  def initialize(handle = nil, options = {}, &block)
+    @started_at = nil
+
+    options = default_options.merge(options)
+    @event_logger                 = options[:event_logger] || Verdict::EventLogger.new(Verdict.default_logger)
+
+    instance_eval(&block) if block_given?
+  end
+
+  def storage
+    self.class.storage_instance
+  end
+
+  def handle
+    self.class.handle
+  end
+
+  def groups
+    segmenter.groups
+  end
+
+  def group(handle)
+    segmenter.groups[handle.to_s]
   end
 
   def rollout_percentage(percentage, rollout_group_name = :enabled)
@@ -81,37 +101,13 @@ class Verdict::Experiment
     end
   end
 
-  def qualify(method_name = nil, &block)
-    if block_given?
-      @qualifiers << block
-    elsif method_name.nil?
-      raise ArgumentError, "no method nor blocked passed!"
-    elsif respond_to?(method_name, true)
-      @qualifiers << method(method_name).to_proc
-    else
-      raise ArgumentError, "No helper for #{method_name.inspect}"
-    end
-  end
-
-  def storage(storage = nil, options = {})
-    return @storage if storage.nil?
-
-    @store_unqualified = options[:store_unqualified] if options.has_key?(:store_unqualified)
-    @storage = case storage
-      when :memory; Verdict::Storage::MemoryStorage.new
-      when :none;   Verdict::Storage::MockStorage.new
-      when Class;   storage.new
-      else          storage
-    end
-  end
-
   def segmenter
-    raise Verdict::Error, "No groups defined for experiment #{@handle.inspect}." if @segmenter.nil?
-    @segmenter
+    raise Verdict::Error, "No groups defined for experiment #{self.class.name}." if self.class.segmenter.nil?
+    self.class.segmenter
   end
 
   def started_at
-    @started_at ||= @storage.retrieve_start_timestamp(self)
+    @started_at ||= storage_instance.retrieve_start_timestamp(self)
   rescue Verdict::StorageError
     nil
   end
@@ -145,10 +141,10 @@ class Verdict::Experiment
   def assign(subject, context = nil, dynamic_qualifiers: [])
     previous_assignment = lookup(subject)
 
-    subject_identifier = retrieve_subject_identifier(subject)
     assignment = if previous_assignment
       previous_assignment
     elsif dynamic_subject_qualifies?(subject, dynamic_qualifiers, context) && is_make_new_assignments?
+      subject_identifier = retrieve_subject_identifier(subject)
       group = segmenter.assign(subject_identifier, subject, context)
       subject_assignment(subject, group, nil, group.nil?)
     else
@@ -181,17 +177,17 @@ class Verdict::Experiment
   end
 
   def store_assignment(assignment)
-    @storage.store_assignment(assignment) if should_store_assignment?(assignment)
+    storage_instance.store_assignment(assignment) if should_store_assignment?(assignment)
     event_logger.log_assignment(assignment)
     assignment
   end
 
   def cleanup(options = {})
-    @storage.cleanup(self, options)
+    storage_instance.cleanup(self, options)
   end
 
   def remove_subject_assignment(subject)
-    @storage.remove_assignment(self, subject)
+    storage_instance.remove_assignment(self, subject)
   end
 
   # The qualifiers param accepts an array of procs.
@@ -202,7 +198,7 @@ class Verdict::Experiment
   end
 
   def lookup(subject)
-    @storage.retrieve_assignment(self, subject)
+    storage_instance.retrieve_assignment(self, subject)
   end
 
   def retrieve_subject_identifier(subject)
@@ -212,7 +208,7 @@ class Verdict::Experiment
   end
 
   def has_qualifier?
-    @qualifiers.any?
+    qualifiers.any?
   end
 
   def everybody_qualifies?
@@ -239,14 +235,22 @@ class Verdict::Experiment
     raise NotImplementedError, "Fetching subjects based on identifier is not implemented for experiment #{@handle.inspect}."
   end
 
-  def disqualify_empty_identifier?
-    @disqualify_empty_identifier
-  end
-
   def subject_qualifies?(subject, context = nil, dynamic_qualifiers: [])
     ensure_experiment_has_started
     return false unless dynamic_qualifiers.all? { |qualifier| qualifier.call(subject) }
-    everybody_qualifies? || @qualifiers.all? { |qualifier| qualifier.call(subject, context) }
+    everybody_qualifies? || all_qualifiers_satisfied_for?(subject, context)
+  end
+
+
+  def all_qualifiers_satisfied_for?(subject, context)
+    qualifiers.all? do |qualifier|
+      case qualifier
+      when Symbol
+        send(qualifier, subject, context)
+      else
+        instance_exec(subject, context, &qualifier)
+      end
+    end
   end
 
   protected
@@ -264,7 +268,7 @@ class Verdict::Experiment
   end
 
   def set_start_timestamp
-    @storage.store_start_timestamp(self, started_now = Time.now.utc)
+    storage_instance.store_start_timestamp(self, started_now = Time.now.utc)
     started_now
   rescue NotImplementedError
     nil
@@ -283,17 +287,17 @@ class Verdict::Experiment
   private
 
   def is_scheduled?
-    if @schedule_start_timestamp && @schedule_start_timestamp > Time.now
-      return false
+    if schedule_start_timestamp? && schedule_start_timestamp > Time.now
+      false
+    elsif schedule_end_timestamp? && schedule_end_timestamp <= Time.now
+      false
+    else
+      true
     end
-    if @schedule_end_timestamp && @schedule_end_timestamp <= Time.now
-      return false
-    end
-    return true
   end
 
   def is_make_new_assignments?
-    return !(@schedule_stop_new_assignment_timestamp && @schedule_stop_new_assignment_timestamp <= Time.now)
+    return !(schedule_stop_new_assignment_timestamp? && schedule_stop_new_assignment_timestamp <= Time.now)
   end
 
   # Used when a Experiment class has overridden the subject_qualifies? method prior to v0.15.0

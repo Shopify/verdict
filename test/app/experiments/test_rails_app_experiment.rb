@@ -1,4 +1,4 @@
-Verdict::Experiment.define(:test_rails_app_experiment) do
+class TestRailsAppExperiment < Verdict::Experiment
   qualify { true }
 
   groups do

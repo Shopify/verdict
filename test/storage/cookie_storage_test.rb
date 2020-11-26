@@ -4,14 +4,18 @@ require 'test_helper'
 require 'fake_app'
 
 class CookieStorageTest < Minitest::Test
+  class CookieStorage < Verdict::Experiment
+    groups { group :all, 100 }
+    storage storage, store_unqualified: true
+  end
+
+
   def setup
     @storage = Verdict::Storage::CookieStorage.new.tap do |s|
       s.cookies = ActionDispatch::Cookies::CookieJar.new(nil)
     end
-    @experiment = Verdict::Experiment.new(:cookie_storage_test) do
-      groups { group :all, 100 }
-      storage @storage, store_unqualified: true
-    end
+    CookieStorage.storage @storage, store_unqualified: true
+    @experiment = CookieStorage.new
     @subject = stub(id: 'bob')
     @assignment = Verdict::Assignment.new(@experiment, @subject, @experiment.group(:all), nil)
   end

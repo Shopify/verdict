@@ -82,14 +82,16 @@ end
 class RedisStorageTest < Minitest::Test
   include SharedRedisStorageTests
 
+  class RedisStorage < Verdict::Experiment
+    qualify { |s| s == 'subject_1' }
+    groups { group :all, 100 }
+  end
+
   def setup
     @redis = ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
-    @storage = storage = Verdict::Storage::RedisStorage.new(@redis)
-    @experiment = Verdict::Experiment.new(:redis_storage) do
-      qualify { |s| s == 'subject_1' }
-      groups { group :all, 100 }
-      storage storage, store_unqualified: true
-    end
+    @storage = Verdict::Storage::RedisStorage.new(@redis)
+    RedisStorage.storage @storage, store_unqualified: true
+    @experiment = RedisStorage.new(:redis_storage)
   end
 
   def teardown
@@ -110,17 +112,19 @@ end
 class RedisStorageConnectionPoolTest < Minitest::Test
   include SharedRedisStorageTests
 
+  class RedisStorage < Verdict::Experiment
+    qualify { |s| s == 'subject_1' }
+    groups { group :all, 100 }
+  end
+
   def setup
     @redis = ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
     @redis_pool = ::ConnectionPool.new(size: 3) do
       ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
     end
-    @storage = storage = Verdict::Storage::RedisStorage.new(@redis_pool)
-    @experiment = Verdict::Experiment.new(:redis_storage) do
-      qualify { |s| s == 'subject_1' }
-      groups { group :all, 100 }
-      storage storage, store_unqualified: true
-    end
+    @storage = Verdict::Storage::RedisStorage.new(@redis_pool)
+    RedisStorage.storage @storage, store_unqualified: true
+    @experiment = RedisStorage.new(:redis_storage)
   end
 
   def teardown

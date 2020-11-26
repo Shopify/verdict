@@ -53,7 +53,6 @@ require "verdict/group"
 require "verdict/assignment"
 require "verdict/conversion"
 require "verdict/segmenters"
-require "verdict/storage"
 require "verdict/event_logger"
 
 Verdict.default_logger ||= Logger.new("/dev/null")

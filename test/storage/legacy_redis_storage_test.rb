@@ -2,23 +2,25 @@ require 'test_helper'
 
 class LegacyRedisStorageTest < Minitest::Test
 
+  class LegacyRedisStorage < Verdict::Experiment
+    qualify { |s| s == 'subject_1' }
+    groups { group :all, 100 }
+  end
+
   def setup
     @redis = ::Redis.new(host: REDIS_HOST, port: REDIS_PORT)
-    @storage = storage = Verdict::Storage::LegacyRedisStorage.new(@redis)
-    @experiment = Verdict::Experiment.new(:legacy_redis_storage) do
-      qualify { |s| s == 'subject_1' }
-      groups { group :all, 100 }
-      storage storage, store_unqualified: true
-    end
+    @storage = Verdict::Storage::LegacyRedisStorage.new(@redis)
+    LegacyRedisStorage.storage @storage, store_unqualified: true
+    @experiment = LegacyRedisStorage.new
   end
 
   def teardown
-    @redis.del('experiments/legacy_redis_storage')
-    @redis.del('experiments/legacy_redis_storage/started_at')
+    @redis.del('experiments/legacy_redis_storage_test/legacy_redis_storage')
+    @redis.del('experiments/legacy_redis_storage_test/legacy_redis_storage/started_at')
   end
 
   def test_generate_experiment_key_should_generate_namespaced_key
-    assert_equal 'experiments/legacy_redis_storage', @storage.send(:generate_experiment_key, @experiment)
+    assert_equal 'experiments/legacy_redis_storage_test/legacy_redis_storage', @storage.send(:generate_experiment_key, @experiment)
   end
 
   def test_store_and_retrieve_qualified_assignment

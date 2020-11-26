@@ -4,18 +4,22 @@ require 'test_helper'
 class ExperimentTest < Minitest::Test
 
   def test_no_qualifier
-    e = Verdict::Experiment.new('test')
+    e = Verdict::Experiment.new
     refute e.has_qualifier?
     assert e.everybody_qualifies?
   end
 
   def test_qualifier
-    e = Verdict::Experiment.new('test') do |experiment|
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       qualify { |subject| subject.country == 'CA' }
       groups do
         group :all, 100
       end
-    end
+    end.new
 
     assert e.has_qualifier?
     refute e.everybody_qualifies?
@@ -38,14 +42,18 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_multiple_qualifier
-    e = Verdict::Experiment.new('test') do |experiment|
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       qualify { |subject| subject.language == 'fr' }
       qualify { |subject| subject.country == 'CA' }
 
       groups do
         group :all, 100
       end
-    end
+    end.new
 
     assert e.has_qualifier?
     refute e.everybody_qualifies?
@@ -72,17 +80,21 @@ class ExperimentTest < Minitest::Test
       subject.country == 'CA'
     end
   end
-  def test_method_qualifier
 
-    e = Verdict::Experiment.new('test') do |experiment|
-      extend CountryIsCanadaHelper
+  def test_method_qualifier
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
+      include CountryIsCanadaHelper
 
       qualify :country_is_canada
 
       groups do
         group :all, 100
       end
-    end
+    end.new
 
     assert e.has_qualifier?
     refute e.everybody_qualifies?
@@ -91,8 +103,8 @@ class ExperimentTest < Minitest::Test
     ca_subject = subject_stub.new(1, 'CA')
     us_subject = subject_stub.new(2, 'US')
 
-    assert e.qualifiers.all? { |q| q.call(ca_subject, nil) }
-    refute e.qualifiers.all? { |q| q.call(us_subject, nil) }
+    assert e.all_qualifiers_satisfied_for?(ca_subject, nil)
+    refute e.all_qualifiers_satisfied_for?(us_subject, nil)
 
     qualified = e.assign(ca_subject)
     assert_kind_of Verdict::Assignment, qualified
@@ -105,25 +117,36 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_disqualify_empty_identifier
-    e = Verdict::Experiment.new('test', disqualify_empty_identifier: true) do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
+      self.disqualify_empty_identifier = true
+
       groups do
         group :a, :half
         group :b, :rest
       end
-    end
+    end.new
 
     refute e.assign(nil).qualified?
     assert_nil e.convert('', :mygoal)
   end
 
   def test_assignment
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       qualify { |subject| subject <= 2 }
+
       groups do
         group :a, :half
         group :b, :rest
       end
-    end
+    end.new
 
     assert_raises(Verdict::EmptySubjectIdentifier) { e.assign(nil) }
 
@@ -137,29 +160,39 @@ class ExperimentTest < Minitest::Test
     assert_kind_of Verdict::Assignment, assignment
     refute assignment.qualified?
 
-    assert_equal :a,  e.switch(1)
-    assert_equal :b,  e.switch(2)
+    assert_equal :a, e.switch(1)
+    assert_equal :b, e.switch(2)
     assert_nil e.switch(3)
   end
 
   def test_experiment_without_manual_assignment_timestamps_option
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     refute e.manual_assignment_timestamps?
   end
 
   def test_experiment_with_manual_assignment_timestamps_option
-    e = Verdict::Experiment.new('test', manual_assignment_timestamps: true) do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
+      self.manual_assignment_timestamps = true
+
       groups { group :all, 100 }
-    end
+    end.new
 
     assert e.manual_assignment_timestamps?
   end
 
   def test_subject_identifier
-    e = Verdict::Experiment.new('test')
+    e = Verdict::Experiment.new
     assert_equal '123', e.retrieve_subject_identifier(stub(id: 123, to_s: '456'))
     assert_equal '456', e.retrieve_subject_identifier(stub(to_s: '456'))
     assert_raises(Verdict::EmptySubjectIdentifier) { e.retrieve_subject_identifier(stub(id: nil)) }
@@ -168,26 +201,36 @@ class ExperimentTest < Minitest::Test
 
   def test_assignment_without_store_unqualified_always_fetches_old_assignment_if_available
     mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
-    e = Verdict::Experiment.new('test') do
+
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: false
       groups { group :all, 100 }
-    end
+    end.new
 
     qualified_assignment = e.subject_assignment(mock('identifier'), e.group(:all), Time.now)
 
     mock_store.expects(:retrieve_assignment).returns(qualified_assignment).once
     mock_store.expects(:store_assignment).never
+
     e.assign(mock('subject'))
   end
 
   def test_new_unqualified_assignment_without_store_unqualified_does_not_store_if_merchant_not_qualified
     mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: false
       groups { group :all, 100 }
-    end
+    end.new
 
     mock_qualifier.expects(:qualifies?).returns(false)
     mock_store.expects(:retrieve_assignment).returns(nil).once
@@ -197,10 +240,14 @@ class ExperimentTest < Minitest::Test
 
   def test_new_unqualified_assignment_with_store_unqualified
     mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
-    end
+    end.new
 
     mock_qualifier.expects(:qualifies?).returns(false)
     mock_store.expects(:retrieve_assignment).returns(nil).once
@@ -210,10 +257,14 @@ class ExperimentTest < Minitest::Test
 
   def test_returning_unqualified_assignment_with_store_unqualified
     mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
-    end
+    end.new
 
     unqualified_assignment = e.subject_assignment(mock('subject_identifier'), nil, Time.now)
     mock_qualifier.expects(:qualifies?).never
@@ -224,10 +275,14 @@ class ExperimentTest < Minitest::Test
 
   def test_assign_manually_stores_assignment
     mock_store = Verdict::Storage::MockStorage.new
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       storage mock_store, store_unqualified: true
       groups { group :all, 100 }
-    end
+    end.new
 
     group = e.group('all')
     mock_store.expects(:store_assignment).once
@@ -235,9 +290,15 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_disqualify_manually
-    e = Verdict::Experiment.new('test', store_unqualified: true) do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
+      self.store_unqualified = true
+
       groups { group :all, 100 }
-    end
+    end.new
 
     subject = stub(id: 'walrus')
     original_assignment = e.assign(subject)
@@ -247,20 +308,30 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_disqualify_manually_fails_with_store_unqualified_disabled
-    e = Verdict::Experiment.new('test', store_unqualified: false) do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
+      self.store_unqualified = false
+
       groups { group :all, 100 }
-    end
+    end.new
 
     assert_raises(Verdict::Error) { e.disqualify_manually('subject') }
   end
 
   def test_returning_qualified_assignment_with_store_unqualified
     mock_store, mock_qualifier = Verdict::Storage::MockStorage.new, mock('qualifier')
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       qualify { mock_qualifier.qualifies? }
       storage mock_store, store_unqualified: true
       groups { group :all, 100 }
-    end
+    end.new
 
     qualified_assignment = e.subject_assignment(mock('subject_identifier'), e.group(:all), Time.now)
     mock_qualifier.expects(:qualifies?).never
@@ -271,10 +342,14 @@ class ExperimentTest < Minitest::Test
 
   def test_dont_store_when_segmenter_returns_nil
     mock_store = Verdict::Storage::MockStorage.new
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups { group :all, 100 }
       storage mock_store, store_unqualified: true
-    end
+    end.new
 
     e.segmenter.stubs(:assign).returns(nil)
     mock_store.expects(:store_assignment).never
@@ -284,9 +359,13 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_assignment_event_logging
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     e.stubs(:event_logger).returns(logger = mock('event_logger'))
     logger.expects(:log_assignment).with(kind_of(Verdict::Assignment))
@@ -295,9 +374,13 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_conversion_event_logging
-    e = Verdict::Experiment.new('test')do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     subject = stub(id: 'test_subject')
     e.stubs(:event_logger).returns(logger = mock('logger'))
@@ -310,14 +393,19 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_json
-    e = Verdict::Experiment.new(:json) do
-      name 'testing'
-      subject_type 'visitor'
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Json"
+      end
+
+      self.subject_type = 'visitor'
+
+      name_metadata 'testing'
       groups do
         group :a, :half
         group :b, :rest
       end
-    end
+    end.new
 
     Timecop.freeze(Time.new(2013, 2, 3, 4, 5, 6, '+00:00')) do
       e.send(:ensure_experiment_has_started)
@@ -334,10 +422,14 @@ class ExperimentTest < Minitest::Test
 
   def test_storage_read_failure
     storage_mock = Verdict::Storage::MockStorage.new
-    e = Verdict::Experiment.new(:json) do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Json"
+      end
+
       groups { group :all, 100 }
       storage storage_mock
-    end
+    end.new
 
     storage_mock.stubs(:retrieve_assignment).raises(Verdict::StorageError, 'storage read issues')
     rescued_assignment = e.assign(stub(id: 123))
@@ -346,10 +438,14 @@ class ExperimentTest < Minitest::Test
 
   def test_storage_write_failure
     storage_mock = Verdict::Storage::MockStorage.new
-    e = Verdict::Experiment.new(:json) do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Json"
+      end
+
       groups { group :all, 100 }
       storage storage_mock
-    end
+    end.new
 
     storage_mock.expects(:retrieve_assignment).returns(e.subject_assignment(mock('subject_identifier'), e.group(:all), nil))
     storage_mock.expects(:store_assignment).raises(Verdict::StorageError, 'storage write issues')
@@ -358,9 +454,13 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_initial_started_at
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     e.storage.expects(:retrieve_start_timestamp).returns(nil)
     e.storage.expects(:store_start_timestamp).once
@@ -368,9 +468,13 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_subsequent_started_at_when_start_time_is_memoized
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     e.send(:ensure_experiment_has_started)
     e.storage.expects(:retrieve_start_timestamp).never
@@ -379,9 +483,13 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_subsequent_started_at_when_start_time_is_not_memoized
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     e.storage.expects(:retrieve_start_timestamp).returns(Time.now.utc)
     e.storage.expects(:store_start_timestamp).never
@@ -390,10 +498,14 @@ class ExperimentTest < Minitest::Test
 
   def test_qualify_based_on_experiment_start_timestamp
     Timecop.freeze(Time.new(2012)) do
-      e = Verdict::Experiment.new('test') do
+      e = Class.new(Verdict::Experiment) do
+        def self.name
+          "Test"
+        end
+
         qualify { |subject| subject.created_at >= self.started_at }
         groups { group :all, 100 }
-      end
+      end.new
 
       subject = stub(id: 'old', created_at: Time.new(2011))
       refute e.assign(subject).qualified?
@@ -404,9 +516,13 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_experiment_starting_behavior
-    e = Verdict::Experiment.new('starting_test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "StartingTest"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     refute e.started?, "The experiment should not have started yet"
 
@@ -415,9 +531,13 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_experiment_set_start_timestamp_handles_storage_that_does_not_implement_timestamps
-    e = Verdict::Experiment.new('starting_test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "StartingTest"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     e.storage.expects(:store_start_timestamp).raises(NotImplementedError)
 
@@ -425,20 +545,28 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_no_storage
-    e = Verdict::Experiment.new('starting_test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "StartingTest"
+      end
+
       groups { group :all, 100 }
       storage :none
-    end
+    end.new
 
     assert_kind_of Verdict::Storage::MockStorage, e.storage
   end
 
   def test_cleanup
     storage = Verdict::Storage::RedisStorage.new(redis)
-    experiment = Verdict::Experiment.new(:cleanup_test) do
+    experiment = Class.new(Verdict::Experiment) do
+      def self.name
+        "CleanupTest"
+      end
+
       groups { group :all, 100 }
       storage storage, store_unqualified: true
-    end
+    end.new
 
     experiment.assign("something")
     assert_operator redis, :exists, "experiments/cleanup_test"
@@ -450,9 +578,13 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_cleanup_options
-    experiment = Verdict::Experiment.new(:cleanup_test) do
+    experiment = Class.new(Verdict::Experiment) do
+      def self.name
+        "CleanupTest"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     experiment.storage.expects(:clear).with(experiment.handle, some: :thing)
     experiment.assign("something")
@@ -460,9 +592,13 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_cleanup_without_redis
-    experiment = Verdict::Experiment.new(:cleanup_test) do
+    experiment = Class.new(Verdict::Experiment) do
+      def self.name
+        "CleanupTest"
+      end
+
       groups { group :all, 100 }
-    end
+    end.new
 
     assert_raises(NotImplementedError) do
       experiment.assign("something")
@@ -471,14 +607,18 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_is_scheduled
-    e = Verdict::Experiment.new(:json) do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Json"
+      end
+
       groups do
         group :a, :half
         group :b, :rest
       end
-      schedule_start_timestamp Time.new(2020, 1, 1)
-      schedule_end_timestamp Time.new(2020, 1, 3)
-    end
+      self.schedule_start_timestamp = Time.new(2020, 1, 1)
+      self.schedule_end_timestamp = Time.new(2020, 1, 3)
+    end.new
 
     # Within the interval
     Timecop.freeze(Time.new(2020, 1, 2)) do
@@ -495,13 +635,17 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_is_scheduled_no_end_timestamp
-    e = Verdict::Experiment.new(:json) do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Json"
+      end
+
       groups do
         group :a, :half
         group :b, :rest
       end
-      schedule_start_timestamp Time.new(2020, 1, 1)
-    end
+      self.schedule_start_timestamp = Time.new(2020, 1, 1)
+    end.new
 
     # Within the interval because there is no end date
     Timecop.freeze(Time.new(2030, 1, 1)) do
@@ -514,13 +658,17 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_is_scheduled_no_start_timestamp
-    e = Verdict::Experiment.new(:json) do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Json"
+      end
+
       groups do
         group :a, :half
         group :b, :rest
       end
-      schedule_end_timestamp Time.new(2020, 1, 3)
-    end
+      self.schedule_end_timestamp = Time.new(2020, 1, 3)
+    end.new
 
     # Within the interval because there is no start date
     Timecop.freeze(Time.new(2019, 12, 30)) do
@@ -533,14 +681,19 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_switch_respects_time_schedule
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups do
         group :a, :half
         group :b, :rest
       end
-      schedule_start_timestamp Time.new(2020, 1, 1)
-      schedule_end_timestamp Time.new(2020, 1, 2)
-    end
+
+      self.schedule_start_timestamp = Time.new(2020, 1, 1)
+      self.schedule_end_timestamp = Time.new(2020, 1, 2)
+    end.new
 
     Timecop.freeze(Time.new(2020, 1, 3)) do
       assert_nil e.switch(1)
@@ -548,17 +701,21 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_switch_respects_time_schedule_even_after_assignment
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups do
         group :a, :half
         group :b, :rest
       end
-    end
+    end.new
 
     assert_equal :a, e.switch(1)
 
-    e.schedule_start_timestamp Time.new(2020, 1, 1)
-    e.schedule_end_timestamp Time.new(2020, 1, 2)
+    e.schedule_start_timestamp = Time.new(2020, 1, 1)
+    e.schedule_end_timestamp = Time.new(2020, 1, 2)
 
     Timecop.freeze(Time.new(2020, 1, 3)) do
       assert_nil e.switch(1)
@@ -566,13 +723,17 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_is_stop_new_assignments
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups do
         group :a, :half
         group :b, :half
       end
-      schedule_stop_new_assignment_timestamp Time.new(2020, 1, 15)
-    end
+      self.schedule_stop_new_assignment_timestamp = Time.new(2020, 1, 15)
+    end.new
 
     # new assignments stopped after the stop timestamp
     Timecop.freeze(Time.new(2020, 1, 16)) do
@@ -587,16 +748,20 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_switch_preserves_old_assignments_after_stop_new_assignments_timestamp
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups do
         group :a, :half
         group :b, :half
       end
-    end
+    end.new
 
     assert_equal :a, e.switch(1)
 
-    e.schedule_stop_new_assignment_timestamp Time.new(2020, 4, 15)
+    e.schedule_stop_new_assignment_timestamp = Time.new(2020, 4, 15)
 
     # switch respects to stop new assignment timestamp, old assignment preserves, new assignment returns nil
     Timecop.freeze(Time.new(2020, 4, 16)) do
@@ -609,16 +774,20 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_schedule_start_timestamp_and_stop_new_assignemnt_timestamp_are_inclusive_but_end_timestamp_is_exclusive
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups do
         group :a, :half
         group :b, :half
       end
 
-      schedule_start_timestamp Time.new(2020, 1, 1)
-      schedule_stop_new_assignment_timestamp Time.new(2020, 1, 15)
-      schedule_end_timestamp Time.new(2020, 1, 31)
-    end
+      self.schedule_start_timestamp = Time.new(2020, 1, 1)
+      self.schedule_stop_new_assignment_timestamp = Time.new(2020, 1, 15)
+      self.schedule_end_timestamp = Time.new(2020, 1, 31)
+    end.new
 
     # start_timestamp is included
     Timecop.freeze(Time.new(2020, 1, 1)) do
@@ -643,11 +812,15 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_custom_qualifiers_success
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups do
         group :all, 100
       end
-    end
+    end.new
 
     subject = 2
     custom_qualifier_a = Proc.new { |subject| subject.even? }
@@ -658,11 +831,15 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_custom_qualifiers_failure
-    e = Verdict::Experiment.new('test') do
+    e = Class.new(Verdict::Experiment) do
+      def self.name
+        "Test"
+      end
+
       groups do
         group :all, 100
       end
-    end
+    end.new
 
     subject = 3
     custom_qualifier_a = Proc.new { |subject| subject.even? }
@@ -673,11 +850,15 @@ class ExperimentTest < Minitest::Test
   end
 
   def test_dynamic_subject_qualifies_call_overridden_method
-    e = MyExperiment.new('test') do
+    e = Class.new(MyExperiment) do
+      def self.name
+        "Test"
+      end
+
       groups do
         group :all, 100
       end
-    end
+    end.new
 
     group = e.switch(4)
     assert_nil group
