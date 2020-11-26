@@ -9,7 +9,7 @@ end
 require "bundler/setup"
 require "minitest/autorun"
 require "minitest/pride"
-require "mocha/setup"
+require "mocha/minitest"
 require "timecop"
 require "verdict"
 require "redis"
