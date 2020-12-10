@@ -67,15 +67,17 @@ module Verdict
       end
 
       def scrub(scope, cursor: 0)
-        cursor, results = redis.with do |conn|
-          conn.hscan(scope_key(scope), cursor, count: PAGE_SIZE)
-        end
+        loop do
+          cursor, results = redis.with do |conn|
+            conn.hscan(scope_key(scope), cursor, count: PAGE_SIZE)
+          end
 
-        results.map(&:first).each do |key|
-          remove(scope, key)
-        end
+          results.map(&:first).each do |key|
+            remove(scope, key)
+          end
 
-        scrub(scope, cursor: cursor) unless cursor.to_i.zero?
+          break if cursor.to_i.zero?
+        end
       end
     end
   end
