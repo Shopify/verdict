@@ -1,3 +1,6 @@
+## v0.16.1
+* Change `RedisStorage` scrub to be iterative to avoid SystemStackError while cleaning big experiments
+
 ## v0.16.0
 * Allow configuring the `RedisStorage` with a [`ConnectionPool`](https://github.com/mperham/connection_pool) instead of a raw `Redis` connection.
 
