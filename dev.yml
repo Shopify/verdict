@@ -1,0 +1,11 @@
+name: verdict
+
+type: ruby
+
+up:
+  - ruby: 2.7.1
+  - bundler
+
+commands:
+  test:
+    run: rake test
