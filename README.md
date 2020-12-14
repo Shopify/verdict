@@ -1,6 +1,6 @@
 # Verdict
 
-[![Build Status](https://travis-ci.org/Shopify/verdict.png)](https://travis-ci.org/Shopify/verdict)
+[![Build Status](https://github.com/Shopify/verdict/workflows/CI/badge.svg?branch=master)](https://github.com/Shopify/verdict/actions)
 [![Code Climate](https://codeclimate.com/github/Shopify/verdict.png)](https://codeclimate.com/github/Shopify/verdict)
 
 This library allows you to define and use experiments in your application.
