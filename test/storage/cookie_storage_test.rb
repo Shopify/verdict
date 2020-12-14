@@ -6,7 +6,9 @@ require 'fake_app'
 class CookieStorageTest < Minitest::Test
   def setup
     @storage = Verdict::Storage::CookieStorage.new.tap do |s|
-      s.cookies = ActionDispatch::Cookies::CookieJar.new(nil)
+      request = mock()
+      request.stubs(:cookies_same_site_protection).returns(proc { :none })
+      s.cookies = ActionDispatch::Cookies::CookieJar.new(request)
     end
     @experiment = Verdict::Experiment.new(:cookie_storage_test) do
       groups { group :all, 100 }
