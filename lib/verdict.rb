@@ -4,29 +4,7 @@ require 'digest/md5'
 module Verdict
   extend self
 
-  attr_accessor :default_logger, :directory
-
-  def [](handle)
-    Verdict.repository[handle.to_s]
-  end
-
-  def repository
-    discovery if @repository.nil?
-    @repository
-  end
-
-  def eager_load!
-    discovery
-  end
-
-  def discovery
-    @repository = {}
-    Dir[File.join(Verdict.directory, '**', '*.rb')].each { |f| load f } if @directory
-  end
-
-  def clear_repository_cache
-    @repository = nil
-  end
+  attr_accessor :default_logger
 
   class Error < StandardError; end
   class SegmentationError < Verdict::Error; end
@@ -56,5 +34,3 @@ require "verdict/segmenters"
 require "verdict/event_logger"
 
 Verdict.default_logger ||= Logger.new("/dev/null")
-Verdict.directory = nil
-Verdict.clear_repository_cache

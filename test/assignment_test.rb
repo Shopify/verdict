@@ -2,9 +2,11 @@ require 'test_helper'
 require 'json'
 
 class AssignmentTest < Minitest::Test
+  class Experiment < Verdict::Experiment
+  end
 
   def setup
-    @experiment = Verdict::Experiment.new('assignment test')
+    @experiment = Experiment.new('assignment test')
     @group = Verdict::Group.new(@experiment, :control)
   end
 
@@ -54,7 +56,7 @@ class AssignmentTest < Minitest::Test
     assignment = Verdict::Assignment.new(@experiment, 'test_subject_id', @group, Time.new(2013, 1, 1, 0, 0, 0, '+00:00'))
     json = JSON.parse(assignment.to_json)
 
-    assert_equal 'assignment test', json['experiment']
+    assert_equal 'assignment_test/experiment', json['experiment']
     assert_equal 'test_subject_id', json['subject']
     assert_equal true, json['qualified']
     assert_equal true, json['returning']
