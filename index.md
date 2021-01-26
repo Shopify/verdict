@@ -5,14 +5,14 @@ layout: index
 [![Build Status](https://travis-ci.org/Shopify/verdict.png)](https://travis-ci.org/Shopify/verdict)
 [![Code Climate](https://codeclimate.com/github/Shopify/verdict.png)](https://codeclimate.com/github/Shopify/verdict)
 
+## Note: Verdict is no longer actively maintained. If you have questions, reach out to experiments@shopify.com.
+
 This library allows you to define and use experiments in your application.
 
 - It can be used in any Ruby application, and comes with a `Railtie` to make integrating it with a Rails app easy.
 - It handles consistently assigning subjects to experiment groups, and storing/logging these assignments for analysis.
 
 __*This library doesn't do any analysis of results. That should happen elsewhere, e.g. in a data warehouse environment.*__
-
-## Note: Verdict is no longer actively maintained. If you have questions, reach out to experiments@shopify.com.
 
 ## Installation
 
