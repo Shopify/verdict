@@ -12,6 +12,7 @@ This library allows you to define and use experiments in your application.
 
 __*This library doesn't do any analysis of results. That should happen elsewhere, e.g. in a data warehouse environment.*__
 
+## Note: Verdict is no longer actively maintained. If you have questions, reach out to experiments@shopify.com.
 
 ## Installation
 
