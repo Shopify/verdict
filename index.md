@@ -5,7 +5,7 @@ layout: index
 [![Build Status](https://travis-ci.org/Shopify/verdict.png)](https://travis-ci.org/Shopify/verdict)
 [![Code Climate](https://codeclimate.com/github/Shopify/verdict.png)](https://codeclimate.com/github/Shopify/verdict)
 
-## Note: Verdict is no longer actively maintained. If you have questions, reach out to experiments@shopify.com.
+## Note: Verdict is no longer actively maintained. If you have questions, reach out to experiments-platform@shopify.com.
 
 This library allows you to define and use experiments in your application.
 
