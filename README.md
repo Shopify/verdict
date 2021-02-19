@@ -1,6 +1,6 @@
 # Verdict
 
-## Note: Verdict is no longer actively maintained. If you have questions, reach out to experiments@shopify.com.
+## Note: Verdict is no longer actively maintained. If you have questions, reach out to experiments-platform@shopify.com.
 
 [![Build Status](https://github.com/Shopify/verdict/workflows/CI/badge.svg?branch=master)](https://github.com/Shopify/verdict/actions)
 [![Code Climate](https://codeclimate.com/github/Shopify/verdict.png)](https://codeclimate.com/github/Shopify/verdict)
